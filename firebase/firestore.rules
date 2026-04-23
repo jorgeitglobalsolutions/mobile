@@ -1,0 +1,28 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      allow read, delete: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null && request.auth.uid == userId;
+      // Clients cannot change subscription.* (Cloud Functions / Admin SDK only).
+      allow update: if request.auth != null && request.auth.uid == userId
+        && (
+          !resource.data.keys().hasAny(['subscription'])
+          || request.resource.data.subscription == resource.data.subscription
+        );
+
+      match /routines/{routineId} {
+        allow read, write, delete: if request.auth != null && request.auth.uid == userId;
+      }
+      match /workouts/{workoutId} {
+        allow read, write, delete: if request.auth != null && request.auth.uid == userId;
+      }
+      match /habitDays/{dayId} {
+        allow read, write, delete: if request.auth != null && request.auth.uid == userId;
+      }
+      match /workoutDrafts/{draftId} {
+        allow read, write, delete: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+  }
+}
