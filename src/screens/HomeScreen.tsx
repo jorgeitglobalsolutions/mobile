@@ -32,9 +32,38 @@ function moodLabel(m: MoodValue | null | undefined): string {
 }
 
 function nextMood(cur: MoodValue | null | undefined): MoodValue {
-  if (!cur) return 'good';
+  if (!cur) return 'great';
   const i = MOODS.indexOf(cur);
   return MOODS[(i + 1) % MOODS.length];
+}
+
+function moodIcon(m: MoodValue | null | undefined): keyof typeof Ionicons.glyphMap {
+  if (!m) return 'happy-outline';
+  const icons: Record<MoodValue, keyof typeof Ionicons.glyphMap> = {
+    great: 'happy',
+    good: 'happy-outline',
+    low: 'sad-outline',
+    tired: 'moon-outline',
+    stressed: 'flash-outline',
+  };
+  return icons[m];
+}
+
+function moodIconColor(m: MoodValue | null | undefined): string {
+  if (!m) return colors.textMuted;
+  const map: Record<MoodValue, string> = {
+    great: colors.yellow,
+    good: colors.green,
+    low: colors.textSecondary,
+    tired: colors.primaryMuted,
+    stressed: colors.orange,
+  };
+  return map[m];
+}
+
+function moodValueColor(m: MoodValue | null | undefined): string {
+  if (!m) return colors.textSecondary;
+  return moodIconColor(m);
 }
 
 export default function HomeScreen() {
@@ -153,11 +182,11 @@ export default function HomeScreen() {
               done={waterDone}
             />
             <StatusTile
-              icon="happy-outline"
-              iconColor={colors.yellow}
+              icon={moodIcon(habitDay?.mood)}
+              iconColor={moodIconColor(habitDay?.mood)}
               label="Mood"
               value={moodLabel(habitDay?.mood)}
-              valueColor={moodDone ? colors.yellow : colors.textSecondary}
+              valueColor={moodValueColor(habitDay?.mood)}
               done={moodDone}
               disabled={busy || !user?.uid}
               onPress={() =>
