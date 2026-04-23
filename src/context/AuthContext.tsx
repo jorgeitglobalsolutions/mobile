@@ -8,8 +8,14 @@ import {
 } from 'firebase/auth';
 import { getFirebaseAuth } from '../lib/firebase';
 import { getFirebasePublicConfig, isFirebaseConfigured } from '../config/firebaseConfig';
+import { isMockDataMode } from '../config/mockMode';
+import { createMockAuthUser, ensureMockUser, MOCK_UID } from '../mock/inMemoryBackend';
 import { computeAccessLevel } from '../services/subscription';
-import { createUserDocument, ensureUserDocument, subscribeUserDocument } from '../services/userDocument';
+import {
+  createUserDocument,
+  ensureUserDocument,
+  subscribeUserDocument,
+} from '../services/userDocument';
 import { seedPredefinedRoutinesIfEmpty } from '../services/routinesRepo';
 import { registerForPushNotificationsAsync } from '../services/notifications';
 import type { UserDocument, UserProfile } from '../types/firestoreUser';
@@ -18,7 +24,9 @@ type AccessLevel = ReturnType<typeof computeAccessLevel>['level'];
 
 type AuthContextValue = {
   firebaseReady: boolean;
+  /** True when Firebase is configured OR mock demo mode is on (app can show main flows). */
   firebaseConfigured: boolean;
+  useMockData: boolean;
   user: User | null;
   userDoc: UserDocument | null;
   accessLevel: AccessLevel;
@@ -37,8 +45,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const pushRegisterUid = useRef<string | null>(null);
 
   const configured = useMemo(() => isFirebaseConfigured(getFirebasePublicConfig()), []);
+  const mockMode = useMemo(() => isMockDataMode(), []);
+  const dataLayerOk = useMemo(() => configured || mockMode, [configured, mockMode]);
 
   useEffect(() => {
+    if (mockMode) {
+      setFirebaseReady(true);
+      return;
+    }
     const auth = getFirebaseAuth();
     if (!auth) {
       setFirebaseReady(true);
@@ -48,12 +62,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(u);
       setFirebaseReady(true);
     });
-  }, [configured]);
+  }, [configured, mockMode]);
 
   useEffect(() => {
-    if (!user?.uid) return;
+    if (!mockMode || !user?.uid || user.uid !== MOCK_UID) return;
     void seedPredefinedRoutinesIfEmpty(user.uid);
-  }, [user?.uid]);
+  }, [mockMode, user?.uid]);
 
   useEffect(() => {
     if (!user) {
@@ -63,6 +77,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let cancelled = false;
     let unsubDoc: (() => void) | undefined;
     void (async () => {
+      if (mockMode) {
+        unsubDoc = subscribeUserDocument(user.uid, setUserDoc);
+        return;
+      }
       try {
         await ensureUserDocument(user);
       } catch {
@@ -75,7 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       cancelled = true;
       unsubDoc?.();
     };
-  }, [user?.uid]);
+  }, [user?.uid, mockMode]);
 
   useEffect(() => {
     if (!user?.uid) {
@@ -89,13 +107,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     void registerForPushNotificationsAsync(user.uid);
   }, [user?.uid, userDoc]);
 
-  const signIn = useCallback(async (email: string, password: string) => {
-    const auth = getFirebaseAuth();
-    if (!auth) throw new Error('Firebase is not configured');
-    await signInWithEmailAndPassword(auth, email.trim(), password);
-  }, []);
+  const signIn = useCallback(
+    async (email: string, password: string) => {
+      if (isMockDataMode()) {
+        const e = email.trim() || 'demo@mock.local';
+        const u = createMockAuthUser(e, e.split('@')[0] ?? 'Demo');
+        ensureMockUser(MOCK_UID, e, u.displayName ?? 'Demo', null);
+        setUser(u);
+        return;
+      }
+      const auth = getFirebaseAuth();
+      if (!auth) throw new Error('Firebase is not configured');
+      await signInWithEmailAndPassword(auth, email.trim(), password);
+    },
+    [],
+  );
 
   const signUp = useCallback(async (email: string, password: string, profile: UserProfile | null) => {
+    if (isMockDataMode()) {
+      const e = email.trim() || 'demo@mock.local';
+      const u = createMockAuthUser(e, e.split('@')[0] ?? 'Athlete');
+      ensureMockUser(MOCK_UID, e, u.displayName ?? 'Athlete', profile);
+      setUser(u);
+      return;
+    }
     const auth = getFirebaseAuth();
     if (!auth) throw new Error('Firebase is not configured');
     const cred = await createUserWithEmailAndPassword(auth, email.trim(), password);
@@ -103,6 +138,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signOutUser = useCallback(async () => {
+    if (isMockDataMode()) {
+      setUser(null);
+      setUserDoc(null);
+      return;
+    }
     const auth = getFirebaseAuth();
     if (!auth) return;
     await signOut(auth);
@@ -125,7 +165,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     return {
       firebaseReady,
-      firebaseConfigured: configured,
+      firebaseConfigured: dataLayerOk,
+      useMockData: mockMode,
       user,
       userDoc,
       accessLevel: level,
@@ -134,7 +175,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signUp,
       signOutUser,
     };
-  }, [firebaseReady, configured, user, userDoc, signIn, signUp, signOutUser]);
+  }, [firebaseReady, dataLayerOk, mockMode, user, userDoc, signIn, signUp, signOutUser]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

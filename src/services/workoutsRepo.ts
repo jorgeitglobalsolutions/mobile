@@ -11,6 +11,8 @@ import {
   type Firestore,
 } from 'firebase/firestore';
 import { getFirebaseFirestore } from '../lib/firebase';
+import { isMockDataMode } from '../config/mockMode';
+import * as mem from '../mock/inMemoryBackend';
 import type { LoggedExercise, WorkoutDoc } from '../types/domain';
 
 function workoutsCol(db: Firestore, uid: string) {
@@ -54,6 +56,9 @@ export async function saveWorkoutSession(
     exercises: LoggedExercise[];
   },
 ): Promise<string> {
+  if (isMockDataMode()) {
+    return mem.mockSaveWorkoutSession(uid, input);
+  }
   const db = getFirebaseFirestore();
   if (!db) throw new Error('Firestore not initialized');
   const durationSeconds = Math.max(0, Math.floor((input.endedAt.getTime() - input.startedAt.getTime()) / 1000));
@@ -76,6 +81,9 @@ export async function saveWorkoutSession(
 }
 
 export async function listRecentWorkouts(uid: string, max = 50): Promise<{ id: string; data: WorkoutDoc }[]> {
+  if (isMockDataMode()) {
+    return mem.mockListRecentWorkouts(uid, max);
+  }
   const db = getFirebaseFirestore();
   if (!db) return [];
   const q = query(workoutsCol(db, uid), orderBy('endedAt', 'desc'), limit(max));
@@ -84,6 +92,9 @@ export async function listRecentWorkouts(uid: string, max = 50): Promise<{ id: s
 }
 
 export async function getWorkout(uid: string, workoutId: string): Promise<WorkoutDoc | null> {
+  if (isMockDataMode()) {
+    return mem.mockGetWorkout(uid, workoutId);
+  }
   const db = getFirebaseFirestore();
   if (!db) return null;
   const ref = doc(workoutsCol(db, uid), workoutId);

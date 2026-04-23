@@ -36,7 +36,7 @@ const FEATURES = [
 ];
 
 export default function PaywallScreen({ navigation }: Props) {
-  const { user } = useAuth();
+  const { user, useMockData } = useAuth();
   const [plan, setPlan] = useState<'month' | 'year'>('month');
   const [busy, setBusy] = useState(false);
   const legal = getLegalUrls();
@@ -58,8 +58,8 @@ export default function PaywallScreen({ navigation }: Props) {
     }
     setBusy(true);
     try {
-      if (__DEV__) {
-        await callGrantDevSubscription();
+      if (useMockData || __DEV__) {
+        await callGrantDevSubscription(user.uid);
         navigation.goBack();
         return;
       }
@@ -80,9 +80,12 @@ export default function PaywallScreen({ navigation }: Props) {
     }
     setBusy(true);
     try {
-      if (__DEV__) {
-        await callGrantDevSubscription();
-        Alert.alert('Restore', 'Dev build: subscription refreshed from server.');
+      if (useMockData || __DEV__) {
+        await callGrantDevSubscription(user.uid);
+        Alert.alert(
+          'Restore',
+          useMockData ? 'Demo mode: subscription unlocked locally.' : 'Dev build: subscription refreshed from server.',
+        );
         navigation.goBack();
         return;
       }

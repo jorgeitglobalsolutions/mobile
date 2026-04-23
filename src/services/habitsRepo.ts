@@ -8,6 +8,8 @@ import {
   type Unsubscribe,
 } from 'firebase/firestore';
 import { getFirebaseFirestore } from '../lib/firebase';
+import { isMockDataMode } from '../config/mockMode';
+import * as mem from '../mock/inMemoryBackend';
 import type { HabitDayDoc, MoodValue } from '../types/domain';
 
 function habitDayRef(uid: string, date: string) {
@@ -31,6 +33,9 @@ export async function getOrCreateHabitDay(
   date: string,
   defaults: { proteinGoalG: number; waterGoalMl: number },
 ): Promise<HabitDayDoc> {
+  if (isMockDataMode()) {
+    return mem.mockGetOrCreateHabitDay(uid, date, defaults);
+  }
   const ref = habitDayRef(uid, date);
   const snap = await getDoc(ref);
   if (snap.exists()) return snap.data() as HabitDayDoc;
@@ -54,6 +59,9 @@ export function subscribeHabitDay(
   defaults: { proteinGoalG: number; waterGoalMl: number },
   onData: (doc: HabitDayDoc | null) => void,
 ): Unsubscribe {
+  if (isMockDataMode()) {
+    return mem.mockSubscribeHabitDay(uid, date, defaults, onData);
+  }
   const ref = habitDayRef(uid, date);
   return onSnapshot(ref, (snap) => {
     if (!snap.exists()) {
@@ -88,6 +96,10 @@ export function subscribeHabitDay(
 }
 
 export async function incrementProtein(uid: string, date: string, deltaG: number, defaults: { proteinGoalG: number; waterGoalMl: number }) {
+  if (isMockDataMode()) {
+    await mem.mockIncrementProtein(uid, date, deltaG, defaults);
+    return;
+  }
   const ref = habitDayRef(uid, date);
   const cur = await getOrCreateHabitDay(uid, date, defaults);
   await setDoc(
@@ -103,6 +115,10 @@ export async function incrementProtein(uid: string, date: string, deltaG: number
 }
 
 export async function incrementWater(uid: string, date: string, deltaMl: number, defaults: { proteinGoalG: number; waterGoalMl: number }) {
+  if (isMockDataMode()) {
+    await mem.mockIncrementWater(uid, date, deltaMl, defaults);
+    return;
+  }
   const ref = habitDayRef(uid, date);
   const cur = await getOrCreateHabitDay(uid, date, defaults);
   await setDoc(
@@ -123,6 +139,10 @@ export async function setWorkoutCompleted(
   completed: boolean,
   defaults: { proteinGoalG: number; waterGoalMl: number },
 ) {
+  if (isMockDataMode()) {
+    await mem.mockSetWorkoutCompleted(uid, date, completed, defaults);
+    return;
+  }
   const ref = habitDayRef(uid, date);
   const cur = await getOrCreateHabitDay(uid, date, defaults);
   await setDoc(
@@ -138,6 +158,10 @@ export async function setWorkoutCompleted(
 }
 
 export async function setMood(uid: string, date: string, mood: MoodValue | null, defaults: { proteinGoalG: number; waterGoalMl: number }) {
+  if (isMockDataMode()) {
+    await mem.mockSetMood(uid, date, mood, defaults);
+    return;
+  }
   const ref = habitDayRef(uid, date);
   const cur = await getOrCreateHabitDay(uid, date, defaults);
   await setDoc(

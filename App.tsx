@@ -6,6 +6,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { RootStackParamList } from './src/navigation/types';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
+import { isMockDataMode } from './src/config/mockMode';
+import { getFirebasePublicConfig, isFirebaseConfigured } from './src/config/firebaseConfig';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import SignUpScreen from './src/screens/SignUpScreen';
@@ -45,7 +47,8 @@ function AppNavigation() {
     );
   }
 
-  if (!firebaseConfigured) {
+  const hasFirebase = isFirebaseConfigured(getFirebasePublicConfig());
+  if (!hasFirebase && !isMockDataMode()) {
     return <MissingFirebaseScreen />;
   }
 

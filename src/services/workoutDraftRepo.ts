@@ -1,5 +1,7 @@
 import { doc, deleteDoc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { getFirebaseFirestore } from '../lib/firebase';
+import { isMockDataMode } from '../config/mockMode';
+import * as mem from '../mock/inMemoryBackend';
 import type { LoggedExercise } from '../types/domain';
 
 export type WorkoutDraftDoc = {
@@ -18,6 +20,9 @@ function draftRef(uid: string) {
 }
 
 export async function getWorkoutDraft(uid: string): Promise<WorkoutDraftDoc | null> {
+  if (isMockDataMode()) {
+    return mem.mockGetWorkoutDraft(uid);
+  }
   const db = getFirebaseFirestore();
   if (!db) return null;
   const s = await getDoc(draftRef(uid));
@@ -35,6 +40,15 @@ export async function saveWorkoutDraft(
   uid: string,
   payload: { routineId: string; title: string; startedAtMs: number; exercises: LoggedExercise[] },
 ): Promise<void> {
+  if (isMockDataMode()) {
+    await mem.mockSaveWorkoutDraft(uid, {
+      routineId: payload.routineId,
+      title: payload.title,
+      startedAtMs: payload.startedAtMs,
+      exercises: payload.exercises,
+    });
+    return;
+  }
   await setDoc(draftRef(uid), {
     ...payload,
     updatedAt: serverTimestamp(),
@@ -42,6 +56,10 @@ export async function saveWorkoutDraft(
 }
 
 export async function clearWorkoutDraft(uid: string): Promise<void> {
+  if (isMockDataMode()) {
+    await mem.mockClearWorkoutDraft(uid);
+    return;
+  }
   const db = getFirebaseFirestore();
   if (!db) return;
   try {

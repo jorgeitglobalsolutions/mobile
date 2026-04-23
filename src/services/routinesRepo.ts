@@ -13,6 +13,8 @@ import {
   type Unsubscribe,
 } from 'firebase/firestore';
 import { getFirebaseFirestore } from '../lib/firebase';
+import { isMockDataMode } from '../config/mockMode';
+import * as mem from '../mock/inMemoryBackend';
 import type { RoutineDoc } from '../types/domain';
 import { PREDEFINED_ROUTINES_SEED } from '../data/predefinedRoutinesSeed';
 
@@ -23,6 +25,10 @@ function routinesCol(uid: string) {
 }
 
 export async function seedPredefinedRoutinesIfEmpty(uid: string): Promise<void> {
+  if (isMockDataMode()) {
+    await mem.mockSeedPredefinedIfEmpty(uid);
+    return;
+  }
   const db = getFirebaseFirestore();
   if (!db) return;
   const col = routinesCol(uid);
@@ -50,6 +56,9 @@ export function subscribeRoutines(
   uid: string,
   onUpdate: (rows: { id: string; data: RoutineDoc }[]) => void,
 ): Unsubscribe {
+  if (isMockDataMode()) {
+    return mem.mockSubscribeRoutines(uid, onUpdate);
+  }
   const q = query(routinesCol(uid), orderBy('title'));
   return onSnapshot(q, (snap) => {
     const rows = snap.docs.map((d) => ({ id: d.id, data: d.data() as RoutineDoc }));
@@ -58,6 +67,9 @@ export function subscribeRoutines(
 }
 
 export async function getRoutine(uid: string, routineId: string): Promise<RoutineDoc | null> {
+  if (isMockDataMode()) {
+    return mem.mockGetRoutine(uid, routineId);
+  }
   const ref = doc(routinesCol(uid), routineId);
   const s = await getDoc(ref);
   if (!s.exists()) return null;
@@ -69,6 +81,9 @@ export async function saveUserRoutine(
   routineId: string | undefined,
   data: Omit<RoutineDoc, 'updatedAt' | 'isPredefined'> & { isPredefined?: boolean },
 ): Promise<string> {
+  if (isMockDataMode()) {
+    return mem.mockSaveUserRoutine(uid, routineId, data);
+  }
   const col = routinesCol(uid);
   const id = routineId ?? doc(col).id;
   const ref = doc(col, id);
@@ -82,6 +97,10 @@ export async function saveUserRoutine(
 }
 
 export async function deleteRoutine(uid: string, routineId: string): Promise<void> {
+  if (isMockDataMode()) {
+    await mem.mockDeleteRoutine(uid, routineId);
+    return;
+  }
   const ref = doc(routinesCol(uid), routineId);
   const snap = await getDoc(ref);
   if (!snap.exists()) return;
