@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "mobile",
-    "slug": "mobile",
+    "name": "EM Fit System",
+    "slug": "em-fit-system",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -21,10 +21,32 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.jorgeitglobalsolutionssorganization.emfitsystem"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-iap",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#ffffff"
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "23d75ead-2ffa-4de0-978a-4f95e2ba2f0b"
+      },
+      "iapSkuMonthly": "em_fit_monthly",
+      "iapSkuYearly": "em_fit_yearly",
+      "legalTermsUrl": "https://example.com/terms",
+      "legalPrivacyUrl": "https://example.com/privacy",
+      "supportEmail": "support@example.com"
+    },
+    "owner": "jorgeitglobalsolutionss-organization"
   }
 }
