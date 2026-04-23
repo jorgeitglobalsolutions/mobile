@@ -95,6 +95,7 @@ export default function ExerciseLibraryScreen({ navigation, route }: Props) {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
+        style={styles.chipsScroll}
         contentContainerStyle={styles.chipsRow}
       >
         {MUSCLE_CATEGORIES.map((c) => (
@@ -162,7 +163,14 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   input: { flex: 1, paddingVertical: 12, fontSize: 16, color: colors.text },
-  chipsRow: { paddingHorizontal: spacing.xl, paddingVertical: spacing.md, gap: spacing.sm },
+  /** Prevents horizontal ScrollView from stretching to fill column (bug: tall thin chips). */
+  chipsScroll: { flexGrow: 0, flexShrink: 0 },
+  chipsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.md,
+  },
   chip: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
@@ -171,6 +179,7 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     marginRight: spacing.sm,
     backgroundColor: colors.white,
+    alignSelf: 'center',
   },
   chipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
   chipText: { fontSize: 14, fontWeight: '600', color: colors.text },
