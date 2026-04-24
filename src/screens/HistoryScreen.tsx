@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
@@ -40,14 +41,26 @@ function sameDay(a: Date, b: Date) {
   );
 }
 
+function dayKey(d: Date) {
+  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+}
+
+function formatVol(kg: number, metric: boolean) {
+  if (!metric) return `${Math.round(kg * 2.20462)} lb`;
+  return `${Math.round(kg)} kg`;
+}
+
 export default function HistoryScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { user } = useAuth();
+  const { user, userDoc } = useAuth();
   const [tab, setTab] = useState<'workouts' | 'stats' | 'progress'>('workouts');
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<{ id: string; data: WorkoutDoc }[]>([]);
   const [weekAnchor, setWeekAnchor] = useState(() => new Date());
   const [selected, setSelected] = useState(() => new Date());
+  const [refreshing, setRefreshing] = useState(false);
+
+  const metric = userDoc?.settings?.unitsMetric !== false;
 
   const weekDays = useMemo(() => {
     const s = startOfWeek(weekAnchor);
@@ -69,11 +82,30 @@ export default function HistoryScreen() {
     }
   }, [user?.uid]);
 
+  const onRefresh = useCallback(async () => {
+    if (!user?.uid) return;
+    setRefreshing(true);
+    try {
+      const list = await listRecentWorkouts(user.uid, 80);
+      setItems(list);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [user?.uid]);
+
   useFocusEffect(
     useCallback(() => {
       void load();
     }, [load]),
   );
+
+  const workoutDayKeys = useMemo(() => {
+    const keys = new Set<string>();
+    for (const w of items) {
+      keys.add(dayKey(w.data.endedAt.toDate()));
+    }
+    return keys;
+  }, [items]);
 
   const selectedWorkouts = useMemo(() => {
     return items.filter((w) => sameDay(w.data.endedAt.toDate(), selected));
@@ -92,18 +124,27 @@ export default function HistoryScreen() {
     return { sessions, volumeKg, minutes, sets };
   }, [items]);
 
+  const weekStats = useMemo(() => {
+    const start = startOfWeek(weekAnchor);
+    const end = addDays(start, 7);
+    const inWeek = items.filter((w) => {
+      const t = w.data.endedAt.toDate().getTime();
+      return t >= start.getTime() && t < end.getTime();
+    });
+    const sessions = inWeek.length;
+    const volumeKg = inWeek.reduce((s, w) => s + (w.data.totalVolumeKg ?? 0), 0);
+    const minutes = Math.round(inWeek.reduce((s, w) => s + w.data.durationSeconds / 60, 0));
+    return { sessions, volumeKg, minutes };
+  }, [items, weekAnchor]);
+
   const weeklyBars = useMemo(() => {
-    const anchor = new Date();
-    anchor.setHours(0, 0, 0, 0);
-    const start = new Date(anchor);
-    start.setDate(start.getDate() - 6);
+    const s = startOfWeek(weekAnchor);
     const days: { label: string; vol: number }[] = [];
     for (let i = 0; i < 7; i++) {
-      const d = new Date(start);
-      d.setDate(start.getDate() + i);
+      const d = addDays(s, i);
       const vol = items
         .filter((w) => sameDay(w.data.endedAt.toDate(), d))
-        .reduce((s, w) => s + (w.data.totalVolumeKg ?? 0), 0);
+        .reduce((acc, w) => acc + (w.data.totalVolumeKg ?? 0), 0);
       days.push({
         label: d.toLocaleDateString(undefined, { weekday: 'short' }),
         vol,
@@ -111,11 +152,22 @@ export default function HistoryScreen() {
     }
     const maxVol = Math.max(1, ...days.map((x) => x.vol));
     return { days, maxVol };
-  }, [items]);
+  }, [items, weekAnchor]);
+
+  const goWeek = (deltaDays: number) => {
+    const n = new Date(weekAnchor);
+    n.setDate(n.getDate() + deltaDays);
+    setWeekAnchor(n);
+  };
+
+  const goToday = () => {
+    const t = new Date();
+    setWeekAnchor(t);
+    setSelected(t);
+  };
 
   const openDetail = (id: string) => {
-    const parent = navigation.getParent();
-    parent?.navigate('WorkoutSessionDetail', { workoutId: id });
+    navigation.navigate('WorkoutSessionDetail', { workoutId: id });
   };
 
   const primary = (w: WorkoutDoc) => {
@@ -125,11 +177,17 @@ export default function HistoryScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
+        }
+      >
         <View style={styles.header}>
           <Text style={styles.title}>History</Text>
-          <TouchableOpacity style={styles.iconBtn} onPress={() => setWeekAnchor(new Date())}>
-            <Ionicons name="calendar-outline" size={22} color={colors.text} />
+          <TouchableOpacity style={styles.iconBtn} onPress={goToday} accessibilityLabel="Jump to today">
+            <Ionicons name="today-outline" size={22} color={colors.text} />
           </TouchableOpacity>
         </View>
 
@@ -144,19 +202,34 @@ export default function HistoryScreen() {
           ))}
         </View>
 
+        <View style={styles.weekNav}>
+          <TouchableOpacity style={styles.weekNavBtn} onPress={() => goWeek(-7)} accessibilityLabel="Previous week">
+            <Ionicons name="chevron-back" size={22} color={colors.primary} />
+          </TouchableOpacity>
+          <Text style={styles.weekNavLabel} numberOfLines={1}>
+            Week of {startOfWeek(weekAnchor).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+          </Text>
+          <TouchableOpacity style={styles.weekNavBtn} onPress={() => goWeek(7)} accessibilityLabel="Next week">
+            <Ionicons name="chevron-forward" size={22} color={colors.primary} />
+          </TouchableOpacity>
+        </View>
+
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.calRow}>
           {weekDays.map((d) => {
             const on = sameDay(d, selected);
             const label = d.toLocaleDateString(undefined, { weekday: 'short' });
             const num = d.getDate();
+            const hasWorkout = workoutDayKeys.has(dayKey(d));
             return (
               <TouchableOpacity
                 key={d.toISOString()}
                 onPress={() => setSelected(d)}
                 style={[styles.calCell, on && styles.calCellOn]}
+                accessibilityLabel={`${label} ${num}${hasWorkout ? ', has workout' : ''}`}
               >
                 <Text style={[styles.calD, on && styles.calDOn]}>{label}</Text>
                 <Text style={[styles.calN, on && styles.calNOn]}>{num}</Text>
+                <View style={[styles.calDot, hasWorkout && styles.calDotOn, on && styles.calDotOnSelected]} />
               </TouchableOpacity>
             );
           })}
@@ -204,9 +277,13 @@ export default function HistoryScreen() {
                         value={`${Math.floor(w.data.durationSeconds / 60)}:${String(w.data.durationSeconds % 60).padStart(2, '0')}`}
                         label="Duration"
                       />
-                      <Stat icon="scale-outline" value={`${w.data.totalVolumeKg} kg`} label="Volume" />
+                      <Stat icon="scale-outline" value={formatVol(w.data.totalVolumeKg, metric)} label="Volume" />
                       <Stat icon="trophy-outline" value={String(w.data.totalSets)} label="Sets" />
-                      <Stat icon="ribbon-outline" value={String(w.data.bestSetVolumeKg)} label="Best set" />
+                      <Stat
+                        icon="ribbon-outline"
+                        value={formatVol(w.data.bestSetVolumeKg, metric)}
+                        label="Best set"
+                      />
                     </View>
                   </TouchableOpacity>
                 ))
@@ -251,15 +328,17 @@ export default function HistoryScreen() {
               <Text style={styles.empty}>Log workouts to see stats here.</Text>
             ) : (
               <>
-                <Text style={styles.statsHead}>Last {items.length} sessions (loaded)</Text>
+                <Text style={styles.statsHead}>All sessions (last {items.length} loaded)</Text>
                 <View style={styles.statGrid}>
                   <View style={styles.statBox}>
                     <Text style={styles.statBoxVal}>{statsSummary.sessions}</Text>
                     <Text style={styles.statBoxLbl}>Workouts</Text>
                   </View>
                   <View style={styles.statBox}>
-                    <Text style={styles.statBoxVal}>{statsSummary.volumeKg.toLocaleString()}</Text>
-                    <Text style={styles.statBoxLbl}>Volume (kg)</Text>
+                    <Text style={styles.statBoxVal}>
+                      {metric ? statsSummary.volumeKg.toLocaleString() : Math.round(statsSummary.volumeKg * 2.20462).toLocaleString()}
+                    </Text>
+                    <Text style={styles.statBoxLbl}>{metric ? 'Volume (kg)' : 'Volume (lb)'}</Text>
                   </View>
                   <View style={styles.statBox}>
                     <Text style={styles.statBoxVal}>{statsSummary.minutes}</Text>
@@ -268,6 +347,22 @@ export default function HistoryScreen() {
                   <View style={styles.statBox}>
                     <Text style={styles.statBoxVal}>{statsSummary.sets}</Text>
                     <Text style={styles.statBoxLbl}>Sets logged</Text>
+                  </View>
+                </View>
+
+                <Text style={[styles.statsHead, { marginTop: spacing.lg }]}>This calendar week</Text>
+                <View style={styles.weekSummaryCard}>
+                  <View style={styles.weekSummaryRow}>
+                    <Text style={styles.weekSummaryLbl}>Workouts</Text>
+                    <Text style={styles.weekSummaryVal}>{weekStats.sessions}</Text>
+                  </View>
+                  <View style={styles.weekSummaryRow}>
+                    <Text style={styles.weekSummaryLbl}>Volume</Text>
+                    <Text style={styles.weekSummaryVal}>{formatVol(weekStats.volumeKg, metric)}</Text>
+                  </View>
+                  <View style={[styles.weekSummaryRow, { borderBottomWidth: 0 }]}>
+                    <Text style={styles.weekSummaryLbl}>Active minutes</Text>
+                    <Text style={styles.weekSummaryVal}>{weekStats.minutes}</Text>
                   </View>
                 </View>
               </>
@@ -281,7 +376,7 @@ export default function HistoryScreen() {
               <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 24 }} />
             ) : (
               <>
-                <Text style={styles.statsHead}>Volume by day (last 7 days)</Text>
+                <Text style={styles.statsHead}>Volume by day (week shown above)</Text>
                 <View style={styles.barChart}>
                   {weeklyBars.days.map((d, i) => (
                     <View key={`${d.label}-${i}`} style={styles.barCol}>
@@ -296,7 +391,7 @@ export default function HistoryScreen() {
                         />
                       </View>
                       <Text style={styles.barLbl}>{d.label}</Text>
-                      <Text style={styles.barVol}>{d.vol > 0 ? `${d.vol}` : '—'}</Text>
+                      <Text style={styles.barVol}>{d.vol > 0 ? formatVol(d.vol, metric) : '—'}</Text>
                     </View>
                   ))}
                 </View>
@@ -358,9 +453,35 @@ const styles = StyleSheet.create({
   tabTextActive: { color: colors.primary },
   tabLine: { height: 3, width: '50%', backgroundColor: colors.primary, borderRadius: 2 },
   calRow: { paddingHorizontal: spacing.xl, paddingVertical: spacing.lg, gap: spacing.sm },
+  weekNav: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.xl,
+    marginBottom: spacing.sm,
+  },
+  weekNavBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.white,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  weekNavLabel: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.textSecondary,
+    marginHorizontal: spacing.sm,
+  },
   calCell: {
     width: 52,
-    height: 64,
+    minHeight: 72,
+    paddingBottom: 6,
     borderRadius: radius.md,
     backgroundColor: colors.white,
     alignItems: 'center',
@@ -369,6 +490,15 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.border,
   },
+  calDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginTop: 6,
+    backgroundColor: 'transparent',
+  },
+  calDotOn: { backgroundColor: colors.green },
+  calDotOnSelected: { backgroundColor: colors.white },
   calCellOn: { backgroundColor: colors.primary, borderColor: colors.primary },
   calD: { fontSize: 11, color: colors.textSecondary, fontWeight: '600' },
   calDOn: { color: colors.white },
@@ -457,4 +587,21 @@ const styles = StyleSheet.create({
   barLbl: { fontSize: 10, color: colors.textMuted, marginTop: 6, fontWeight: '600' },
   barVol: { fontSize: 11, color: colors.textSecondary, marginTop: 2, fontWeight: '700' },
   progressHint: { marginTop: spacing.lg, fontSize: 13, color: colors.textMuted, lineHeight: 18 },
+  weekSummaryCard: {
+    backgroundColor: colors.white,
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border,
+  },
+  weekSummaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.border,
+  },
+  weekSummaryLbl: { fontSize: 15, color: colors.textSecondary, fontWeight: '600' },
+  weekSummaryVal: { fontSize: 16, fontWeight: '800', color: colors.text },
 });

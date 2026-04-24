@@ -245,13 +245,19 @@ export default function HomeScreen() {
           </View>
         ) : null}
 
-        <TouchableOpacity style={styles.banner} activeOpacity={0.9}>
+        <TouchableOpacity
+          style={styles.banner}
+          activeOpacity={0.9}
+          onPress={() => navigation.navigate('History')}
+          accessibilityRole="button"
+          accessibilityLabel="Open history and stats"
+        >
           <View style={styles.bannerIcon}>
             <Ionicons name="trophy" size={22} color={colors.primary} />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.bannerTitle}>Great job staying consistent!</Text>
-            <Text style={styles.bannerSub}>Small steps, big results.</Text>
+            <Text style={styles.bannerSub}>See your workouts and weekly stats in History.</Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
         </TouchableOpacity>

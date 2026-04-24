@@ -8,6 +8,7 @@ import {
   TextInput,
   ActivityIndicator,
   Alert,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -49,11 +50,23 @@ export default function WorkoutActiveScreen({ navigation, route }: Props) {
   const [seconds, setSeconds] = useState(0);
   const [exercises, setExercises] = useState<LoggedExercise[]>([]);
   const startedAtRef = useRef<Date>(new Date());
+  const [restRemaining, setRestRemaining] = useState<number | null>(null);
 
   useEffect(() => {
     const id = setInterval(() => setSeconds((s) => s + 1), 1000);
     return () => clearInterval(id);
   }, []);
+
+  useEffect(() => {
+    if (restRemaining === null || restRemaining <= 0) return;
+    const id = setInterval(() => {
+      setRestRemaining((r) => {
+        if (r === null || r <= 1) return null;
+        return r - 1;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [restRemaining]);
 
   useEffect(() => {
     let cancelled = false;
@@ -149,6 +162,36 @@ export default function WorkoutActiveScreen({ navigation, route }: Props) {
     }
   };
 
+  const onRestPress = () => {
+    setRestRemaining(90);
+  };
+
+  const onEndPress = () => {
+    Alert.alert('End workout', 'Save this session, discard it, or keep training.', [
+      { text: 'Keep training', style: 'cancel' },
+      {
+        text: 'Discard',
+        style: 'destructive',
+        onPress: () => {
+          void (async () => {
+            if (user?.uid) {
+              try {
+                await clearWorkoutDraft(user.uid);
+              } catch {
+                // ignore
+              }
+            }
+            navigation.goBack();
+          })();
+        },
+      },
+      {
+        text: 'Save workout',
+        onPress: () => void onSave(),
+      },
+    ]);
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={[styles.safe, styles.center]} edges={['top']}>
@@ -178,8 +221,8 @@ export default function WorkoutActiveScreen({ navigation, route }: Props) {
             <Text style={styles.timerLabel}>WORKOUT TIME</Text>
           </View>
           <View style={styles.timerActions}>
-            <MiniBtn icon="time-outline" label="Rest" />
-            <MiniBtn icon="stop-outline" label="End" />
+            <MiniBtn icon="time-outline" label="Rest" onPress={onRestPress} />
+            <MiniBtn icon="stop-outline" label="End" onPress={onEndPress} disabled={saving} />
           </View>
         </View>
 
@@ -250,13 +293,43 @@ export default function WorkoutActiveScreen({ navigation, route }: Props) {
         </TouchableOpacity>
         <View style={{ height: 32 }} />
       </ScrollView>
+
+      <Modal visible={restRemaining !== null && restRemaining > 0} transparent animationType="fade">
+        <View style={styles.restOverlay}>
+          <View style={styles.restCard}>
+            <Text style={styles.restTitle}>Rest</Text>
+            <Text style={styles.restTimer}>
+              {restRemaining !== null ? formatElapsed(restRemaining) : '00:00:00'}
+            </Text>
+            <Text style={styles.restHint}>Catch your breath. Next set ready when you are.</Text>
+            <TouchableOpacity style={styles.restSkip} onPress={() => setRestRemaining(null)} activeOpacity={0.9}>
+              <Text style={styles.restSkipText}>Skip</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
 
-function MiniBtn({ icon, label }: { icon: keyof typeof Ionicons.glyphMap; label: string }) {
+function MiniBtn({
+  icon,
+  label,
+  onPress,
+  disabled,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  onPress?: () => void;
+  disabled?: boolean;
+}) {
   return (
-    <TouchableOpacity style={styles.miniBtn} activeOpacity={0.85}>
+    <TouchableOpacity
+      style={[styles.miniBtn, disabled && { opacity: 0.45 }]}
+      activeOpacity={0.85}
+      onPress={onPress}
+      disabled={disabled}
+    >
       <Ionicons name={icon} size={20} color={colors.text} />
       <Text style={styles.miniLabel}>{label}</Text>
     </TouchableOpacity>
@@ -364,4 +437,36 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
   },
   saveText: { color: colors.white, fontSize: 17, fontWeight: '700' },
+  restOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing.xl,
+  },
+  restCard: {
+    backgroundColor: colors.white,
+    borderRadius: radius.xl,
+    padding: spacing.xl,
+    width: '100%',
+    maxWidth: 340,
+    alignItems: 'center',
+  },
+  restTitle: { fontSize: 14, fontWeight: '700', color: colors.textSecondary, letterSpacing: 1 },
+  restTimer: {
+    fontSize: 42,
+    fontWeight: '800',
+    color: colors.primary,
+    marginVertical: spacing.md,
+    fontVariant: ['tabular-nums'],
+  },
+  restHint: { fontSize: 14, color: colors.textSecondary, textAlign: 'center', lineHeight: 20 },
+  restSkip: {
+    marginTop: spacing.lg,
+    paddingVertical: 12,
+    paddingHorizontal: spacing.xl,
+    backgroundColor: colors.primarySoft,
+    borderRadius: radius.lg,
+  },
+  restSkipText: { fontSize: 16, fontWeight: '700', color: colors.primary },
 });
