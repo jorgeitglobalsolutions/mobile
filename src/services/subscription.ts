@@ -9,8 +9,8 @@ function tsToDate(t: Timestamp | null | undefined): Date | null {
 }
 
 /**
- * Client-side access rule (MVP). Production apps should verify purchases
- * with App Store / Play Billing via Cloud Functions and treat this as a cache.
+ * Client-side access rule (MVP). Server `verifyPurchase` updates subscription fields using
+ * Apple signed transaction JWS + Google Play APIs when configured; this remains the UI cache.
  */
 export function computeAccessLevel(sub: SubscriptionFields | null | undefined): {
   level: AccessLevel;

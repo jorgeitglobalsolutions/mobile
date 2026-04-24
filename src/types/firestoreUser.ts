@@ -20,6 +20,8 @@ export type SubscriptionFields = {
 export type UserSettings = {
   notificationsEnabled?: boolean;
   unitsMetric?: boolean;
+  /** 0–23 UTC hour for scheduled push reminder; omit or null = server default (13). */
+  reminderHourUtc?: number | null;
 };
 
 export type UserDocument = {

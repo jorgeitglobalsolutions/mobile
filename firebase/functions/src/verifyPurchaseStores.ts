@@ -147,12 +147,12 @@ async function verifyGooglePlay(
     let verifiedProductId = clientProductId;
     for (const li of items) {
       const pid = li.productId ?? clientProductId;
-      if (li.productId && !allowed.has(li.productId)) continue;
+      if (li.productId && !allowed.has(li.productId) && li.productId !== clientProductId) continue;
       if (li.expiryTime) {
         const ms = Date.parse(li.expiryTime);
         if (!Number.isNaN(ms) && ms > bestExpiryMs) {
           bestExpiryMs = ms;
-          verifiedProductId = pid;
+          verifiedProductId = allowed.has(pid) ? pid : clientProductId;
         }
       }
     }
