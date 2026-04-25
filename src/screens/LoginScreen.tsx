@@ -80,6 +80,14 @@ export default function LoginScreen({ navigation }: Props) {
             <Text style={styles.primaryText}>{busy ? 'Signing in…' : 'Sign in'}</Text>
           </TouchableOpacity>
 
+          <TouchableOpacity
+            style={styles.onboardingLink}
+            onPress={() => navigation.navigate('Onboarding')}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.onboardingLinkText}>New here? Set weight, height & goal first</Text>
+          </TouchableOpacity>
+
           <TouchableOpacity style={styles.linkRow} onPress={() => navigation.navigate('SignUp', {})}>
             <Text style={styles.link}>{"No account? "}</Text>
             <Text style={styles.linkBold}>Create one</Text>
@@ -115,7 +123,13 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
   },
   primaryText: { color: colors.white, fontSize: 17, fontWeight: '700' },
-  linkRow: { flexDirection: 'row', justifyContent: 'center', marginTop: spacing.xl },
+  onboardingLink: {
+    marginTop: spacing.lg,
+    paddingVertical: spacing.sm,
+    alignItems: 'center',
+  },
+  onboardingLinkText: { fontSize: 15, fontWeight: '700', color: colors.primary, textAlign: 'center' },
+  linkRow: { flexDirection: 'row', justifyContent: 'center', marginTop: spacing.lg },
   link: { fontSize: 15, color: colors.textSecondary },
   linkBold: { fontSize: 15, fontWeight: '800', color: colors.primary },
 });

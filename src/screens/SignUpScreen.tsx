@@ -72,6 +72,18 @@ export default function SignUpScreen({ navigation, route }: Props) {
               : 'Finish registration to start your free trial.'}
           </Text>
 
+          {!profile ? (
+            <TouchableOpacity
+              style={styles.onboardingLink}
+              onPress={() => navigation.navigate('Onboarding')}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.onboardingLinkText}>
+                Set weight, height & goal first (recommended)
+              </Text>
+            </TouchableOpacity>
+          ) : null}
+
           <Text style={styles.label}>Email</Text>
           <TextInput
             style={styles.input}
@@ -137,6 +149,8 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
   },
   primaryText: { color: colors.white, fontSize: 17, fontWeight: '700' },
+  onboardingLink: { marginBottom: spacing.lg, alignItems: 'center' },
+  onboardingLinkText: { fontSize: 15, fontWeight: '700', color: colors.primary, textAlign: 'center' },
   linkRow: { flexDirection: 'row', justifyContent: 'center', marginTop: spacing.xl },
   link: { fontSize: 15, color: colors.textSecondary },
   linkBold: { fontSize: 15, fontWeight: '800', color: colors.primary },
