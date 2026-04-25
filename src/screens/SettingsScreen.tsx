@@ -62,6 +62,23 @@ export default function SettingsScreen({ navigation }: Props) {
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll}>
+        <Text style={styles.section}>Profile</Text>
+        <TouchableOpacity
+          style={styles.navRow}
+          onPress={() => navigation.navigate('BodyMetrics')}
+          activeOpacity={0.85}
+        >
+          <Ionicons name="body-outline" size={22} color={colors.text} />
+          <Text style={styles.navRowLabel}>Body metrics (weight, height, goal)</Text>
+          <Ionicons
+            name="chevron-forward"
+            size={20}
+            color={colors.textMuted}
+            style={{ marginLeft: 'auto' }}
+          />
+        </TouchableOpacity>
+        <Text style={styles.hintSmall}>Used for protein/water targets and personalization.</Text>
+
         <Text style={styles.section}>Notifications</Text>
         <View style={styles.row}>
           <Text style={styles.rowLabel}>Push reminders</Text>
@@ -157,6 +174,17 @@ const styles = StyleSheet.create({
   title: { flex: 1, textAlign: 'center', fontSize: 17, fontWeight: '800', color: colors.text },
   scroll: { padding: spacing.xl, paddingBottom: 40 },
   section: { fontSize: 14, fontWeight: '800', color: colors.textSecondary, marginTop: spacing.lg, marginBottom: spacing.sm },
+  navRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border,
+  },
+  navRowLabel: { marginLeft: spacing.md, fontSize: 16, fontWeight: '600', color: colors.text, flex: 1 },
+  hintSmall: { fontSize: 12, color: colors.textMuted, marginTop: spacing.xs, marginBottom: spacing.sm, lineHeight: 16 },
   row: {
     flexDirection: 'row',
     alignItems: 'center',

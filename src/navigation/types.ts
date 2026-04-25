@@ -30,6 +30,7 @@ export type RootStackParamList = {
   Paywall: undefined;
   WorkoutSessionDetail: { workoutId: string };
   Settings: undefined;
+  BodyMetrics: undefined;
 };
 
 export type RoutinesScreenProps<T extends keyof RoutinesStackParamList> = NativeStackScreenProps<

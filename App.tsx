@@ -17,6 +17,7 @@ import ExerciseDetailScreen from './src/screens/ExerciseDetailScreen';
 import PaywallScreen from './src/screens/PaywallScreen';
 import WorkoutSessionDetailScreen from './src/screens/WorkoutSessionDetailScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
+import BodyMetricsScreen from './src/screens/BodyMetricsScreen';
 import MissingFirebaseScreen from './src/screens/MissingFirebaseScreen';
 import { ONBOARDING_WIZARD_KEY } from './src/constants/storageKeys';
 import { colors } from './src/theme';
@@ -82,6 +83,7 @@ function AppNavigation() {
         />
         <Stack.Screen name="WorkoutSessionDetail" component={WorkoutSessionDetailScreen} />
         <Stack.Screen name="Settings" component={SettingsScreen} />
+        <Stack.Screen name="BodyMetrics" component={BodyMetricsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

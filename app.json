@@ -14,7 +14,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.jorgeitglobalsolutionssorganization.emfitsystem"
+      "bundleIdentifier": "com.jorgeitglobalsolutionssorganization.emfitsystem",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
