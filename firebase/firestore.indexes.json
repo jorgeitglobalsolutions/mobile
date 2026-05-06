@@ -1,15 +1,4 @@
 {
-  "indexes": [
-    {
-      "collectionGroup": "workouts",
-      "queryScope": "COLLECTION",
-      "fields": [{ "fieldPath": "endedAt", "order": "DESCENDING" }]
-    },
-    {
-      "collectionGroup": "routines",
-      "queryScope": "COLLECTION",
-      "fields": [{ "fieldPath": "title", "order": "ASCENDING" }]
-    }
-  ],
+  "indexes": [],
   "fieldOverrides": []
 }

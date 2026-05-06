@@ -6,7 +6,8 @@
   },
   "main": "lib/index.js",
   "scripts": {
-    "build": "node --max-old-space-size=8192 ./node_modules/typescript/bin/tsc -p .",
+    "clean": "node -e \"require('fs').rmSync('lib',{recursive:true,force:true});\"",
+    "build": "npm run clean && node --max-old-space-size=8192 ./node_modules/typescript/bin/tsc -p .",
     "serve": "npm run build && firebase emulators:start --only functions",
     "deploy": "npm run build && firebase deploy --only functions"
   },

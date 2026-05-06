@@ -2,7 +2,11 @@ import { initializeApp, getApps, type FirebaseApp } from 'firebase/app';
 import { getAuth, type Auth } from 'firebase/auth';
 import { getFirestore, type Firestore } from 'firebase/firestore';
 import { getFunctions, type Functions } from 'firebase/functions';
-import { getFirebasePublicConfig, isFirebaseConfigured } from '../config/firebaseConfig';
+import {
+  getFirebaseFunctionsRegion,
+  getFirebasePublicConfig,
+  isFirebaseConfigured,
+} from '../config/firebaseConfig';
 
 let app: FirebaseApp | null = null;
 let auth: Auth | null = null;
@@ -42,7 +46,7 @@ export function getFirebaseFunctions(): Functions | null {
   const a = getFirebaseApp();
   if (!a) return null;
   if (!functions) {
-    functions = getFunctions(a);
+    functions = getFunctions(a, getFirebaseFunctionsRegion());
   }
   return functions;
 }

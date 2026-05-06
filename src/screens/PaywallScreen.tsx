@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Linking } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Linking, BackHandler } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -36,7 +36,7 @@ const FEATURES = [
 ];
 
 export default function PaywallScreen({ navigation }: Props) {
-  const { user, useMockData } = useAuth();
+  const { user, useMockData, accessLevel } = useAuth();
   const [plan, setPlan] = useState<'month' | 'year'>('month');
   const [busy, setBusy] = useState(false);
   const legal = getLegalUrls();
@@ -58,7 +58,7 @@ export default function PaywallScreen({ navigation }: Props) {
     }
     setBusy(true);
     try {
-      if (useMockData || __DEV__) {
+      if (useMockData) {
         await callGrantDevSubscription(user.uid);
         navigation.goBack();
         return;
@@ -73,6 +73,26 @@ export default function PaywallScreen({ navigation }: Props) {
     }
   };
 
+  const onQaGrantSubscription = async () => {
+    if (!user?.uid) {
+      Alert.alert('Session', 'Sign in again to continue.');
+      return;
+    }
+    setBusy(true);
+    try {
+      await callGrantDevSubscription(user.uid);
+      Alert.alert(
+        'QA unlock',
+        'Uses Cloud Function grantDevSubscription. Enable ALLOW_DEV_SUBSCRIPTION on that function (or use the emulator).',
+      );
+      navigation.goBack();
+    } catch (e: unknown) {
+      Alert.alert('QA unlock failed', e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const onRestore = async () => {
     if (!user?.uid) {
       Alert.alert('Session', 'Sign in again to continue.');
@@ -80,12 +100,9 @@ export default function PaywallScreen({ navigation }: Props) {
     }
     setBusy(true);
     try {
-      if (useMockData || __DEV__) {
+      if (useMockData) {
         await callGrantDevSubscription(user.uid);
-        Alert.alert(
-          'Restore',
-          useMockData ? 'Demo mode: subscription unlocked locally.' : 'Dev build: subscription refreshed from server.',
-        );
+        Alert.alert('Restore', 'Demo mode: subscription unlocked locally.');
         navigation.goBack();
         return;
       }
@@ -99,12 +116,20 @@ export default function PaywallScreen({ navigation }: Props) {
     }
   };
 
+  useEffect(() => {
+    if (accessLevel !== 'paywalled') return;
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => true);
+    return () => sub.remove();
+  }, [accessLevel]);
+
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       <View style={styles.topRight}>
-        <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={12}>
-          <Ionicons name="close" size={26} color={colors.text} />
-        </TouchableOpacity>
+        {accessLevel !== 'paywalled' ? (
+          <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={12}>
+            <Ionicons name="close" size={26} color={colors.text} />
+          </TouchableOpacity>
+        ) : null}
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
@@ -196,6 +221,16 @@ export default function PaywallScreen({ navigation }: Props) {
         <TouchableOpacity style={styles.secondaryBtn} onPress={onRestore} disabled={busy}>
           <Text style={styles.secondaryBtnText}>Restore purchase</Text>
         </TouchableOpacity>
+
+        {__DEV__ && !useMockData ? (
+          <TouchableOpacity
+            style={styles.secondaryBtn}
+            onPress={() => void onQaGrantSubscription()}
+            disabled={busy}
+          >
+            <Text style={[styles.secondaryBtnText, styles.qaHint]}>QA: unlock without store (requires backend)</Text>
+          </TouchableOpacity>
+        ) : null}
 
         <View style={styles.trustRow}>
           <Trust icon="shield-checkmark-outline" label="Secure Checkout" />
@@ -305,6 +340,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   secondaryBtnText: { fontSize: 14, fontWeight: '700', color: colors.paywallPurple },
+  qaHint: { fontSize: 12, fontWeight: '600', color: colors.textMuted },
   lockRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: spacing.sm },
   lockText: { fontSize: 12, color: colors.textMuted },
   trustRow: {

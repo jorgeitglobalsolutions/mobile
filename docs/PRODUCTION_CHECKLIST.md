@@ -5,7 +5,7 @@ Use this when moving from local/mock development to a store-ready build aligned 
 ## Mobile app (Expo / EAS)
 
 1. **Firebase client config**  
-   Add production web SDK keys under `expo.extra.firebase` (or your chosen pattern) in `app.json`, matching the Firebase project used in production. Without valid Firebase config, `isMockDataMode()` may enable demo data—only acceptable for internal demos.
+   Add production web SDK keys under `expo.extra.firebase` in `app.json`, **or** set `EXPO_PUBLIC_FIREBASE_*` in `.env` (see `.env.example`) / [EAS Secrets](https://docs.expo.dev/build-reference/variables/), matching the Firebase project used in production. Callable functions region defaults to `us-central1` (`extra.firebaseFunctionsRegion` / `EXPO_PUBLIC_FIREBASE_FUNCTIONS_REGION`). Without valid Firebase config, `isMockDataMode()` may enable demo data—only acceptable for internal demos.
 
 2. **Mock data off**  
    `app.json` sets `extra.useMockData` to `false` for release alignment. For local work **without** Firebase, set `EXPO_PUBLIC_USE_MOCK_DATA=1` (see [mockMode.ts](../src/config/mockMode.ts)) in your shell, `.env`, or a non-production EAS profile before `expo start`.

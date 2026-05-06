@@ -1,12 +1,27 @@
-import { FieldPath, FieldValue, Timestamp, getFirestore } from 'firebase-admin/firestore';
-import { initializeApp } from 'firebase-admin/app';
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { logger } from 'firebase-functions';
-import { verifyStorePurchase } from './verifyPurchaseStores';
+import type { Firestore } from 'firebase-admin/firestore';
 
-initializeApp();
-const db = getFirestore();
+/** Lazy-load firebase-admin only when a function runs — avoids deploy discovery timeout on cold require(). */
+let cachedDb: Firestore | null = null;
+
+function getDb(): Firestore {
+  if (!cachedDb) {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const app = require('firebase-admin/app') as typeof import('firebase-admin/app');
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const firestore = require('firebase-admin/firestore') as typeof import('firebase-admin/firestore');
+    if (!app.getApps().length) {
+      app.initializeApp();
+    }
+    cachedDb = firestore.getFirestore();
+  }
+  return cachedDb;
+}
+
+/** Must match the mobile client (`getFirebaseFunctions` / `EXPO_PUBLIC_FIREBASE_FUNCTIONS_REGION`). */
+const FUNCTIONS_REGION = 'us-central1';
 
 type VerifyBody = {
   platform: string;
@@ -30,7 +45,10 @@ function tokenLooksValidStub(platform: string, token: string): boolean {
   return false;
 }
 
-export const verifyPurchase = onCall(async (request) => {
+export const verifyPurchase = onCall({ region: FUNCTIONS_REGION }, async (request) => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { Timestamp, FieldValue } = require('firebase-admin/firestore') as typeof import('firebase-admin/firestore');
+
   if (!request.auth?.uid) {
     throw new HttpsError('unauthenticated', 'Sign in required');
   }
@@ -56,7 +74,7 @@ export const verifyPurchase = onCall(async (request) => {
     const monthMs = 30 * 24 * 60 * 60 * 1000;
     const yearMs = 365 * 24 * 60 * 60 * 1000;
     const end = new Date(Date.now() + (plan === 'year' ? yearMs : monthMs));
-    await db.doc(`users/${uid}`).update({
+    await getDb().doc(`users/${uid}`).update({
       'subscription.status': 'active',
       'subscription.currentPeriodEndsAt': Timestamp.fromDate(end),
       'subscription.productId': productId,
@@ -67,6 +85,7 @@ export const verifyPurchase = onCall(async (request) => {
     return { ok: true, stub: true };
   }
 
+  const { verifyStorePurchase } = await import('./verifyPurchaseStores');
   const verified = await verifyStorePurchase({
     platform,
     productId,
@@ -78,7 +97,7 @@ export const verifyPurchase = onCall(async (request) => {
     throw new HttpsError('failed-precondition', 'Subscription is already expired according to the store.');
   }
 
-  await db.doc(`users/${uid}`).update({
+  await getDb().doc(`users/${uid}`).update({
     'subscription.status': 'active',
     'subscription.currentPeriodEndsAt': Timestamp.fromDate(verified.expiresAt),
     'subscription.productId': verified.verifiedProductId,
@@ -101,7 +120,10 @@ export const verifyPurchase = onCall(async (request) => {
  * Dev-only: grant active subscription (30d) for QA. Enable with Firebase env `ALLOW_DEV_SUBSCRIPTION=true`
  * or run under the Functions emulator (`FUNCTIONS_EMULATOR=true`).
  */
-export const grantDevSubscription = onCall(async (request) => {
+export const grantDevSubscription = onCall({ region: FUNCTIONS_REGION }, async (request) => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { Timestamp, FieldValue } = require('firebase-admin/firestore') as typeof import('firebase-admin/firestore');
+
   if (!request.auth?.uid) {
     throw new HttpsError('unauthenticated', 'Sign in required');
   }
@@ -116,7 +138,7 @@ export const grantDevSubscription = onCall(async (request) => {
   const uid = request.auth.uid;
   const end = new Date();
   end.setDate(end.getDate() + 30);
-  await db.doc(`users/${uid}`).update({
+  await getDb().doc(`users/${uid}`).update({
     'subscription.status': 'active',
     'subscription.currentPeriodEndsAt': Timestamp.fromDate(end),
     'subscription.lastSyncedAt': FieldValue.serverTimestamp(),
@@ -143,8 +165,10 @@ function shouldSendReminderThisHour(data: UserPushFields, utcHour: number): bool
 }
 
 async function clearPushToken(uid: string) {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { FieldValue } = require('firebase-admin/firestore') as typeof import('firebase-admin/firestore');
   try {
-    await db.doc(`users/${uid}`).update({
+    await getDb().doc(`users/${uid}`).update({
       pushToken: null,
       updatedAt: FieldValue.serverTimestamp(),
     });
@@ -159,75 +183,81 @@ type ExpoPushTicket = { status?: string; message?: string; details?: { error?: s
  * Hourly job: sends habit reminder only in the user's configured UTC hour (default 13).
  * Paginates all `users` docs (ordered by document id) so more than 500 accounts are covered.
  */
-export const sendDailyHabitReminders = onSchedule('every 60 minutes', async () => {
-  const utcHour = new Date().getUTCHours();
-  let lastId: string | undefined;
-  let scanned = 0;
-  let sent = 0;
-  let clearedTokens = 0;
-  let failures = 0;
+export const sendDailyHabitReminders = onSchedule(
+  { schedule: 'every 60 minutes', region: FUNCTIONS_REGION },
+  async () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { FieldPath } = require('firebase-admin/firestore') as typeof import('firebase-admin/firestore');
 
-  while (true) {
-    let q = db.collection('users').orderBy(FieldPath.documentId()).limit(300);
-    if (lastId) q = q.startAfter(lastId);
-    const snap = await q.get();
-    if (snap.empty) break;
+    const utcHour = new Date().getUTCHours();
+    let lastId: string | undefined;
+    let scanned = 0;
+    let sent = 0;
+    let clearedTokens = 0;
+    let failures = 0;
 
-    for (const doc of snap.docs) {
-      scanned += 1;
-      const d = doc.data() as UserPushFields;
-      if (!d.pushToken || typeof d.pushToken !== 'string') continue;
-      if (!shouldSendReminderThisHour(d, utcHour)) continue;
+    while (true) {
+      let q = getDb().collection('users').orderBy(FieldPath.documentId()).limit(300);
+      if (lastId) q = q.startAfter(lastId);
+      const snap = await q.get();
+      if (snap.empty) break;
 
-      try {
-        const res = await fetch('https://exp.host/--/api/v2/push/send', {
-          method: 'POST',
-          headers: {
-            Accept: 'application/json',
-            'Accept-Encoding': 'gzip, deflate',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            to: d.pushToken,
-            title: 'EM Fit',
-            body: 'Quick check-in: log protein, water, or start a workout.',
-            sound: 'default',
-          }),
-        });
-        const json = (await res.json()) as { data?: ExpoPushTicket | ExpoPushTicket[] };
-        if (!res.ok) {
-          failures += 1;
-          logger.warn('Expo push HTTP error', { uid: doc.id, status: res.status, body: json });
-          continue;
-        }
-        const raw = json.data;
-        const ticket = Array.isArray(raw) ? raw[0] : raw;
-        if (ticket?.status === 'error') {
-          failures += 1;
-          const err = ticket.details?.error ?? ticket.message ?? 'unknown';
-          logger.warn('Expo push ticket error', { uid: doc.id, err });
-          if (err === 'DeviceNotRegistered' || err === 'InvalidCredentials') {
-            await clearPushToken(doc.id);
-            clearedTokens += 1;
+      for (const doc of snap.docs) {
+        scanned += 1;
+        const d = doc.data() as UserPushFields;
+        if (!d.pushToken || typeof d.pushToken !== 'string') continue;
+        if (!shouldSendReminderThisHour(d, utcHour)) continue;
+
+        try {
+          const res = await fetch('https://exp.host/--/api/v2/push/send', {
+            method: 'POST',
+            headers: {
+              Accept: 'application/json',
+              'Accept-Encoding': 'gzip, deflate',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              to: d.pushToken,
+              title: 'EM Fit',
+              body: 'Quick check-in: log protein, water, or start a workout.',
+              sound: 'default',
+            }),
+          });
+          const json = (await res.json()) as { data?: ExpoPushTicket | ExpoPushTicket[] };
+          if (!res.ok) {
+            failures += 1;
+            logger.warn('Expo push HTTP error', { uid: doc.id, status: res.status, body: json });
+            continue;
           }
-          continue;
+          const raw = json.data;
+          const ticket = Array.isArray(raw) ? raw[0] : raw;
+          if (ticket?.status === 'error') {
+            failures += 1;
+            const err = ticket.details?.error ?? ticket.message ?? 'unknown';
+            logger.warn('Expo push ticket error', { uid: doc.id, err });
+            if (err === 'DeviceNotRegistered' || err === 'InvalidCredentials') {
+              await clearPushToken(doc.id);
+              clearedTokens += 1;
+            }
+            continue;
+          }
+          sent += 1;
+        } catch (e) {
+          failures += 1;
+          logger.warn('Expo push error', { uid: doc.id, err: String(e) });
         }
-        sent += 1;
-      } catch (e) {
-        failures += 1;
-        logger.warn('Expo push error', { uid: doc.id, err: String(e) });
       }
+
+      lastId = snap.docs[snap.docs.length - 1].id;
+      if (snap.size < 300) break;
     }
 
-    lastId = snap.docs[snap.docs.length - 1].id;
-    if (snap.size < 300) break;
-  }
-
-  logger.info('sendDailyHabitReminders done', {
-    utcHour,
-    scanned,
-    sent,
-    failures,
-    clearedTokens,
-  });
-});
+    logger.info('sendDailyHabitReminders done', {
+      utcHour,
+      scanned,
+      sent,
+      failures,
+      clearedTokens,
+    });
+  },
+);

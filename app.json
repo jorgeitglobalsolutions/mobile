@@ -42,7 +42,8 @@
       ]
     ],
     "extra": {
-      "useMockData": true,
+      "useMockData": false,
+      "firebaseFunctionsRegion": "us-central1",
       "eas": {
         "projectId": "23d75ead-2ffa-4de0-978a-4f95e2ba2f0b"
       },

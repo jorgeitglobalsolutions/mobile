@@ -25,7 +25,7 @@ import { colors } from './src/theme';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function AppNavigation() {
-  const { firebaseReady, firebaseConfigured, user } = useAuth();
+  const { firebaseReady, firebaseConfigured, user, accessLevel } = useAuth();
   const [wizardDone, setWizardDone] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -79,7 +79,11 @@ function AppNavigation() {
         <Stack.Screen
           name="Paywall"
           component={PaywallScreen}
-          options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
+          options={{
+            presentation: 'modal',
+            animation: 'slide_from_bottom',
+            gestureEnabled: accessLevel !== 'paywalled',
+          }}
         />
         <Stack.Screen name="WorkoutSessionDetail" component={WorkoutSessionDetailScreen} />
         <Stack.Screen name="Settings" component={SettingsScreen} />

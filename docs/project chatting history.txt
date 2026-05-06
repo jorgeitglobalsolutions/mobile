@@ -1,0 +1,570 @@
+Project Title: "Desarrollo de App Fitness y Panel Web"
+
+Project Detail: "Estoy buscando un desarrollador o pequeño equipo para crear una aplicación móvil de fitness enfocada en adherencia, seguimiento del usuario y consistencia diaria.
+
+La aplicación debe ser simple, rápida y fácil de usar, priorizando la experiencia del usuario y el uso diario. No se trata de una app compleja de planificación, sino de un sistema que ayude al usuario a cumplir su entrenamiento y hábitos básicos.
+
+Además, se requiere un panel web administrativo para visualizar el comportamiento de los usuarios.
+
+Objetivo de la aplicación
+
+La aplicación no está orientada a generar planes personalizados complejos."
+
+Project Chatting history: 
+``````````````````````````````````````````
+Descripción del proyecto Estoy buscando un desarrollador o pequeño equipo para crear una aplicación móvil de fitness enfocada en adherencia, seguimiento del usuario y consistencia diaria. La aplicación debe ser simple, rápida y fácil de usar, priorizando la experiencia del usuario y el uso diario. No se trata de una aplicación compleja de planificación, sino de un sistema que ayuda al usuario a cumplir su entrenamiento y hábitos básicos. Además, se requiere un panel web administrativo para visualizar el comportamiento de los usuarios.
+Objetivo de la aplicación La aplicación no está orientada a generar planos personalizados complejos. Su objetivo es: Facilitar que el usuario siga una rutina Permitir el registro de hábitos diarios (entrenamiento, proteína, agua) Mostrar el progreso de forma clara Generar feedback automático según comportamiento Mejorar la adherencia y la constancia Funcionalidades principales (MVP) 1. Pantalla principal (adherencia) Visualización de racha de días consecutivos Gráfico semanal de entrenamientos completados Meta semanal de entrenamiento (por ejemplo, 3–5 días) Checklist diario: Entrenamiento realizado (sí/no) Consumo de proteína (gramos consumidos vs objetivo) Consumo de agua (ml consumidos vs objetivo) Estado del usuario: Selector simple para indicar cómo se siente el usuario: Con energía Normal Bajo Fatigado Estresado Feedback automático: Mensajes generados automáticamente según: nivel de adherencia cumplimiento de hábitos estado del usuario 2. Perfil inicial del usuario Al registrarse, el usuario debe ingresar: Peso Altura Objetivo (pérdida de grasa o ganancia muscular) A partir de esto, el sistema calcula: Requerimiento diario de proteína Consumo recomendado de agua 3. Pantalla de rutinas Rutinas predeterminadas: 3 días 4 días 5 días Opciones generales o segmentadas Biblioteca de ejercicios: Nombre del ejercicio Imagen o animación (GIF/video) Categoría 4. Pantalla de entrenamiento (funcionalidad principal) Lista de ejercicios del día Para cada ejercicio: Registro de peso Registro de repeticiones Registro de series Temporizador automático de sesión Botón para marcar entrenamiento como completado Feedback al finalizar: Mensaje automático según progreso semanal 5. Pantalla de progreso Subida de fotos semanal Historial de fotos Métricas: Racha de días Porcentaje de adherencia Feedback automático: Mensajes generados según: consistente semanal cumplimiento de hábitos carga de fotos 6. Sistema de nutrición simple No se requiere registro detallado de alimentos. El usuario únicamente registra las cantidades consumidas. Ejemplo: Proteína: Meta diaria en gramos Botones para sumar (por ejemplo, +10g, +20g, +30g) Agua: Botones para sumar (por ejemplo, +250ml, +500ml) Visualización mediante barras de progreso. 7. Notificaciones Recordatorio si el usuario no ha entrenado Recordatorios de hábitos (proteína y agua) Recordatorio semanal para subir fotos Mensajes según comportamiento del usuario 8. Sistema de usuarios Registro e inicio de sesión (email o Google) Almacenamiento del progreso Registro del número de teléfonos del usuario Panel administrativo (web) Se requiere un panel web básico para gestión y visualización de usuarios. Funcionalidades: Lista de usuarios: Nombre País Teléfono Nivel de adherencia (%) Estado del usuario Perfil de usuario: Racha Historial de entrenamientos Cumplimiento de hábitos Estado reportado Fotos Última actividad Acción: Botón para contacto directo vía WhatsApp: Ejemplo:
+
+
+(No se requiere integración avanzada en esta fase) Requisitos técnicos Aplicación móvil para iOS y Android Preferible uso de Flutter o React Native Backend sencillo (Firebase o equivalente) Base de datos para usuarios, progreso y actividad Diseño Interfaz limpia y minimalista Navegación simple Enfoque en velocidad y facilidad de uso Experiencia centrada en el uso diario importantes Se trata de un MVP (versión inicial) No se buscan funcionalidades complejas Prioridad en: simplicidad estabilidad rendimiento Presupuesto Abierto a propuestas, Considere en una solución eficiente para MVP. Perfil del desarrollador Experiencia en desarrollo de aplicaciones móviles Ideal experiencia en apps de fitness o seguimiento Capacidad de trabajar con productos simples y enfocados en usuario Información requerida Por favor incluir: Portafolio Aplicaciones similares desarrolladas Tecnología propuesta Tiempo estimado de desarrollo
+Hi, thanks for getting touch me.
+Can you answer the my questions of clarification board?
+- What key user actions define “daily adherence” in your app (check-ins, workouts completed, habits tracked)?
+
+- What kind of metrics do you want to see in the admin panel (retention, streaks, activity frequency, etc.)?
+C
+Hola, excelente pregunta, esto es clave para el proyecto.
+
+Para mí, la adherencia diaria se define por acciones simples y repetibles. Las más importantes son:
+
+marcar el entrenamiento como completado
+registrar el consumo de proteína
+registrar el consumo de agua
+seleccionar cómo se siente el usuario (estado diario)
+
+No necesito que el usuario haga cosas complejas. Mientras más simple sea la interacción, mejor será la adherencia.
+Adicionalmente, para mí es muy importante la parte de entrenamiento.
+La app debe permitir que el usuario registre fácilmente:
+
+ejercicios realizados
+peso utilizado
+repeticiones
+series
+
+Y que ese registro se guarde como historial de progreso.
+
+También es importante que existan rutinas predeterminadas y una biblioteca de ejercicios con soporte visual (GIF o video), para que el usuario pueda ejecutar correctamente cada movimiento sin complicaciones.
+También es importante incluir un sistema simple de seguimiento visual mediante fotos.
+El usuario debería poder subir fotos de progreso de forma semanal y ver un historial básico dentro de la aplicación.
+
+No necesito análisis complejo de imágenes. Lo que sí quiero es que la app pueda mostrar mensajes automáticos según ciertos parámetros de progreso y adherencia.
+
+Por ejemplo:
+
+si el usuario completa cierta cantidad de días (por ejemplo 7, 15 o 30 días), mostrar mensajes de avance
+si mantiene buena frecuencia, mostrar mensajes positivos
+si baja la adherencia, mostrar mensajes correctivos
+si no sube fotos, enviar recordatorio
+si cumple bien entrenamiento y hábitos, mostrar mensajes que refuercen que va por buen camino
+
+La idea no es usar inteligencia artificial compleja, sino reglas simples y mensajes predefinidos inteligentes según el comportamiento del usuario.
+
+Sobre el panel de administración, lo más importante para mí es poder identificar el comportamiento del usuario.
+Las métricas clave serían:
+
+porcentaje de adherencia (días cumplidos vs días objetivo)
+racha actual
+frecuencia de entrenamiento semanal
+última actividad (para detectar abandono)
+estado del usuario (activo o en riesgo)
+
+También es importante poder identificar rápidamente qué usuarios están bajando su actividad para poder contactarlos.
+
+Mi objetivo principal es crear una app que el usuario utilice todos los días, enfocada en ejecución y consistencia, no en complejidad.
+Thanks for the explanation; it's very clear and well-focused on adherence, which I think is excellent for a solid MVP.
+
+Based on what you've said, I envision an app focused on:
+
+* Simple daily check-ins (training, protein, water, status)
+* Basic but efficient workout tracking
+* Habit system + visual progress (photos)
+* Rule-based automated messaging (no complex AI)
+* Admin panel focused on retention and behavior
+
+Before proposing a technical solution and exact timelines, I want to confirm a few key points:
+1. Will the default routines be fixed for all users, or do you want to be able to manage them dynamically from the admin panel?
+2. Regarding notifications: do you prefer in-app notifications only, or also push notifications (daily reminders, inactivity alerts, etc.)?
+3. For the web panel: would you be using it alone, or do you need user roles (for example, coaches in the future)?
+
+With this, I can now define a clear architecture, recommended stack, and realistic estimate for the MVP.
+C
+Hola, gracias. Vamos por partes:
+
+Rutinas predeterminadas
+Para este MVP, prefiero que sean fijas al inicio, no dinámicas desde el panel.
+La idea es comenzar simple, con algunas rutinas base ya cargadas en la app.
+Más adelante sí podría interesarme gestionarlas desde el panel, pero no es prioridad en esta primera versión.
+Notificaciones
+Sí quiero notificaciones push, no solo dentro de la app.
+Para mí esto es importante porque la adherencia depende mucho de recordatorios externos.
+Las principales serían:
+recordatorio de entrenamiento
+recordatorio para registrar proteína y agua
+recordatorio para subir fotos semanales
+alertas por inactividad o baja adherencia
+Panel web / roles
+En esta primera versión lo usaría solo yo o mi equipo interno, así que no necesito roles complejos por ahora.
+Si en el futuro la app crece, sí podría interesarme agregar roles para entrenadores o soporte, pero tampoco es prioridad del MVP.
+Mi prioridad para esta versión es mantener todo lo más simple posible, pero bien hecho:
+
+app simple y rápida
+tracking de entrenamiento sólido
+hábitos diarios fáciles de registrar
+seguimiento visual con fotos
+mensajes automáticos según comportamiento
+panel admin básico para ver adherencia, actividad y detectar usuarios en riesgo
+
+Si quieres, con esto ya me puedes proponer la arquitectura recomendada, el tiempo estimado y una versión MVP bien definida.
+1. Do you already have a defined design/UI or do you need me to include it (wireframes + basic UI)?
+C
+Sí, ya tengo una idea bastante clara de la estructura y flujo de la aplicación.
+
+He definido las pantallas principales (home, rutinas, entrenamiento, progreso) y tengo referencias visuales del estilo que busco (diseño simple, limpio y enfocado en uso diario).
+
+Para esta primera versión (MVP), no busco un diseño complejo ni muy detallado.
+
+Prefiero:
+
+wireframes simples
+interfaz limpia y funcional
+enfoque en facilidad de uso y rapidez
+
+Estoy abierto a que propongas mejoras en UX, pero manteniendo la simplicidad como prioridad.
+
+Más adelante se puede trabajar en una versión más refinada del diseño si es necesario.
+Ok, I will send you quotation soon.
+Fitness_App_MVP_Quotation.docx
+C
+Gracias por el documento, está muy claro y bien alineado con lo que busco.
+
+Antes de avanzar, hay un punto importante que no mencioné anteriormente y quiero incluir desde ahora.
+
+La aplicación debe tener un modelo de suscripción simple:
+
+7 días de prueba gratuita con acceso completo
+después del período de prueba, el usuario debe suscribirse (mensual) para continuar usando la app
+
+Esto implica:
+
+manejo de estados del usuario (trial activo, suscripción activa, expirado)
+control de acceso a funcionalidades según el estado
+integración con pagos dentro de la app (App Store y Google Play)
+
+Quiero saber cómo impacta esto en la arquitectura, el tiempo estimado y el costo del proyecto.
+The deadline will be about 4 days, and the cost will be an additional $1500.
+C
+Gracias por la aclaración.
+
+Me interesa incluir el sistema de suscripción desde el inicio, ya que es clave para el modelo de negocio.
+
+Sin embargo, me gustaría mantener el proyecto dentro de un presupuesto más ajustado en esta primera fase.
+
+¿Crees que podríamos simplificar o dejar fuera algunas partes menos críticas del MVP (por ejemplo, ciertas funcionalidades del panel admin o lógica más avanzada), manteniendo:
+
+app principal
+entrenamiento
+tracking de hábitos
+base de datos
+sistema de suscripción
+
+La idea es lanzar una versión funcional y validar el producto, y luego iterar.
+Mi idea es mantener lo más importante:
+
+sistema de entrenamiento (registro de ejercicios, peso, reps, series)
+rutinas predeterminadas
+tracking básico (proteína, agua)
+sistema de usuarios y base de datos
+notificaciones simples
+
+Y simplificar o dejar fuera en esta primera fase:
+
+panel admin avanzado
+lógica compleja de mensajes
+funcionalidades adicionales que no sean críticas para el uso diario
+Fitness_App_MVP_Phase1_Quotation.docx
+Did you check last quotation?
+C
+Gracias, esta versión del MVP me parece mucho más alineada con lo que busco.
+
+Antes de avanzar, solo quiero confirmar algunos puntos:
+
+que la app estará preparada para publicación en App Store y Google Play (incluyendo pruebas previas)
+que las notificaciones serán push (no solo dentro de la app)
+que el sistema de suscripción utilizará los métodos oficiales de Apple y Google
+👍
+C
+Perfecto, entonces avancemos.
+
+Me gustaría estructurar el proyecto en milestones para poder ir validando cada etapa del desarrollo.
+
+Si estás de acuerdo, podemos dividirlo en:
+
+diseño y estructura inicial
+desarrollo de la app (entrenamiento, rutinas, tracking)
+backend + sistema de suscripción
+testing final y entrega
+
+También me gustaría ir revisando avances funcionales en cada fase.
+Una duda adicional para confirmar:
+
+Además de las rutinas predeterminadas, ¿la app permitirá que el usuario cree su propia rutina de forma simple a partir de la biblioteca de ejercicios?
+
+La idea no es algo complejo, solo poder seleccionar ejercicios y armar su rutina de forma básica.
+También quiero confirmar que la app incluirá un historial de entrenamientos donde el usuario pueda ver sus sesiones pasadas, con un resumen como:
+
+fecha
+duración
+ejercicios realizados
+peso y repeticiones
+mejor serie
+
+La idea es algo similar a cómo lo maneja Strong, pero en versión simple.
+Fitness_App_MVP_Final_Quotation.docx
+Please review this quotation and if you are agree, we can start.
+If you have any feedback, please let me know.
+Apr 16, 2026
+
+C
+Perfecto, antes de avanzar solo quiero confirmar algunos puntos:
+
+que el timeline total del proyecto es de aproximadamente 4 semanas
+que está incluido el soporte para publicación en App Store y Google Play
+
+Además, quiero confirmar algo importante para mi modelo:
+
+¿La app permitirá crear usuarios manualmente o dar acceso a ciertos usuarios sin pasar por el sistema de suscripción?
+
+La idea es poder usar la app también con clientes actuales del reto sin que necesariamente tengan que pagar dentro de la aplicación.
+Thank you, I can confirm:
+
+* The estimated timeline is 4-5 weeks (includes full development + subscriptions + testing).
+
+* Yes, support for publishing on the App Store and Google Play is included.
+
+Regarding non-subscribed users:
+Yes, we can allow manual access (whitelisting) so that certain users can use the app without going through the payment system. This is easily managed from the backend.
+
+If everything is in order, we can start with the first milestone this week.
+C
+Perfecto, todo parece estar en orden.
+
+Antes de adjudicar el proyecto, quisiera confirmar que seguiremos con los hitos descritos en la propuesta y que revisaremos el progreso en cada etapa antes de realizar los pagos.
+
+Una vez confirmado esto, puedo avanzar y comenzar con el Hito 1
+Yes, that is working for me and this platform rule.
+You can fund milestones on this platform and can release them each step.
+C
+Antes de financiar, ¿podría confirmar que el proyecto está estructurado de forma separada?
+What do you mean?
+C
+¿Podrías configurar los hitos en la plataforma como se acordó (etapas separadas), para que pueda financiar el primer hito y continuar?
+Ok.
+Milestone 1 – Design & Structure Cost: $1,000 | Duration: 1 week
+Milestone 2 – Core App Development Cost: $2,500 | Duration: 2-3 weeks
+Milestone 3 – Backend & Subscription Cost: $2,000 | Duration: 4 weeks
+Milestone 4 – Testing & Delivery Cost: $1,000 | Duration: 4 week
+C
+Veo el desglose de hitos que enviaste, pero en la plataforma todavía aparece.
+
+¿Podrías configurarlos directamente en Freelancer como hitos separados, para que pueda financiar el Hito 1 y continuar?
+Oh, I understand your problem.
+You can award without milestones first.
+I just set milestones, please try again.
+Milestone created by @cmdsh19
+Milestone 1 Design & Structure
+—
+$1000.00 USD
+Congratulations, your bid has been awarded!
+Click the Accept button below to start working.
+
+This project has a budget of $6500.00 USD and you will be charged a project commission of $650.00 USD once you've accepted.
+
+Accept
+👍
+C
+Great, let’s start.
+
+For this first milestone, I’d like to review:
+
+app structure
+main screens (home, training, routines)
+overall UX flow
+
+So we can validate everything before moving forward.
+👍
+Project collaboration is easier with Workspaces!
+Use this workspace for structured discussions, task management and keeping all your resources in one place.
+
+Go to Workspace
+Accepted!
+You're all set to start working.
+
+Your client has created a workspace to manage this project. You can set reminders to post project updates in the workspace.
+
+Set reminders
+C
+Al principio, el usuario debe ingresar información básica (peso, altura, objetivo) y, en función de ello, la aplicación puede generar una recomendación inicial sencilla (como la cantidad diaria de proteínas y agua).
+
+No tiene por qué ser complejo, solo un paso básico de registro.
+ok
+Apr 17, 2026
+
+Hello, Cesar.
+I will update my work at the next Monday.
+Have a good weekend.
+Apr 19, 2026
+
+C
+Ok. Una pregunta rápida:
+
+Por ahora, podemos mantener la aplicación en español, pero me gustaría que la estructura admitiera varios idiomas en el futuro (como el inglés), sin necesidad de rediseñarla por completo.
+We’ll use “EM Fit System” as the working name for now.
+Apr 20, 2026
+
+Milestone_1_Report_EM_Fit_System.docx
+Hello, Cesar.
+Please review this report for first milestone.
+👍
+C
+I’d like to make sure we include simple rule-based messages based on user activity (for example: missed workouts, low protein, streak reminders). This is important for adherence.
+Also, I want to confirm that daily protein and water tracking will be included with simple progress indicators (bars or percentages).
+No problem for adding them.
+But when you add more functions, it will grow budget for this project.
+Btw, please release first milestone, and let's start milestone 2.
+C
+I understand.
+
+For now, let’s keep the MVP simple and proceed with the current scope.
+
+We can include more advanced behavior-based messages in a future phase.
+Before releasing Milestone 1, I’d like to review the wireframes or visual structure of the main screens so we can confirm everything is aligned.
+I am currently planning the app like this.
+app wireframe.png
+app wireframe.png
+Of course, the design and details will be changed as needed during development.
+Are you good now?
+Milestone release requested by @jvy7802
+Milestone 1 Design & Structure
+—
+$1000.00 USD
+Hello?
+C
+Calma por favor, estamos verificando
+👍
+C
+Me gustaría incluir una vista de entrenamiento semanal similar a esta, donde el usuario pueda ver claramente cuántos entrenamientos completó cada semana.
+
+La idea es que la constancia semanal sea muy visible, no solo la finalización diaria.
+
+Además, con respecto a la función de estado de ánimo, me gustaría confirmar si admitirá diferentes emojis (por ejemplo: estresado, cansado, bien, con energía), para que el usuario pueda indicar cómo se siente cada día.
+image.png
+image.png
+Ok, I will do it.
+But I can make more process after you release first milestone and create second.
+Make sense?
+C
+Sí, tiene sentido.
+
+Incluyamos estos ajustes en este primer hito para poder validar todo antes de seguir adelante.
+You are now violating our initial agreement and trying to continue the project.
+Of course, I can do that for you, but I believe you should also show sincerity toward my work.
+C
+Entiendo tu punto de vista y respeto el alcance acordado.
+
+No pretendo añadir nuevas funcionalidades ni ampliar el proyecto; solo busco perfeccionar la experiencia de usuario durante la fase de diseño inicial (Hito 1) para lograr la mejor estructura antes del desarrollo.
+
+Si algo de lo que he mencionado va más allá de esto, por favor, házmelo saber claramente para que podamos decidir si lo incluimos ahora o más adelante.
+@cmdsh19
+
+Me gustaría incluir una vista de entrenamiento semanal similar a… more
+"Además, con respecto a la función de estado de ánimo, me gustaría confirmar si admitirá diferentes emojis (por ejemplo: estresado, cansado, bien, con energía), para que el usuario pueda indicar cómo se siente cada día."
+This part was added.
+C
+En cuanto a la función de estado de ánimo, no pretendo añadir complejidad, sino simplemente aclarar su funcionamiento.
+
+Bastaría con unas pocas opciones predefinidas sencillas (como 3 o 4 estados) para que el usuario pueda seleccionar rápidamente cómo se siente cada día.
+
+Nada avanzado, solo una versión básica y funcional.
+I understand your desire to build a perfect app from the start.
+
+However, if we have an MVP version, adding or changing features as you wish in the future will not be a difficult task.
+
+Therefore, I hope we can proceed with the project according to the issues we discussed initially.
+If you want the additions as now, we can add them in Milestone 2.
+C
+Entiendo tu punto sobre la importancia de mantener el MVP simple.
+
+Solo quiero aclarar algo sobre la función de estado de ánimo:
+
+Si se implementa con un solo clic, ¿qué representaría exactamente?
+
+¿Qué marcaría el usuario en ese caso?
+
+Porque sin diferentes opciones, no queda claro cómo el usuario expresa sus sentimientos.
+
+Quiero asegurarme de que la función tenga un propósito claro y sea realmente útil.
+@jvy7802
+
+If you want the additions as now, we can add them in Milestone 2.
+.
+I do not mean that I will not add the feature to display mood status.
+I will accurately reflect that in Milestone 2.
+However, as you requested, I started the project with only the first milestone, not the entire set of milestones.
+Therefore, I now doubt whether you have the financial capacity to pay for the project.
+If you pay for the first milestone, I can redo the work on the first milestone tomorrow to reflect that and proceed to Milestone 2.
+Do you understand what I am saying now?
+C
+Ok. Por ahora, mantengámoslo y avancemos
+Thank you for your understanding....
+Please release first milestone and create second milestone.
+then we can move to next plan.
+Milestone released by @cmdsh19
+Milestone 1 Design & Structure
+—
+$1000.00 USD
+👍
+Milestone created by @cmdsh19
+Milestone 2 – Core App Development Cost
+—
+$2500.00 USD
+C
+Perfecto, he aceptado el Hito 2.
+
+Sigamos adelante con el desarrollo.
+👍
+yes, I will report and show app at the Friday as milestone 2.
+C
+Great, sounds good.
+
+I’ll review everything on Friday.
+👍
+Apr 24, 2026
+
+Hello, Cesar.
+Please install "Expo Go" app to your mobile phon.
+QR Code.jpg
+QR Code.jpg
+And scan this QR code, then you can see our app on there.
+note: app is working with mockup data, and it will integrate with Firebase database and will work well at the Milestone 3 step.
+C
+Hi, I scanned the QR code, but the app is not opening on my side. It shows a timeout / requested app error.
+
+Could you please send me a working test link or updated QR so I can properly review Milestone 2?
+
+Once I can test it, I’ll review everything carefully.
+https://expo.dev/accounts/jorgeitglobalsolutionss-organization/projects/em-fit-system/builds/161dc027-d493-433f-9dce-39246deca3a5
+Please check again.
+Is it working for you?
+Apr 25, 2026
+
+C
+NO SIRVE
+NO ABRE SIGUE DANDO EL MISMO ERROR
+Hi, Are you online now?
+https://expo.dev/accounts/jorgeitglobalsolutionss-organization/projects/em-fit-system/builds/161dc027-d493-433f-9dce-39246deca3a5
+C
+Yes
+Are you using android or ios?
+C
+IOS
+Ok.
+I sent to you android version.
+Do you have android phone, don't you?
+C
+don't have
+Ok, then let me build again for IOS app.
+C
+Okay, I'll wait
+Please install "TestFlight" App to your IOS.
+C
+ok
+Did you install?
+C
+yes
+Are you using Apple developer account(paid)?
+C
+No, I’m using a normal Apple ID, not a paid developer account.
+
+Do I need a paid developer account to test the app through TestFlight?
+Yes, so you can see it.
+And for the future, you need it for upload apple store.
+Can I send you screenvideo for App?
+C
+Entiendo que para futuras publicaciones en la App Store necesitaremos una cuenta de desarrollador de Apple.
+
+Pero por ahora, para realizar pruebas con TestFlight, debería poder usar un ID de Apple normal como evaluador, ¿correcto?
+You can check video and you can give me feedback after look video.
+Make sense?
+C
+Yes, that makes sense.
+
+Please send me the video first so I can review the current progress and give feedback.
+
+After that, we can continue with the TestFlight version so I can test it directly.
+video3.mp4
+C
+El progreso parece bueno.
+
+Una pregunta: ¿dónde ingresará el usuario los datos de registro, como peso, altura y objetivos? Quiero entender cómo se gestionará este proceso en las próximas fases.
+I forgot show it.
+that function is already implemented on onboarding screen.
+If you release milestone 2, then we can move to milestone 3 and you can see final MVP version at the end of milestone 3.
+C
+Gracias por la aclaración y el progreso mostrado.
+
+Lanzaré el Hito 2 para que podamos continuar con el Hito 3.
+
+Por favor, manténganme al tanto del progreso del backend y las suscripciones.
+Milestone released by @cmdsh19
+Milestone 2 – Core App Development Cost
+—
+$2500.00 USD
+👍
+Please create milestone 3
+Milestone created by @cmdsh19
+Milestone 3 – Backend & Subscription Cost
+—
+$2000.00 USD
+Cool.
+C
+Genial.
+
+Para este hito, mis prioridades clave son:
+
+un backend estable
+que los datos de usuario se guarden correctamente
+que el proceso de inicio de sesión y registro sea fluido
+que el sistema de suscripción funcione correctamente
+que se pueda probar el acceso desde iPhone cuando esté disponible
+
+Espero con interés la próxima actualización.
+Please create firebase and make billing and share to me.
+So we can have stable database and backend.
+C
+Claro. Crearé el proyecto de Firebase y habilitaré la facturación en mi cuenta.
+
+Por favor, envíame exactamente lo siguiente:
+1. El nombre que deseas para el proyecto de Firebase
+2. Qué permisos/correo electrónico debo usar para agregarte
+3. Cualquier servicio específico de Firebase que necesites habilitar primero
+
+Una vez creado, te daré acceso.
+1. Firebase project name
+I suggest: em-fit-system (or, if it's already taken globally, em-fit-system-mvp). If you get a message saying it's unavailable when creating it, add a short suffix (for example, -2026 or -prod).
+
+2. Permissions and email
+Please invite me to the project with the Editor role (or, if you prefer more restrictive access, at least Firebase Administrator with permissions to deploy Cloud Functions on Google Cloud).
+
+3. Services to Enable/Consider
+- Authentication (user login; in the MVP, email/password is usually sufficient; if you want Google/Apple authentication later, we'll enable it).
+- Cloud Firestore (user data, workouts, habits, etc.).
+- Cloud Functions (server logic, subscription validation, scheduled tasks).
+- Blaze Billing in the Firebase plan (necessary for Cloud Functions and for the scheduler/recurring tasks, such as daily reminders).
+C
+correo electronico por favor
+Hi, I can share my email after I got approve from freelancer staff.
+So let me share it after 2 days.
+jorge.itglobalsolutions@gmail.com
+C
+Access granted. You can proceed with backend setup.
+``````````````````````````````````````````

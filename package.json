@@ -7,7 +7,9 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "firebase:deploy": "npm --prefix firebase/functions run build && npx firebase-tools deploy --only firestore,functions --config firebase/firebase.json",
+    "firebase:deploy:rules": "npx firebase-tools deploy --only firestore:rules --config firebase/firebase.json"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
@@ -32,6 +34,7 @@
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
+    "firebase-tools": "^15.16.0",
     "typescript": "~5.9.2"
   },
   "private": true

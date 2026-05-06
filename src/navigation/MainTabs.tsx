@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native';
 import type { MainTabParamList } from './types';
@@ -36,10 +36,27 @@ function SubscriptionPaywallEffect() {
   return null;
 }
 
+function SubscriptionLockOverlay() {
+  const navigation = useNavigation();
+  const { accessLevel } = useAuth();
+  if (accessLevel !== 'paywalled') return null;
+
+  return (
+    <View style={styles.lockOverlay}>
+      <Text style={styles.lockTitle}>Subscription Required</Text>
+      <Text style={styles.lockSub}>Your trial has ended. Subscribe to continue using EM Fit.</Text>
+      <TouchableOpacity style={styles.lockCta} onPress={() => navigation.navigate('Paywall' as never)}>
+        <Text style={styles.lockCtaText}>Subscribe / Restore</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
 export default function MainTabs() {
   return (
     <View style={styles.flex}>
       <SubscriptionPaywallEffect />
+      <SubscriptionLockOverlay />
       <Tab.Navigator
         tabBar={(props) => <BottomTabBar {...props} />}
         screenOptions={{ headerShown: false }}
@@ -56,4 +73,21 @@ export default function MainTabs() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
+  lockOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 50,
+    backgroundColor: 'rgba(255, 255, 255, 0.96)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+  },
+  lockTitle: { fontSize: 22, fontWeight: '800', marginBottom: 10, color: '#1F2937' },
+  lockSub: { fontSize: 15, color: '#6B7280', textAlign: 'center', marginBottom: 20 },
+  lockCta: {
+    backgroundColor: '#6D28D9',
+    borderRadius: 12,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+  },
+  lockCtaText: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
 });

@@ -1,0 +1,48 @@
+Fitness App MVP (Phase 1) - Quotation & Milestones
+Project Overview
+Development of a streamlined fitness mobile application focused on daily usability, training tracking, and a built-in subscription model. The scope is optimized for fast launch and real-world validation.
+Scope of Work
+•	Mobile Application (iOS & Android):
+- Workout tracking (exercises, sets, reps, weight)
+- Predefined routines
+- Custom routine creation (simple)
+- Workout history (date, duration, exercises, weight, reps, best set)
+- Basic habit tracking (protein, water)
+- Push notifications (simple reminders)
+•	Subscription System:
+- 7-day free trial
+- Monthly subscription
+- User states (trial, active, expired)
+- Paywall after expiration
+- App Store & Google Play integration
+•	Backend:
+- Firebase (Authentication, Firestore)
+- Subscription validation logic
+- Data storage and management
+Project Milestones
+Milestone 1 – Design & Structure
+- Wireframes
+- UX flows
+- Architecture setup
+Cost: $1,000 | Duration: 1 week
+Milestone 2 – Core App Development
+- Training system
+- Routines (predefined + custom)
+- Workout history
+- Habit tracking
+Cost: $2,500 | Duration: 2-3 weeks
+Milestone 3 – Backend & Subscription
+- Firebase setup
+- User logic
+- Subscription integration & validation
+Cost: $2,000 | Duration: 4 weeks
+Milestone 4 – Testing & Delivery
+- QA testing
+- Optimization
+- Final builds (iOS & Android)
+Cost: $1,000 | Duration: 4 week
+Total Cost & Timeline
+Total Cost: $6,500 USD
+Estimated Timeline: 4 weeks
+Notes
+This MVP focuses on essential features required for launch and validation. Future enhancements (advanced analytics, admin panel, automation, etc.) can be implemented in Phase 2.
