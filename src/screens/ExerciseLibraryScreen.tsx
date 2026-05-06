@@ -14,14 +14,16 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { EXERCISES_CATALOG, MUSCLE_CATEGORIES, type CatalogExercise } from '../data/exercisesCatalog';
 import { colors, radius, spacing } from '../theme';
+import { queuePickedExercise } from '../services/exercisePickerBridge';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ExerciseLibrary'>;
 
 export default function ExerciseLibraryScreen({ navigation, route }: Props) {
   const mode = route.params?.mode ?? 'browse';
-  const returnRoutineId = route.params?.returnRoutineId;
   const [q, setQ] = useState('');
   const [cat, setCat] = useState<(typeof MUSCLE_CATEGORIES)[number]>('All');
+  const [addedCount, setAddedCount] = useState(0);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const filtered = useMemo(() => {
     return EXERCISES_CATALOG.filter((e) => {
@@ -34,21 +36,15 @@ export default function ExerciseLibraryScreen({ navigation, route }: Props) {
   const onSelectExercise = useCallback(
     (item: CatalogExercise) => {
       if (mode === 'pick') {
-        navigation.navigate('Main', {
-          screen: 'Routines',
-          params: {
-            screen: 'RoutineBuilder',
-            params: {
-              routineId: returnRoutineId,
-              pickedExerciseName: item.name,
-            },
-          },
-        });
+        if (selectedIds.includes(item.id)) return;
+        queuePickedExercise(item.name);
+        setSelectedIds((prev) => [...prev, item.id]);
+        setAddedCount((c) => c + 1);
         return;
       }
       navigation.navigate('ExerciseDetail', { exerciseId: item.id });
     },
-    [mode, navigation, returnRoutineId],
+    [mode, navigation, selectedIds],
   );
 
   const renderItem = useCallback(
@@ -61,10 +57,21 @@ export default function ExerciseLibraryScreen({ navigation, route }: Props) {
           <Text style={styles.name}>{item.name}</Text>
           <Text style={styles.muscle}>{item.muscle}</Text>
         </View>
-        <Ionicons name={mode === 'pick' ? 'add-circle-outline' : 'chevron-forward'} size={22} color={colors.textMuted} />
+        {mode === 'pick' ? (
+          selectedIds.includes(item.id) ? (
+            <View style={styles.selectedPill}>
+              <Ionicons name="checkmark" size={14} color={colors.white} />
+              <Text style={styles.selectedPillText}>Selected</Text>
+            </View>
+          ) : (
+            <Ionicons name="add-circle-outline" size={22} color={colors.textMuted} />
+          )
+        ) : (
+          <Ionicons name="chevron-forward" size={22} color={colors.textMuted} />
+        )}
       </TouchableOpacity>
     ),
-    [mode, onSelectExercise],
+    [mode, onSelectExercise, selectedIds],
   );
 
   return (
@@ -77,7 +84,11 @@ export default function ExerciseLibraryScreen({ navigation, route }: Props) {
       </View>
 
       {mode === 'pick' ? (
-        <Text style={styles.pickHint}>Tap an exercise to add it to your routine.</Text>
+        <Text style={styles.pickHint}>
+          {addedCount > 0
+            ? `${addedCount} exercise${addedCount === 1 ? '' : 's'} selected. Tap X to return.`
+            : 'Tap exercises to add them, then tap X to return.'}
+        </Text>
       ) : null}
 
       <View style={styles.searchWrap}>
@@ -183,6 +194,20 @@ const styles = StyleSheet.create({
   chipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
   chipText: { fontSize: 14, fontWeight: '600', color: colors.text },
   chipTextActive: { color: colors.white },
+  selectedPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: radius.full,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 5,
+  },
+  selectedPillText: {
+    color: colors.white,
+    fontSize: 11,
+    fontWeight: '700',
+    marginLeft: 4,
+  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',

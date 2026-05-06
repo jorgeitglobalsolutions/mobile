@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList, RoutinesScreenProps } from '../navigation/types';
 import { colors, radius, spacing } from '../theme';
@@ -18,6 +19,7 @@ import { useAuth } from '../context/AuthContext';
 import { getRoutine, saveUserRoutine } from '../services/routinesRepo';
 import type { RoutineDoc, RoutineExerciseTemplate } from '../types/domain';
 import { friendlyAppError } from '../utils/appError';
+import { consumePickedExercises } from '../services/exercisePickerBridge';
 
 type Props = RoutinesScreenProps<'RoutineBuilder'>;
 
@@ -56,13 +58,27 @@ export default function RoutineBuilderScreen({ navigation, route }: Props) {
   }, [editId, user?.uid]);
 
   const pickedName = route.params?.pickedExerciseName;
-  useEffect(() => {
-    if (!pickedName?.trim()) return;
-    const name = pickedName.trim();
+  const appendPicked = (name: string) => {
+    const n = name.trim();
+    if (!n) return;
     const ts = Math.max(1, parseInt(sets, 10) || 3);
     const rmin = Math.max(1, parseInt(repMin, 10) || 8);
     const rmax = Math.max(rmin, parseInt(repMax, 10) || 12);
-    setExercises((prev) => [...prev, { name, targetSets: ts, targetRepMin: rmin, targetRepMax: rmax }]);
+    setExercises((prev) => [...prev, { name: n, targetSets: ts, targetRepMin: rmin, targetRepMax: rmax }]);
+  };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const picked = consumePickedExercises();
+      if (!picked.length) return;
+      picked.forEach((n) => appendPicked(n));
+      setExName('');
+    }, [sets, repMin, repMax]),
+  );
+
+  useEffect(() => {
+    if (!pickedName?.trim()) return;
+    appendPicked(pickedName);
     setExName('');
     navigation.setParams({ pickedExerciseName: undefined });
   }, [pickedName, navigation, sets, repMin, repMax]);
