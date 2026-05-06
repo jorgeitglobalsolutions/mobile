@@ -8,11 +8,14 @@ import {
   FlatList,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import type { RoutinesScreenProps } from '../navigation/types';
 import { colors, radius, spacing } from '../theme';
 import type { RoutineDoc } from '../types/domain';
 import { PREDEFINED_ROUTINES_SEED } from '../data/predefinedRoutinesSeed';
+import { useAuth } from '../context/AuthContext';
+import { subscribeRoutines } from '../services/routinesRepo';
 
 const FILTERS = ['All', 'Push', 'Pull', 'Legs', 'Full Body', 'Upper'] as const;
 
@@ -32,12 +35,27 @@ function formatUpdated(t: { toDate?: () => Date } | undefined) {
 }
 
 export default function RoutinesScreen({ navigation }: Props) {
+  const { user } = useAuth();
   const [tab, setTab] = useState<'pre' | 'my'>('pre');
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>('All');
+  const [myRows, setMyRows] = useState<Row[]>([]);
 
-  const rows = useMemo<Row[]>(() => {
+  useFocusEffect(
+    useCallback(() => {
+      if (!user?.uid) {
+        setMyRows([]);
+        return undefined;
+      }
+      const unsub = subscribeRoutines(user.uid, (list) => {
+        setMyRows(list.filter((r) => !r.data.isPredefined));
+      });
+      return unsub;
+    }, [user?.uid]),
+  );
+
+  const predefinedRows = useMemo<Row[]>(() => {
     const fakeTs = { toDate: () => new Date() } as RoutineDoc['updatedAt'];
-    const predefinedRows = PREDEFINED_ROUTINES_SEED.map((r) => ({
+    return PREDEFINED_ROUTINES_SEED.map((r) => ({
       id: r.id,
       data: {
         title: r.title,
@@ -51,38 +69,16 @@ export default function RoutinesScreen({ navigation }: Props) {
         updatedAt: fakeTs,
       } as RoutineDoc,
     }));
-    const mockCustom: Row = {
-      id: 'mock_custom_upper',
-      data: {
-        title: 'Custom Upper Focus',
-        muscles: 'Chest, Back, Shoulders',
-        minutes: 45,
-        exerciseCount: 5,
-        category: 'Custom',
-        isPredefined: false,
-        exercises: [
-          { name: 'Bench Press', targetSets: 4, targetRepMin: 6, targetRepMax: 10 },
-          { name: 'Lat Pulldown', targetSets: 3, targetRepMin: 8, targetRepMax: 12 },
-          { name: 'Overhead Press', targetSets: 3, targetRepMin: 6, targetRepMax: 10 },
-          { name: 'Lateral Raise', targetSets: 3, targetRepMin: 12, targetRepMax: 15 },
-          { name: 'Cable Curl', targetSets: 3, targetRepMin: 10, targetRepMax: 15 },
-        ],
-        description: 'Mock custom routine from local code.',
-        updatedAt: fakeTs,
-      },
-    };
-    return [...predefinedRows, mockCustom];
   }, []);
 
   const predefined = useMemo(() => {
-    return rows.filter((r) => {
-      if (!r.data.isPredefined) return false;
+    return predefinedRows.filter((r) => {
       if (filter === 'All') return true;
       return r.data.category?.toLowerCase() === filter.toLowerCase();
     });
-  }, [rows, filter]);
+  }, [predefinedRows, filter]);
 
-  const myRoutines = useMemo(() => rows.filter((r) => !r.data.isPredefined), [rows]);
+  const myRoutines = useMemo(() => myRows, [myRows]);
 
   const openRoutine = (id: string) => {
     navigation.navigate('RoutineDetail', { routineId: id });
