@@ -17,6 +17,7 @@ import { colors, radius, spacing } from '../theme';
 import { useAuth } from '../context/AuthContext';
 import { getRoutine, saveUserRoutine } from '../services/routinesRepo';
 import type { RoutineDoc, RoutineExerciseTemplate } from '../types/domain';
+import { friendlyAppError } from '../utils/appError';
 
 type Props = RoutinesScreenProps<'RoutineBuilder'>;
 
@@ -69,7 +70,7 @@ export default function RoutineBuilderScreen({ navigation, route }: Props) {
   const addExercise = () => {
     const name = exName.trim();
     if (!name) {
-      Alert.alert('Exercise', 'Enter a name.');
+      Alert.alert('Exercise', 'Please enter an exercise name.');
       return;
     }
     const ts = Math.max(1, parseInt(sets, 10) || 3);
@@ -87,11 +88,11 @@ export default function RoutineBuilderScreen({ navigation, route }: Props) {
     if (!user?.uid) return;
     const t = title.trim();
     if (!t) {
-      Alert.alert('Routine', 'Enter a title.');
+      Alert.alert('Routine', 'Please enter a routine title.');
       return;
     }
     if (exercises.length === 0) {
-      Alert.alert('Routine', 'Add at least one exercise.');
+      Alert.alert('Routine', 'Please add at least one exercise.');
       return;
     }
     setSaving(true);
@@ -109,7 +110,7 @@ export default function RoutineBuilderScreen({ navigation, route }: Props) {
       });
       navigation.goBack();
     } catch (e: unknown) {
-      Alert.alert('Save', e instanceof Error ? e.message : 'Failed to save');
+      Alert.alert('Save routine', friendlyAppError(e, 'Could not save routine. Please try again.'));
     } finally {
       setSaving(false);
     }

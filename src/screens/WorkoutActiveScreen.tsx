@@ -21,6 +21,7 @@ import { clearWorkoutDraft, getWorkoutDraft, saveWorkoutDraft } from '../service
 import { defaultGoalsFromProfile, setWorkoutCompleted } from '../services/habitsRepo';
 import { localDateKey } from '../utils/dateKey';
 import type { LoggedExercise } from '../types/domain';
+import { friendlyAppError } from '../utils/appError';
 
 type Props = RoutinesScreenProps<'WorkoutActive'>;
 
@@ -79,7 +80,7 @@ export default function WorkoutActiveScreen({ navigation, route }: Props) {
         const routine = await getRoutine(user.uid, routineId);
         if (cancelled) return;
         if (!routine) {
-          Alert.alert('Routine', 'Could not load this routine.');
+          Alert.alert('Routine', 'Could not load this routine. Please go back and try again.');
           navigation.goBack();
           return;
         }
@@ -155,8 +156,7 @@ export default function WorkoutActiveScreen({ navigation, route }: Props) {
       await clearWorkoutDraft(user.uid);
       navigation.popToTop();
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : 'Save failed';
-      Alert.alert('Workout', msg);
+      Alert.alert('Workout', friendlyAppError(e, 'Could not save workout. Please try again.'));
     } finally {
       setSaving(false);
     }

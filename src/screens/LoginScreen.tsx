@@ -14,6 +14,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { useAuth } from '../context/AuthContext';
 import { colors, radius, spacing } from '../theme';
+import { friendlySignInError } from '../utils/authError';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
@@ -28,13 +29,20 @@ export default function LoginScreen({ navigation }: Props) {
       Alert.alert('Firebase', 'Add EXPO_PUBLIC_FIREBASE_* keys to your .env file.');
       return;
     }
+    if (!email.trim()) {
+      Alert.alert('Sign in', 'Please enter your email address.');
+      return;
+    }
+    if (!password) {
+      Alert.alert('Sign in', 'Please enter your password.');
+      return;
+    }
     setBusy(true);
     try {
       await signIn(email, password);
       navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
     } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : 'Sign in failed';
-      Alert.alert('Sign in', message);
+      Alert.alert('Sign in', friendlySignInError(e));
     } finally {
       setBusy(false);
     }

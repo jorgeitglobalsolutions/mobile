@@ -9,6 +9,7 @@ import { callGrantDevSubscription } from '../services/grantDevSubscription';
 import { purchaseEmFitSubscription, restoreSubscriptionsAndVerify } from '../services/nativeSubscriptionPurchase';
 import { getLegalUrls, subscriptionManageUrl } from '../config/legalLinks';
 import { colors, radius, spacing } from '../theme';
+import { friendlyAppError, friendlyPurchaseError } from '../utils/appError';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Paywall'>;
 
@@ -45,15 +46,15 @@ export default function PaywallScreen({ navigation }: Props) {
     try {
       const ok = await Linking.canOpenURL(url);
       if (ok) await Linking.openURL(url);
-      else Alert.alert('Link', 'Could not open this URL. Check app.json extra.legalTermsUrl / legalPrivacyUrl.');
+      else Alert.alert('Link', 'Could not open this link. Please try again later.');
     } catch {
-      Alert.alert('Link', 'Could not open URL.');
+      Alert.alert('Link', 'Could not open this link right now.');
     }
   };
 
   const onSubscribe = async () => {
     if (!user?.uid) {
-      Alert.alert('Session', 'Sign in again to continue.');
+      Alert.alert('Session expired', 'Please sign in again to continue.');
       return;
     }
     setBusy(true);
@@ -66,8 +67,7 @@ export default function PaywallScreen({ navigation }: Props) {
       await purchaseEmFitSubscription(plan);
       navigation.goBack();
     } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : 'Could not update subscription';
-      Alert.alert('Subscription', message);
+      Alert.alert('Subscription', friendlyPurchaseError(e));
     } finally {
       setBusy(false);
     }
@@ -75,7 +75,7 @@ export default function PaywallScreen({ navigation }: Props) {
 
   const onQaGrantSubscription = async () => {
     if (!user?.uid) {
-      Alert.alert('Session', 'Sign in again to continue.');
+      Alert.alert('Session expired', 'Please sign in again to continue.');
       return;
     }
     setBusy(true);
@@ -87,7 +87,7 @@ export default function PaywallScreen({ navigation }: Props) {
       );
       navigation.goBack();
     } catch (e: unknown) {
-      Alert.alert('QA unlock failed', e instanceof Error ? e.message : String(e));
+      Alert.alert('QA unlock', friendlyAppError(e, 'Could not unlock subscription for QA.'));
     } finally {
       setBusy(false);
     }
@@ -95,7 +95,7 @@ export default function PaywallScreen({ navigation }: Props) {
 
   const onRestore = async () => {
     if (!user?.uid) {
-      Alert.alert('Session', 'Sign in again to continue.');
+      Alert.alert('Session expired', 'Please sign in again to continue.');
       return;
     }
     setBusy(true);
@@ -110,7 +110,7 @@ export default function PaywallScreen({ navigation }: Props) {
       Alert.alert('Restore', 'Purchases restored. Your subscription status will update shortly.');
       navigation.goBack();
     } catch (e: unknown) {
-      Alert.alert('Restore', e instanceof Error ? e.message : 'Restore failed');
+      Alert.alert('Restore', friendlyPurchaseError(e));
     } finally {
       setBusy(false);
     }

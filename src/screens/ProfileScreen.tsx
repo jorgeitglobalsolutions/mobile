@@ -10,6 +10,7 @@ import { useAuth } from '../context/AuthContext';
 import { getFirebaseAuth } from '../lib/firebase';
 import { getLegalUrls, subscriptionManageUrl } from '../config/legalLinks';
 import { colors, radius, spacing } from '../theme';
+import { friendlyAppError } from '../utils/appError';
 
 export default function ProfileScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -45,17 +46,16 @@ export default function ProfileScreen() {
             const auth = getFirebaseAuth();
             const u = auth?.currentUser;
             if (!u) {
-              Alert.alert('Delete account', 'No signed-in user.');
+              Alert.alert('Delete account', 'No signed-in user found.');
               return;
             }
             try {
               await deleteUser(u);
               navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
             } catch (e: unknown) {
-              const msg = e instanceof Error ? e.message : 'Delete failed';
               Alert.alert(
                 'Delete account',
-                `${msg}\n\nIf you recently signed in, try signing out and signing in again, then delete.`,
+                `${friendlyAppError(e, 'Could not delete account right now.')}\n\nIf needed, sign out and sign in again, then retry.`,
               );
             }
           },
@@ -70,8 +70,7 @@ export default function ProfileScreen() {
       await signOutUser();
       navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
     } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : 'Sign out failed';
-      Alert.alert('Sign out', message);
+      Alert.alert('Sign out', friendlyAppError(e, 'Could not sign out. Please try again.'));
     } finally {
       setBusy(false);
     }

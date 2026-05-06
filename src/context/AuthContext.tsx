@@ -19,6 +19,7 @@ import {
 import { seedPredefinedRoutinesIfEmpty } from '../services/routinesRepo';
 import { registerForPushNotificationsAsync } from '../services/notifications';
 import type { UserDocument, UserProfile } from '../types/firestoreUser';
+import { trackUserEvent } from '../services/userEvents';
 
 type AccessLevel = ReturnType<typeof computeAccessLevel>['level'];
 
@@ -118,7 +119,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       const auth = getFirebaseAuth();
       if (!auth) throw new Error('Firebase is not configured');
-      await signInWithEmailAndPassword(auth, email.trim(), password);
+      const cred = await signInWithEmailAndPassword(auth, email.trim(), password);
+      await trackUserEvent(cred.user.uid, 'auth_sign_in', { email: email.trim() });
     },
     [],
   );
@@ -145,8 +147,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     const auth = getFirebaseAuth();
     if (!auth) return;
+    if (user?.uid) {
+      await trackUserEvent(user.uid, 'auth_sign_out');
+    }
     await signOut(auth);
-  }, []);
+  }, [user?.uid]);
 
   const value = useMemo<AuthContextValue>(() => {
     let level: AccessLevel = 'paywalled';

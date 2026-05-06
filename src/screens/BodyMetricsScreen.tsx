@@ -10,6 +10,7 @@ import { useAuth } from '../context/AuthContext';
 import { updateUserProfile } from '../services/userDocument';
 import { colors, radius, spacing } from '../theme';
 import { clamp } from '../utils/math';
+import { friendlyAppError } from '../utils/appError';
 import {
   HEIGHT_MAX_CM,
   HEIGHT_MIN_CM,
@@ -19,8 +20,9 @@ import {
 
 type Props = NativeStackScreenProps<RootStackParamList, 'BodyMetrics'>;
 
-export default function BodyMetricsScreen({ navigation }: Props) {
+export default function BodyMetricsScreen({ navigation, route }: Props) {
   const { user, userDoc } = useAuth();
+  const required = Boolean(route.params?.required);
   const p = userDoc?.profile;
   const [weightKg, setWeightKg] = useState(() => clamp(p?.weightKg ?? 70, WEIGHT_MIN_KG, WEIGHT_MAX_KG));
   const [heightCm, setHeightCm] = useState(() => clamp(p?.heightCm ?? 175, HEIGHT_MIN_CM, HEIGHT_MAX_CM));
@@ -52,9 +54,13 @@ export default function BodyMetricsScreen({ navigation }: Props) {
         goal,
       };
       await updateUserProfile(user.uid, next);
-      navigation.goBack();
+      if (required) {
+        navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
+      } else {
+        navigation.goBack();
+      }
     } catch (e: unknown) {
-      Alert.alert('Body metrics', e instanceof Error ? e.message : 'Could not save');
+      Alert.alert('Body metrics', friendlyAppError(e, 'Could not save your body metrics. Please try again.'));
     } finally {
       setSaving(false);
     }
@@ -63,9 +69,13 @@ export default function BodyMetricsScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       <View style={styles.topBar}>
-        <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={12} disabled={saving}>
-          <Ionicons name="chevron-back" size={26} color={colors.text} />
-        </TouchableOpacity>
+        {!required ? (
+          <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={12} disabled={saving}>
+            <Ionicons name="chevron-back" size={26} color={colors.text} />
+          </TouchableOpacity>
+        ) : (
+          <View style={{ width: 26 }} />
+        )}
         <Text style={styles.topTitle}>Body metrics</Text>
         <View style={{ width: 26 }} />
       </View>

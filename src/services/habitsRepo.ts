@@ -11,6 +11,7 @@ import { getFirebaseFirestore } from '../lib/firebase';
 import { isMockDataMode } from '../config/mockMode';
 import * as mem from '../mock/inMemoryBackend';
 import type { HabitDayDoc, MoodValue } from '../types/domain';
+import { trackUserEvent } from './userEvents';
 
 function habitDayRef(uid: string, date: string) {
   const db = getFirebaseFirestore();
@@ -112,6 +113,7 @@ export async function incrementProtein(uid: string, date: string, deltaG: number
     },
     { merge: true },
   );
+  await trackUserEvent(uid, 'habit_protein_updated', { date, deltaG, proteinG: Math.max(0, cur.proteinG + deltaG) });
 }
 
 export async function incrementWater(uid: string, date: string, deltaMl: number, defaults: { proteinGoalG: number; waterGoalMl: number }) {
@@ -131,6 +133,7 @@ export async function incrementWater(uid: string, date: string, deltaMl: number,
     },
     { merge: true },
   );
+  await trackUserEvent(uid, 'habit_water_updated', { date, deltaMl, waterMl: Math.max(0, cur.waterMl + deltaMl) });
 }
 
 export async function setWorkoutCompleted(
@@ -155,6 +158,7 @@ export async function setWorkoutCompleted(
     },
     { merge: true },
   );
+  await trackUserEvent(uid, 'habit_workout_completed', { date, completed });
 }
 
 export async function setMood(uid: string, date: string, mood: MoodValue | null, defaults: { proteinGoalG: number; waterGoalMl: number }) {
@@ -174,4 +178,5 @@ export async function setMood(uid: string, date: string, mood: MoodValue | null,
     },
     { merge: true },
   );
+  await trackUserEvent(uid, 'habit_mood_updated', { date, mood });
 }

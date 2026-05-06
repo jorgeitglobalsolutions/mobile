@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import { updateUserSettings } from '../services/userDocument';
 import { registerForPushNotificationsAsync } from '../services/notifications';
 import { colors, radius, spacing } from '../theme';
+import { friendlyAppError } from '../utils/appError';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Settings'>;
 
@@ -45,7 +46,7 @@ export default function SettingsScreen({ navigation }: Props) {
         reminderHourUtc: useDef ? null : hour,
       });
     } catch (e: unknown) {
-      Alert.alert('Settings', e instanceof Error ? e.message : 'Could not save');
+      Alert.alert('Settings', friendlyAppError(e, 'Could not save your settings. Please try again.'));
     } finally {
       setBusy(false);
     }

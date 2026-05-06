@@ -25,7 +25,7 @@ import { colors } from './src/theme';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function AppNavigation() {
-  const { firebaseReady, firebaseConfigured, user, accessLevel } = useAuth();
+  const { firebaseReady, firebaseConfigured, user, userDoc, accessLevel } = useAuth();
   const [wizardDone, setWizardDone] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -47,14 +47,25 @@ function AppNavigation() {
       </View>
     );
   }
+  // Wait for user document so first-login profile gating is deterministic.
+  if (user && !userDoc) {
+    return (
+      <View style={styles.boot}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
 
   const hasFirebase = isFirebaseConfigured(getFirebasePublicConfig());
   if (!hasFirebase && !isMockDataMode()) {
     return <MissingFirebaseScreen />;
   }
 
+  const needsProfile = Boolean(user && !userDoc?.profile);
   const initialRouteName: keyof RootStackParamList = user
-    ? 'Main'
+    ? needsProfile
+      ? 'BodyMetrics'
+      : 'Main'
     : wizardDone
       ? 'Login'
       : 'Onboarding';
@@ -64,7 +75,7 @@ function AppNavigation() {
       <Stack.Navigator
         screenOptions={{ headerShown: false }}
         initialRouteName={initialRouteName}
-        key={`${user?.uid ?? 'guest'}-${wizardDone ? 'w' : 'nw'}`}
+        key={`${user?.uid ?? 'guest'}-${wizardDone ? 'w' : 'nw'}-${needsProfile ? 'np' : 'p'}`}
       >
         <Stack.Screen name="Onboarding" component={OnboardingScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />
@@ -87,7 +98,12 @@ function AppNavigation() {
         />
         <Stack.Screen name="WorkoutSessionDetail" component={WorkoutSessionDetailScreen} />
         <Stack.Screen name="Settings" component={SettingsScreen} />
-        <Stack.Screen name="BodyMetrics" component={BodyMetricsScreen} />
+        <Stack.Screen
+          name="BodyMetrics"
+          component={BodyMetricsScreen}
+          initialParams={{ required: needsProfile }}
+          options={({ route }) => ({ gestureEnabled: !route.params?.required })}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

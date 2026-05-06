@@ -15,6 +15,7 @@ import type { RootStackParamList } from '../navigation/types';
 import type { UserProfile } from '../types/firestoreUser';
 import { useAuth } from '../context/AuthContext';
 import { colors, radius, spacing } from '../theme';
+import { friendlySignUpError } from '../utils/authError';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SignUp'>;
 
@@ -42,6 +43,10 @@ export default function SignUpScreen({ navigation, route }: Props) {
       Alert.alert('Firebase', 'Add EXPO_PUBLIC_FIREBASE_* keys to your .env file.');
       return;
     }
+    if (!email.trim()) {
+      Alert.alert('Create account', 'Please enter your email address.');
+      return;
+    }
     if (password.length < 6) {
       Alert.alert('Password', 'Use at least 6 characters.');
       return;
@@ -51,8 +56,7 @@ export default function SignUpScreen({ navigation, route }: Props) {
       await signUp(email, password, profile);
       navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
     } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : 'Sign up failed';
-      Alert.alert('Sign up', message);
+      Alert.alert('Create account', friendlySignUpError(e));
     } finally {
       setBusy(false);
     }

@@ -14,6 +14,7 @@ import { getFirebaseFirestore } from '../lib/firebase';
 import { isMockDataMode } from '../config/mockMode';
 import * as mem from '../mock/inMemoryBackend';
 import type { LoggedExercise, WorkoutDoc } from '../types/domain';
+import { trackUserEvent } from './userEvents';
 
 function workoutsCol(db: Firestore, uid: string) {
   return collection(db, 'users', uid, 'workouts');
@@ -77,6 +78,14 @@ export async function saveWorkoutSession(
     bestSetVolumeKg: bestVolume(input.exercises),
   };
   const ref = await addDoc(workoutsCol(db, uid), docData);
+  await trackUserEvent(uid, 'workout_saved', {
+    workoutId: ref.id,
+    routineId: input.routineId,
+    title: input.title,
+    durationSeconds,
+    totalSets: docData.totalSets,
+    totalVolumeKg: docData.totalVolumeKg,
+  });
   return ref.id;
 }
 

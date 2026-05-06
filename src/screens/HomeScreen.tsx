@@ -16,6 +16,7 @@ import {
 import type { HabitDayDoc, MoodValue } from '../types/domain';
 import { localDateKey } from '../utils/dateKey';
 import { colors, radius, spacing } from '../theme';
+import { friendlyAppError } from '../utils/appError';
 
 const MOODS: MoodValue[] = ['great', 'good', 'low', 'tired', 'stressed'];
 
@@ -125,7 +126,7 @@ export default function HomeScreen() {
     try {
       await fn();
     } catch (e: unknown) {
-      Alert.alert('Home', e instanceof Error ? e.message : 'Could not update');
+      Alert.alert('Update', friendlyAppError(e, 'Could not update this item. Please try again.'));
     } finally {
       setBusy(false);
     }

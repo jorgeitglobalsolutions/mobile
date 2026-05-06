@@ -23,6 +23,9 @@ service cloud.firestore {
       match /workoutDrafts/{draftId} {
         allow read, write, delete: if request.auth != null && request.auth.uid == userId;
       }
+      match /events/{eventId} {
+        allow read, write, delete: if request.auth != null && request.auth.uid == userId;
+      }
     }
   }
 }

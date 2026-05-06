@@ -13,6 +13,7 @@ import { getFirebaseFirestore } from '../lib/firebase';
 import { isMockDataMode } from '../config/mockMode';
 import * as mem from '../mock/inMemoryBackend';
 import type { SubscriptionFields, UserDocument, UserProfile, UserSettings } from '../types/firestoreUser';
+import { trackUserEvent } from './userEvents';
 
 export const USERS_COLLECTION = 'users';
 
@@ -60,6 +61,11 @@ export async function createUserDocument(user: User, profile: UserProfile | null
       lastSyncedAt: serverTimestamp(),
     },
   });
+  await trackUserEvent(user.uid, 'auth_sign_up', {
+    email: user.email ?? '',
+    hasProfile: Boolean(profile),
+    trialDays: 7,
+  });
 }
 
 export async function updateUserSettings(uid: string, settings: Partial<UserSettings>): Promise<void> {
@@ -74,6 +80,7 @@ export async function updateUserSettings(uid: string, settings: Partial<UserSett
     if (v !== undefined) updates[`settings.${k}`] = v;
   });
   await updateDoc(ref, updates);
+  await trackUserEvent(uid, 'user_settings_updated', { keys: Object.keys(settings) });
 }
 
 export async function updatePushToken(uid: string, pushToken: string | null): Promise<void> {
@@ -96,6 +103,11 @@ export async function updateUserProfile(uid: string, profile: UserProfile): Prom
   await updateDoc(ref, {
     profile,
     updatedAt: serverTimestamp(),
+  });
+  await trackUserEvent(uid, 'user_profile_updated', {
+    goal: profile.goal,
+    weightKg: profile.weightKg,
+    heightCm: profile.heightCm,
   });
 }
 
