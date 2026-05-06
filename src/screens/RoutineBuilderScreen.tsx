@@ -58,9 +58,14 @@ export default function RoutineBuilderScreen({ navigation, route }: Props) {
   const pickedName = route.params?.pickedExerciseName;
   useEffect(() => {
     if (!pickedName?.trim()) return;
-    setExName(pickedName.trim());
+    const name = pickedName.trim();
+    const ts = Math.max(1, parseInt(sets, 10) || 3);
+    const rmin = Math.max(1, parseInt(repMin, 10) || 8);
+    const rmax = Math.max(rmin, parseInt(repMax, 10) || 12);
+    setExercises((prev) => [...prev, { name, targetSets: ts, targetRepMin: rmin, targetRepMax: rmax }]);
+    setExName('');
     navigation.setParams({ pickedExerciseName: undefined });
-  }, [pickedName, navigation]);
+  }, [pickedName, navigation, sets, repMin, repMax]);
 
   const openExercisePicker = () => {
     const root = navigation.getParent()?.getParent() as NativeStackNavigationProp<RootStackParamList> | undefined;

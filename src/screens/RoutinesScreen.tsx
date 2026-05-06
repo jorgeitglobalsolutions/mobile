@@ -6,16 +6,13 @@ import {
   ScrollView,
   TouchableOpacity,
   FlatList,
-  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import type { RoutinesScreenProps } from '../navigation/types';
 import { colors, radius, spacing } from '../theme';
-import { useAuth } from '../context/AuthContext';
-import { subscribeRoutines } from '../services/routinesRepo';
 import type { RoutineDoc } from '../types/domain';
+import { PREDEFINED_ROUTINES_SEED } from '../data/predefinedRoutinesSeed';
 
 const FILTERS = ['All', 'Push', 'Pull', 'Legs', 'Full Body', 'Upper'] as const;
 
@@ -35,27 +32,47 @@ function formatUpdated(t: { toDate?: () => Date } | undefined) {
 }
 
 export default function RoutinesScreen({ navigation }: Props) {
-  const { user } = useAuth();
   const [tab, setTab] = useState<'pre' | 'my'>('pre');
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>('All');
-  const [rows, setRows] = useState<Row[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useFocusEffect(
-    useCallback(() => {
-      if (!user?.uid) {
-        setRows([]);
-        setLoading(false);
-        return undefined;
-      }
-      setLoading(true);
-      const unsub = subscribeRoutines(user.uid, (list) => {
-        setRows(list);
-        setLoading(false);
-      });
-      return unsub;
-    }, [user?.uid]),
-  );
+  const rows = useMemo<Row[]>(() => {
+    const fakeTs = { toDate: () => new Date() } as RoutineDoc['updatedAt'];
+    const predefinedRows = PREDEFINED_ROUTINES_SEED.map((r) => ({
+      id: r.id,
+      data: {
+        title: r.title,
+        muscles: r.muscles,
+        minutes: r.minutes,
+        exerciseCount: r.exercises.length,
+        category: r.category,
+        isPredefined: true,
+        exercises: r.exercises,
+        description: r.description,
+        updatedAt: fakeTs,
+      } as RoutineDoc,
+    }));
+    const mockCustom: Row = {
+      id: 'mock_custom_upper',
+      data: {
+        title: 'Custom Upper Focus',
+        muscles: 'Chest, Back, Shoulders',
+        minutes: 45,
+        exerciseCount: 5,
+        category: 'Custom',
+        isPredefined: false,
+        exercises: [
+          { name: 'Bench Press', targetSets: 4, targetRepMin: 6, targetRepMax: 10 },
+          { name: 'Lat Pulldown', targetSets: 3, targetRepMin: 8, targetRepMax: 12 },
+          { name: 'Overhead Press', targetSets: 3, targetRepMin: 6, targetRepMax: 10 },
+          { name: 'Lateral Raise', targetSets: 3, targetRepMin: 12, targetRepMax: 15 },
+          { name: 'Cable Curl', targetSets: 3, targetRepMin: 10, targetRepMax: 15 },
+        ],
+        description: 'Mock custom routine from local code.',
+        updatedAt: fakeTs,
+      },
+    };
+    return [...predefinedRows, mockCustom];
+  }, []);
 
   const predefined = useMemo(() => {
     return rows.filter((r) => {
@@ -70,6 +87,35 @@ export default function RoutinesScreen({ navigation }: Props) {
   const openRoutine = (id: string) => {
     navigation.navigate('RoutineDetail', { routineId: id });
   };
+
+  const renderEmpty = (isMyTab: boolean) => (
+    <View style={styles.emptyWrap}>
+      <View style={styles.emptyIcon}>
+        <Ionicons
+          name={isMyTab ? 'create-outline' : 'barbell-outline'}
+          size={30}
+          color={colors.primary}
+        />
+      </View>
+      <Text style={styles.emptyTitle}>{isMyTab ? 'No custom routines yet' : 'No predefined routines yet'}</Text>
+      <Text style={styles.emptyDesc}>
+        {isMyTab
+          ? 'Create your first routine and start tracking workouts.'
+          : 'Try another filter or check Firestore seed/sync status.'}
+      </Text>
+      <TouchableOpacity
+        style={styles.emptyBtn}
+        activeOpacity={0.9}
+        onPress={() =>
+          isMyTab
+            ? navigation.navigate('RoutineBuilder', {})
+            : setFilter('All')
+        }
+      >
+        <Text style={styles.emptyBtnText}>{isMyTab ? 'Create routine' : 'Show all categories'}</Text>
+      </TouchableOpacity>
+    </View>
+  );
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -116,18 +162,12 @@ export default function RoutinesScreen({ navigation }: Props) {
         </ScrollView>
       )}
 
-      {loading ? (
-        <View style={styles.loader}>
-          <ActivityIndicator size="large" color={colors.primary} />
-        </View>
-      ) : tab === 'pre' ? (
+      {tab === 'pre' ? (
         <FlatList
           data={predefined}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={{ padding: spacing.xl, paddingBottom: 100 }}
-          ListEmptyComponent={
-            <Text style={styles.empty}>No routines yet. Check your connection and Firestore rules.</Text>
-          }
+          contentContainerStyle={{ padding: spacing.xl, paddingBottom: 100, flexGrow: 1 }}
+          ListEmptyComponent={renderEmpty(false)}
           ItemSeparatorComponent={() => <View style={{ height: spacing.md }} />}
           renderItem={({ item }) => (
             <TouchableOpacity
@@ -153,10 +193,8 @@ export default function RoutinesScreen({ navigation }: Props) {
         <FlatList
           data={myRoutines}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={{ padding: spacing.xl, paddingBottom: 100 }}
-          ListEmptyComponent={
-            <Text style={styles.empty}>No custom routines yet. Tap + to create one.</Text>
-          }
+          contentContainerStyle={{ padding: spacing.xl, paddingBottom: 100, flexGrow: 1 }}
+          ListEmptyComponent={renderEmpty(true)}
           ItemSeparatorComponent={() => <View style={{ height: spacing.md }} />}
           renderItem={({ item }) => (
             <TouchableOpacity
@@ -185,8 +223,37 @@ export default function RoutinesScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
-  loader: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 40 },
-  empty: { textAlign: 'center', color: colors.textSecondary, marginTop: 24, paddingHorizontal: spacing.xl },
+  emptyWrap: {
+    flex: 1,
+    minHeight: 260,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: spacing.xl,
+  },
+  emptyIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.primarySoft,
+    marginBottom: spacing.md,
+  },
+  emptyTitle: { fontSize: 18, fontWeight: '800', color: colors.text, textAlign: 'center' },
+  emptyDesc: {
+    marginTop: spacing.sm,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  emptyBtn: {
+    marginTop: spacing.lg,
+    backgroundColor: colors.primary,
+    borderRadius: radius.lg,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+  },
+  emptyBtnText: { color: colors.white, fontWeight: '700' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
