@@ -44,7 +44,6 @@ export default function ExerciseLibraryScreen({ navigation, route }: Props) {
             },
           },
         });
-        navigation.goBack();
         return;
       }
       navigation.navigate('ExerciseDetail', { exerciseId: item.id });
