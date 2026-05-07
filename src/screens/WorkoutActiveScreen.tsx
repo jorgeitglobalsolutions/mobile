@@ -15,12 +15,12 @@ import { Ionicons } from '@expo/vector-icons';
 import type { RoutinesScreenProps } from '../navigation/types';
 import { colors, radius, spacing } from '../theme';
 import { useAuth } from '../context/AuthContext';
-import { getRoutine, routineToWorkoutBlocks } from '../services/routinesRepo';
+import { getRoutine, routineToWorkoutBlocks, saveUserRoutine } from '../services/routinesRepo';
 import { saveWorkoutSession } from '../services/workoutsRepo';
 import { clearWorkoutDraft, getWorkoutDraft, saveWorkoutDraft } from '../services/workoutDraftRepo';
 import { defaultGoalsFromProfile, setWorkoutCompleted } from '../services/habitsRepo';
 import { localDateKey } from '../utils/dateKey';
-import type { LoggedExercise } from '../types/domain';
+import type { LoggedExercise, RoutineDoc } from '../types/domain';
 import { friendlyAppError } from '../utils/appError';
 
 type Props = RoutinesScreenProps<'WorkoutActive'>;
@@ -58,11 +58,13 @@ function ensureTrailingEmptyRow(rows: { weightKg: number; reps: number; done: bo
 
 export default function WorkoutActiveScreen({ navigation, route }: Props) {
   const { user, userDoc } = useAuth();
-  const { routineId, title } = route.params;
+  const { routineId, title: initialTitle } = route.params;
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const [exercises, setExercises] = useState<LoggedExercise[]>([]);
+  const [routine, setRoutine] = useState<RoutineDoc | null>(null);
+  const [routineTitle, setRoutineTitle] = useState(initialTitle);
   const startedAtRef = useRef<Date>(new Date());
   const [restRemaining, setRestRemaining] = useState<number | null>(null);
 
@@ -97,6 +99,8 @@ export default function WorkoutActiveScreen({ navigation, route }: Props) {
           navigation.goBack();
           return;
         }
+        setRoutine(routine);
+        setRoutineTitle(routine.title);
         const draft = await getWorkoutDraft(user.uid);
         if (draft && draft.routineId === routineId && draft.exercises?.length) {
           startedAtRef.current = new Date(draft.startedAtMs);
@@ -125,13 +129,13 @@ export default function WorkoutActiveScreen({ navigation, route }: Props) {
     const t = setTimeout(() => {
       void saveWorkoutDraft(user.uid, {
         routineId,
-        title,
+        title: routineTitle,
         startedAtMs: startedAtRef.current.getTime(),
         exercises,
       }).catch(() => {});
     }, 8000);
     return () => clearTimeout(t);
-  }, [user?.uid, loading, routineId, title, exercises]);
+  }, [user?.uid, loading, routineId, routineTitle, exercises]);
 
   const updateSet = useCallback(
     (exIndex: number, setIndex: number, patch: Partial<{ weightKg: number; reps: number; done: boolean }>) => {
@@ -151,14 +155,6 @@ export default function WorkoutActiveScreen({ navigation, route }: Props) {
     [],
   );
 
-  const addSetRow = useCallback((exIndex: number) => {
-    setExercises((prev) =>
-      prev.map((ex, ei) =>
-        ei !== exIndex ? ex : { ...ex, sets: [...ex.sets, { weightKg: 0, reps: 0, done: false }] },
-      ),
-    );
-  }, []);
-
   const totalSets = useMemo(
     () => exercises.reduce((acc, ex) => acc + ex.sets.filter((x) => x.done).length, 0),
     [exercises],
@@ -169,10 +165,28 @@ export default function WorkoutActiveScreen({ navigation, route }: Props) {
     if (!user?.uid) return;
     setSaving(true);
     try {
+      let sessionRoutineId = routineId;
+      if (routine?.isPredefined) {
+        const copyId = `predef_copy_${routineId}`;
+        const existingCopy = await getRoutine(user.uid, copyId);
+        if (!existingCopy) {
+          await saveUserRoutine(user.uid, copyId, {
+            title: routine.title,
+            muscles: routine.muscles,
+            minutes: routine.minutes,
+            exerciseCount: routine.exerciseCount,
+            category: routine.category,
+            exercises: routine.exercises,
+            description: routine.description ?? '',
+            isPredefined: false,
+          });
+        }
+        sessionRoutineId = copyId;
+      }
       const ended = new Date();
       await saveWorkoutSession(user.uid, {
-        routineId,
-        title,
+        routineId: sessionRoutineId,
+        title: routineTitle,
         startedAt: startedAtRef.current,
         endedAt: ended,
         exercises: exercises.map((ex) => ({
@@ -240,7 +254,7 @@ export default function WorkoutActiveScreen({ navigation, route }: Props) {
           <Ionicons name="chevron-back" size={26} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.topTitle} numberOfLines={1}>
-          {title}
+          {routineTitle}
         </Text>
         <TouchableOpacity hitSlop={12}>
           <Ionicons name="ellipsis-horizontal" size={22} color={colors.text} />
@@ -272,15 +286,6 @@ export default function WorkoutActiveScreen({ navigation, route }: Props) {
                 <Ionicons name="barbell" size={22} color={colors.primary} />
               </View>
               <Text style={styles.exTitle}>{block.name}</Text>
-              <TouchableOpacity
-                style={styles.addSetBtn}
-                onPress={() => addSetRow(bi)}
-                hitSlop={8}
-                activeOpacity={0.85}
-              >
-                <Ionicons name="add-circle-outline" size={20} color={colors.primary} />
-                <Text style={styles.addSetText}>Add</Text>
-              </TouchableOpacity>
             </View>
             <View style={styles.tableHead}>
               <Text style={[styles.th, { width: 36 }]}>SET</Text>
@@ -450,16 +455,6 @@ const styles = StyleSheet.create({
     marginRight: spacing.sm,
   },
   exTitle: { fontSize: 17, fontWeight: '700', color: colors.text },
-  addSetBtn: {
-    marginLeft: 'auto',
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 6,
-    borderRadius: radius.full,
-    backgroundColor: colors.primarySoft,
-  },
-  addSetText: { marginLeft: 4, fontSize: 12, fontWeight: '700', color: colors.primary },
   tableHead: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: colors.border, paddingBottom: 6 },
   th: { fontSize: 11, color: colors.textMuted, fontWeight: '700' },
   tableRow: {
