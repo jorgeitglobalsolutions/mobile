@@ -43,6 +43,19 @@ function totalVolumeKg(exercises: LoggedExercise[]): number {
   return Math.round(t);
 }
 
+function rowHasInput(row: { weightKg: number; reps: number; done: boolean }): boolean {
+  return row.done || row.weightKg > 0 || row.reps > 0;
+}
+
+function ensureTrailingEmptyRow(rows: { weightKg: number; reps: number; done: boolean }[]) {
+  if (!rows.length) return [{ weightKg: 0, reps: 0, done: false }];
+  const last = rows[rows.length - 1];
+  if (rowHasInput(last)) {
+    return [...rows, { weightKg: 0, reps: 0, done: false }];
+  }
+  return rows;
+}
+
 export default function WorkoutActiveScreen({ navigation, route }: Props) {
   const { user, userDoc } = useAuth();
   const { routineId, title } = route.params;
@@ -90,7 +103,13 @@ export default function WorkoutActiveScreen({ navigation, route }: Props) {
           setExercises(draft.exercises);
         } else {
           startedAtRef.current = new Date();
-          setExercises(routineToWorkoutBlocks(routine));
+          setExercises(
+            routineToWorkoutBlocks(routine).map((ex) => ({
+              ...ex,
+              // Start with one row; reveal the next row progressively as user logs sets.
+              sets: ex.sets.slice(0, 1),
+            })),
+          );
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -122,13 +141,23 @@ export default function WorkoutActiveScreen({ navigation, route }: Props) {
             ? ex
             : {
                 ...ex,
-                sets: ex.sets.map((st, si) => (si !== setIndex ? st : { ...st, ...patch })),
+                sets: ensureTrailingEmptyRow(
+                  ex.sets.map((st, si) => (si !== setIndex ? st : { ...st, ...patch })),
+                ),
               },
         ),
       );
     },
     [],
   );
+
+  const addSetRow = useCallback((exIndex: number) => {
+    setExercises((prev) =>
+      prev.map((ex, ei) =>
+        ei !== exIndex ? ex : { ...ex, sets: [...ex.sets, { weightKg: 0, reps: 0, done: false }] },
+      ),
+    );
+  }, []);
 
   const totalSets = useMemo(
     () => exercises.reduce((acc, ex) => acc + ex.sets.filter((x) => x.done).length, 0),
@@ -146,7 +175,11 @@ export default function WorkoutActiveScreen({ navigation, route }: Props) {
         title,
         startedAt: startedAtRef.current,
         endedAt: ended,
-        exercises,
+        exercises: exercises.map((ex) => ({
+          ...ex,
+          // Drop trailing placeholder rows so history only stores meaningful set data.
+          sets: ex.sets.filter((s) => rowHasInput(s)),
+        })),
       });
       const defs = defaultGoalsFromProfile(userDoc?.profile?.weightKg, userDoc?.profile?.goal);
       await setWorkoutCompleted(user.uid, localDateKey(), true, {
@@ -239,6 +272,15 @@ export default function WorkoutActiveScreen({ navigation, route }: Props) {
                 <Ionicons name="barbell" size={22} color={colors.primary} />
               </View>
               <Text style={styles.exTitle}>{block.name}</Text>
+              <TouchableOpacity
+                style={styles.addSetBtn}
+                onPress={() => addSetRow(bi)}
+                hitSlop={8}
+                activeOpacity={0.85}
+              >
+                <Ionicons name="add-circle-outline" size={20} color={colors.primary} />
+                <Text style={styles.addSetText}>Add</Text>
+              </TouchableOpacity>
             </View>
             <View style={styles.tableHead}>
               <Text style={[styles.th, { width: 36 }]}>SET</Text>
@@ -408,6 +450,16 @@ const styles = StyleSheet.create({
     marginRight: spacing.sm,
   },
   exTitle: { fontSize: 17, fontWeight: '700', color: colors.text },
+  addSetBtn: {
+    marginLeft: 'auto',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 6,
+    borderRadius: radius.full,
+    backgroundColor: colors.primarySoft,
+  },
+  addSetText: { marginLeft: 4, fontSize: 12, fontWeight: '700', color: colors.primary },
   tableHead: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: colors.border, paddingBottom: 6 },
   th: { fontSize: 11, color: colors.textMuted, fontWeight: '700' },
   tableRow: {
