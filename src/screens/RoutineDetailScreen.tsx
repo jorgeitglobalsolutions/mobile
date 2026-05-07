@@ -7,6 +7,7 @@ import { colors, radius, spacing } from '../theme';
 import { useAuth } from '../context/AuthContext';
 import { deleteRoutine, getRoutine } from '../services/routinesRepo';
 import type { RoutineDoc } from '../types/domain';
+import { EXERCISES_CATALOG } from '../data/exercisesCatalog';
 
 type Props = RoutinesScreenProps<'RoutineDetail'>;
 
@@ -65,6 +66,16 @@ export default function RoutineDetailScreen({ navigation, route }: Props) {
     routine.description ||
     `Focus on ${muscles.toLowerCase()} with compound movements and isolation work.`;
 
+  const openExercise = (name: string) => {
+    const key = name.trim().toLowerCase();
+    const hit = EXERCISES_CATALOG.find((e) => e.name.trim().toLowerCase() === key);
+    if (!hit) {
+      Alert.alert('Exercise', 'Details for this exercise are not available yet.');
+      return;
+    }
+    navigation.navigate('ExerciseDetail', { exerciseId: hit.id });
+  };
+
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.topBar}>
@@ -97,7 +108,12 @@ export default function RoutineDetailScreen({ navigation, route }: Props) {
 
         <Text style={styles.listHeader}>Exercises</Text>
         {routine.exercises.map((ex, i) => (
-          <View key={`${ex.name}-${i}`} style={styles.exRow}>
+          <TouchableOpacity
+            key={`${ex.name}-${i}`}
+            style={styles.exRow}
+            activeOpacity={0.85}
+            onPress={() => openExercise(ex.name)}
+          >
             <Text style={styles.exNum}>{i + 1}</Text>
             <View style={styles.exThumb}>
               <Ionicons name="fitness-outline" size={22} color={colors.primary} />
@@ -108,8 +124,8 @@ export default function RoutineDetailScreen({ navigation, route }: Props) {
                 {ex.targetSets} sets • {ex.targetRepMin}-{ex.targetRepMax} reps
               </Text>
             </View>
-            <Ionicons name="reorder-three" size={26} color={colors.textMuted} />
-          </View>
+            <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+          </TouchableOpacity>
         ))}
 
         {!routine.isPredefined && (
