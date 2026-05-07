@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
   FlatList,
 } from 'react-native';
@@ -15,8 +14,6 @@ import { colors, radius, spacing } from '../theme';
 import type { RoutineDoc } from '../types/domain';
 import { useAuth } from '../context/AuthContext';
 import { subscribePredefinedRoutines, subscribeRoutines } from '../services/routinesRepo';
-
-const FILTERS = ['All', 'Push', 'Pull', 'Legs', 'Full Body', 'Upper'] as const;
 
 type Row = { id: string; data: RoutineDoc };
 
@@ -36,7 +33,6 @@ function formatUpdated(t: { toDate?: () => Date } | undefined) {
 export default function RoutinesScreen({ navigation }: Props) {
   const { user } = useAuth();
   const [tab, setTab] = useState<'pre' | 'my'>('pre');
-  const [filter, setFilter] = useState<(typeof FILTERS)[number]>('All');
   const [myRows, setMyRows] = useState<Row[]>([]);
   const [preRows, setPreRows] = useState<Row[]>([]);
 
@@ -59,12 +55,7 @@ export default function RoutinesScreen({ navigation }: Props) {
     }, [user?.uid]),
   );
 
-  const predefined = useMemo(() => {
-    return preRows.filter((r) => {
-      if (filter === 'All') return true;
-      return r.data.category?.toLowerCase() === filter.toLowerCase();
-    });
-  }, [preRows, filter]);
+  const predefined = useMemo(() => preRows, [preRows]);
 
   const myRoutines = useMemo(() => myRows, [myRows]);
 
@@ -90,13 +81,9 @@ export default function RoutinesScreen({ navigation }: Props) {
       <TouchableOpacity
         style={styles.emptyBtn}
         activeOpacity={0.9}
-        onPress={() =>
-          isMyTab
-            ? navigation.navigate('RoutineBuilder', {})
-            : setFilter('All')
-        }
+        onPress={() => (isMyTab ? navigation.navigate('RoutineBuilder', {}) : undefined)}
       >
-        <Text style={styles.emptyBtnText}>{isMyTab ? 'Create routine' : 'Show all categories'}</Text>
+        <Text style={styles.emptyBtnText}>{isMyTab ? 'Create routine' : 'Refresh'}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -127,24 +114,6 @@ export default function RoutinesScreen({ navigation }: Props) {
           {tab === 'my' ? <View style={styles.tabUnderline} /> : <View style={{ height: 2 }} />}
         </TouchableOpacity>
       </View>
-
-      {tab === 'pre' && (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.chipsRow}
-        >
-          {FILTERS.map((f) => (
-            <TouchableOpacity
-              key={f}
-              onPress={() => setFilter(f)}
-              style={[styles.chip, filter === f && styles.chipActive]}
-            >
-              <Text style={[styles.chipText, filter === f && styles.chipTextActive]}>{f}</Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      )}
 
       {tab === 'pre' ? (
         <FlatList
@@ -251,27 +220,6 @@ const styles = StyleSheet.create({
   tabText: { fontSize: 16, color: colors.textSecondary, fontWeight: '600', marginBottom: spacing.sm },
   tabTextActive: { color: colors.text },
   tabUnderline: { height: 3, width: '60%', backgroundColor: colors.primary, borderRadius: 2 },
-  chipsRow: {
-    paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.sm,
-    gap: spacing.sm,
-    alignItems: 'center',
-  },
-  chip: {
-    paddingHorizontal: spacing.lg,
-    minHeight: 40,
-    paddingVertical: spacing.sm,
-    borderRadius: radius.full,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginRight: spacing.sm,
-    backgroundColor: colors.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  chipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
-  chipText: { fontSize: 14, fontWeight: '600', color: colors.text },
-  chipTextActive: { color: colors.white },
   preCard: {
     flexDirection: 'row',
     alignItems: 'center',
