@@ -25,7 +25,7 @@ export type RootStackParamList = {
     goal: 'lose' | 'build' | 'maintain';
   }>;
   Main: NavigatorScreenParams<MainTabParamList> | undefined;
-  ExerciseLibrary: { mode?: 'browse' | 'pick'; returnRoutineId?: string } | undefined;
+  ExerciseLibrary: { mode?: 'browse' | 'pick'; returnRoutineId?: string; pickerSessionId?: string } | undefined;
   ExerciseDetail: { exerciseId: string };
   Paywall: undefined;
   WorkoutSessionDetail: { workoutId: string };

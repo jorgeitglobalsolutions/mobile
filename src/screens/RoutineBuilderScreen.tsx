@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -25,6 +25,7 @@ type Props = RoutinesScreenProps<'RoutineBuilder'>;
 
 export default function RoutineBuilderScreen({ navigation, route }: Props) {
   const { user } = useAuth();
+  const pickerSessionIdRef = useRef(`rb-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
   const editId = route.params?.routineId;
   const [title, setTitle] = useState('');
   const [muscles, setMuscles] = useState('');
@@ -69,7 +70,7 @@ export default function RoutineBuilderScreen({ navigation, route }: Props) {
 
   useFocusEffect(
     React.useCallback(() => {
-      const picked = consumePickedExercises();
+      const picked = consumePickedExercises(pickerSessionIdRef.current);
       if (!picked.length) return;
       picked.forEach((n) => appendPicked(n));
       setExName('');
@@ -85,7 +86,11 @@ export default function RoutineBuilderScreen({ navigation, route }: Props) {
 
   const openExercisePicker = () => {
     const root = navigation.getParent()?.getParent() as NativeStackNavigationProp<RootStackParamList> | undefined;
-    root?.navigate('ExerciseLibrary', { mode: 'pick', returnRoutineId: editId });
+    root?.navigate('ExerciseLibrary', {
+      mode: 'pick',
+      returnRoutineId: editId,
+      pickerSessionId: pickerSessionIdRef.current,
+    });
   };
 
   const addExercise = () => {

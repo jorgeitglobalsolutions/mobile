@@ -47,15 +47,6 @@ function AppNavigation() {
       </View>
     );
   }
-  // Wait for user document so first-login profile gating is deterministic.
-  if (user && !userDoc) {
-    return (
-      <View style={styles.boot}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
-    );
-  }
-
   const hasFirebase = isFirebaseConfigured(getFirebasePublicConfig());
   if (!hasFirebase && !isMockDataMode()) {
     return <MissingFirebaseScreen />;

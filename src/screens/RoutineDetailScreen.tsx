@@ -19,7 +19,10 @@ export default function RoutineDetailScreen({ navigation, route }: Props) {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      if (!user?.uid) return;
+      if (!user?.uid) {
+        if (!cancelled) setLoading(false);
+        return;
+      }
       const r = await getRoutine(user.uid, routineId);
       if (!cancelled) {
         setRoutine(r);

@@ -25,7 +25,10 @@ export default function WorkoutSessionDetailScreen({ navigation, route }: Props)
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      if (!user?.uid) return;
+      if (!user?.uid) {
+        if (!cancelled) setLoading(false);
+        return;
+      }
       const w = await getWorkout(user.uid, workoutId);
       if (!cancelled) {
         setDoc(w);

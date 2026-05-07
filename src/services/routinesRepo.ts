@@ -3,7 +3,6 @@ import {
   collection,
   doc,
   getDoc,
-  getDocs,
   onSnapshot,
   orderBy,
   query,
@@ -24,20 +23,16 @@ function routinesCol(uid: string) {
   return collection(db, 'users', uid, 'routines');
 }
 
-export async function seedPredefinedRoutinesIfEmpty(uid: string): Promise<void> {
-  if (isMockDataMode()) {
-    await mem.mockSeedPredefinedIfEmpty(uid);
-    return;
-  }
+function predefinedCol() {
   const db = getFirebaseFirestore();
-  if (!db) return;
-  const col = routinesCol(uid);
-  const snap = await getDocs(query(col));
-  if (!snap.empty) return;
+  if (!db) throw new Error('Firestore not initialized');
+  return collection(db, 'predefinedRoutines');
+}
 
-  for (const seed of PREDEFINED_ROUTINES_SEED) {
-    const ref = doc(col, seed.id);
-    const payload: Omit<RoutineDoc, 'updatedAt'> & { updatedAt: ReturnType<typeof serverTimestamp> } = {
+function mapSeedToRows(): { id: string; data: RoutineDoc }[] {
+  return PREDEFINED_ROUTINES_SEED.map((seed) => ({
+    id: seed.id,
+    data: {
       title: seed.title,
       muscles: seed.muscles,
       minutes: seed.minutes,
@@ -46,10 +41,33 @@ export async function seedPredefinedRoutinesIfEmpty(uid: string): Promise<void> 
       isPredefined: true,
       exercises: seed.exercises,
       description: seed.description,
-      updatedAt: serverTimestamp(),
-    };
-    await setDoc(ref, payload);
+      updatedAt: Timestamp.now(),
+    },
+  }));
+}
+
+/**
+ * Global predefined routines source (Firebase collection: `predefinedRoutines`).
+ * Falls back to local seed when unavailable/empty.
+ */
+export function subscribePredefinedRoutines(
+  onUpdate: (rows: { id: string; data: RoutineDoc }[]) => void,
+): Unsubscribe {
+  if (isMockDataMode()) {
+    onUpdate(mapSeedToRows());
+    return () => {};
   }
+  const q = query(predefinedCol(), orderBy('title'));
+  return onSnapshot(
+    q,
+    (snap) => {
+      const rows = snap.docs.map((d) => ({ id: d.id, data: d.data() as RoutineDoc }));
+      onUpdate(rows.length ? rows : mapSeedToRows());
+    },
+    () => {
+      onUpdate(mapSeedToRows());
+    },
+  );
 }
 
 export function subscribeRoutines(
@@ -72,7 +90,18 @@ export async function getRoutine(uid: string, routineId: string): Promise<Routin
   }
   const ref = doc(routinesCol(uid), routineId);
   const s = await getDoc(ref);
-  if (!s.exists()) return null;
+  if (!s.exists()) {
+    // Not found in user's custom routines; try global predefined routines first.
+    try {
+      const pre = await getDoc(doc(predefinedCol(), routineId));
+      if (pre.exists()) return pre.data() as RoutineDoc;
+    } catch {
+      // ignore and fallback to local seed below
+    }
+    const seed = PREDEFINED_ROUTINES_SEED.find((r) => r.id === routineId);
+    if (!seed) return null;
+    return mapSeedToRows().find((r) => r.id === routineId)?.data ?? null;
+  }
   return s.data() as RoutineDoc;
 }
 

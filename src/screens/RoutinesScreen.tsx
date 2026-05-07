@@ -13,9 +13,8 @@ import { Ionicons } from '@expo/vector-icons';
 import type { RoutinesScreenProps } from '../navigation/types';
 import { colors, radius, spacing } from '../theme';
 import type { RoutineDoc } from '../types/domain';
-import { PREDEFINED_ROUTINES_SEED } from '../data/predefinedRoutinesSeed';
 import { useAuth } from '../context/AuthContext';
-import { subscribeRoutines } from '../services/routinesRepo';
+import { subscribePredefinedRoutines, subscribeRoutines } from '../services/routinesRepo';
 
 const FILTERS = ['All', 'Push', 'Pull', 'Legs', 'Full Body', 'Upper'] as const;
 
@@ -39,44 +38,33 @@ export default function RoutinesScreen({ navigation }: Props) {
   const [tab, setTab] = useState<'pre' | 'my'>('pre');
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>('All');
   const [myRows, setMyRows] = useState<Row[]>([]);
+  const [preRows, setPreRows] = useState<Row[]>([]);
 
   useFocusEffect(
     useCallback(() => {
+      const unsubPre = subscribePredefinedRoutines((list) => {
+        setPreRows(list.filter((r) => r.data.isPredefined));
+      });
       if (!user?.uid) {
         setMyRows([]);
-        return undefined;
+        return () => unsubPre();
       }
       const unsub = subscribeRoutines(user.uid, (list) => {
         setMyRows(list.filter((r) => !r.data.isPredefined));
       });
-      return unsub;
+      return () => {
+        unsubPre();
+        unsub();
+      };
     }, [user?.uid]),
   );
 
-  const predefinedRows = useMemo<Row[]>(() => {
-    const fakeTs = { toDate: () => new Date() } as RoutineDoc['updatedAt'];
-    return PREDEFINED_ROUTINES_SEED.map((r) => ({
-      id: r.id,
-      data: {
-        title: r.title,
-        muscles: r.muscles,
-        minutes: r.minutes,
-        exerciseCount: r.exercises.length,
-        category: r.category,
-        isPredefined: true,
-        exercises: r.exercises,
-        description: r.description,
-        updatedAt: fakeTs,
-      } as RoutineDoc,
-    }));
-  }, []);
-
   const predefined = useMemo(() => {
-    return predefinedRows.filter((r) => {
+    return preRows.filter((r) => {
       if (filter === 'All') return true;
       return r.data.category?.toLowerCase() === filter.toLowerCase();
     });
-  }, [predefinedRows, filter]);
+  }, [preRows, filter]);
 
   const myRoutines = useMemo(() => myRows, [myRows]);
 

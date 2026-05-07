@@ -20,6 +20,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'ExerciseLibrary'>;
 
 export default function ExerciseLibraryScreen({ navigation, route }: Props) {
   const mode = route.params?.mode ?? 'browse';
+  const pickerSessionId = route.params?.pickerSessionId ?? '';
   const [q, setQ] = useState('');
   const [cat, setCat] = useState<(typeof MUSCLE_CATEGORIES)[number]>('All');
   const [addedCount, setAddedCount] = useState(0);
@@ -37,14 +38,14 @@ export default function ExerciseLibraryScreen({ navigation, route }: Props) {
     (item: CatalogExercise) => {
       if (mode === 'pick') {
         if (selectedIds.includes(item.id)) return;
-        queuePickedExercise(item.name);
+        queuePickedExercise(pickerSessionId, item.name);
         setSelectedIds((prev) => [...prev, item.id]);
         setAddedCount((c) => c + 1);
         return;
       }
       navigation.navigate('ExerciseDetail', { exerciseId: item.id });
     },
-    [mode, navigation, selectedIds],
+    [mode, navigation, pickerSessionId, selectedIds],
   );
 
   const renderItem = useCallback(

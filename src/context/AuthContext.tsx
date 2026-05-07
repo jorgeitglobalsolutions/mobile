@@ -16,7 +16,6 @@ import {
   ensureUserDocument,
   subscribeUserDocument,
 } from '../services/userDocument';
-import { seedPredefinedRoutinesIfEmpty } from '../services/routinesRepo';
 import { registerForPushNotificationsAsync } from '../services/notifications';
 import type { UserDocument, UserProfile } from '../types/firestoreUser';
 import { trackUserEvent } from '../services/userEvents';
@@ -64,11 +63,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setFirebaseReady(true);
     });
   }, [configured, mockMode]);
-
-  useEffect(() => {
-    if (!mockMode || !user?.uid || user.uid !== MOCK_UID) return;
-    void seedPredefinedRoutinesIfEmpty(user.uid);
-  }, [mockMode, user?.uid]);
 
   useEffect(() => {
     if (!user) {
