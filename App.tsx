@@ -18,6 +18,7 @@ import PaywallScreen from './src/screens/PaywallScreen';
 import WorkoutSessionDetailScreen from './src/screens/WorkoutSessionDetailScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import BodyMetricsScreen from './src/screens/BodyMetricsScreen';
+import WeightTrackingScreen from './src/screens/WeightTrackingScreen';
 import MissingFirebaseScreen from './src/screens/MissingFirebaseScreen';
 import { ONBOARDING_WIZARD_KEY } from './src/constants/storageKeys';
 import { colors } from './src/theme';
@@ -95,6 +96,7 @@ function AppNavigation() {
           initialParams={{ required: needsProfile }}
           options={({ route }) => ({ gestureEnabled: !route.params?.required })}
         />
+        <Stack.Screen name="WeightTracking" component={WeightTrackingScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

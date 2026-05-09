@@ -1,0 +1,36 @@
+EM Fit System - Phase 2 Expansion Quotation
+Project Expansion Overview
+This quotation covers the additional modules requested after Milestone 3 and before the final QA & publication phase. These additions expand the nutrition, tracking, and engagement capabilities of the application while maintaining the MVP architecture already implemented.
+Additional Modules
+Module 1 – Body Weight Tracking
+•	Weight logging
+•	Weight history
+•	Progress graph visualization
+Cost: $600 USD
+Duration: 3–4 days
+Module 2 – Calories & Macronutrient System
+•	Daily calorie calculations
+•	Macro targets
+•	Protein / Carbs / Fat tracking
+Cost: $900 USD
+Duration: 5–6 days
+Module 3 – Nutrition Dashboard
+•	Daily nutrition summary
+•	Macro progress tracking
+•	Goal visualization
+Cost: $700 USD
+Duration: 4–5 days
+Module 4 – Food Database & Meal Logging
+•	Basic food database
+•	Food search
+•	Meal logging system
+•	Nutritional storage
+Cost: $1,200 USD
+Duration: 6–7 days
+Module 5 – Exercise Videos & GIF Support
+Note: I can insert medias like video and gif files, but I can’t make medias myself.
+Total Expansion Cost & Timeline(exception module 5: media work)
+Total Cost: $3,400 USD
+Estimated Additional Timeline: 3 weeks
+Next Phase
+After completion of these modules, the project will proceed to the final QA, optimization, and App Store / Google Play publication phase.

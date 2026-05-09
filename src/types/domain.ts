@@ -48,3 +48,10 @@ export type HabitDayDoc = {
   waterGoalMl: number;
   updatedAt: Timestamp;
 };
+
+/** Single body-weight log (users/{uid}/weightEntries). */
+export type WeightEntryDoc = {
+  weightKg: number;
+  loggedAt: Timestamp;
+  note?: string;
+};

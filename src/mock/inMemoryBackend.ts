@@ -1,6 +1,6 @@
 import { Timestamp } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
-import type { HabitDayDoc, LoggedExercise, MoodValue, RoutineDoc, WorkoutDoc } from '../types/domain';
+import type { HabitDayDoc, LoggedExercise, MoodValue, RoutineDoc, WeightEntryDoc, WorkoutDoc } from '../types/domain';
 import type { SubscriptionFields, UserDocument, UserProfile, UserSettings } from '../types/firestoreUser';
 import { PREDEFINED_ROUTINES_SEED } from '../data/predefinedRoutinesSeed';
 import type { WorkoutDraftDoc } from '../services/workoutDraftRepo';
@@ -43,6 +43,8 @@ const routines = new Map<string, Map<string, RoutineDoc>>();
 const workouts = new Map<string, { id: string; data: WorkoutDoc }[]>();
 const habitDays = new Map<string, Map<string, HabitDayDoc>>();
 const drafts = new Map<string, WorkoutDraftDoc | null>();
+const weightEntries = new Map<string, { id: string; data: WeightEntryDoc }[]>();
+const weightListeners = new Map<string, Set<(rows: { id: string; data: WeightEntryDoc }[]) => void>>();
 
 const userDocListeners = new Map<string, Set<(d: UserDocument | null) => void>>();
 const routineListeners = new Map<string, Set<(rows: { id: string; data: RoutineDoc }[]) => void>>();
@@ -69,6 +71,33 @@ function seedRoutines(uid: string) {
     });
   }
   routines.set(uid, map);
+}
+
+function emitWeightEntries(uid: string) {
+  const rows = weightEntries.get(uid) ?? [];
+  weightListeners.get(uid)?.forEach((cb) => cb(rows));
+}
+
+function seedWeightEntries(uid: string) {
+  if (weightEntries.has(uid)) return;
+  const profileKg = userDocs.get(uid)?.profile?.weightKg ?? 75;
+  const arr: { id: string; data: WeightEntryDoc }[] = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i * 4);
+    const jitter = (i - 3) * 0.35;
+    const w = Math.round((profileKg + jitter) * 10) / 10;
+    arr.push({
+      id: `mock_we_${uid}_${i}`,
+      data: {
+        weightKg: w,
+        loggedAt: ts(d),
+      },
+    });
+  }
+  arr.sort((a, b) => b.data.loggedAt.toMillis() - a.data.loggedAt.toMillis());
+  weightEntries.set(uid, arr);
+  emitWeightEntries(uid);
 }
 
 function seedWorkouts(uid: string) {
@@ -103,6 +132,7 @@ export function ensureMockUser(uid: string, email: string, displayName: string |
   }
   seedRoutines(uid);
   seedWorkouts(uid);
+  seedWeightEntries(uid);
   notifyUser(uid);
   emitRoutines(uid);
 }
@@ -464,6 +494,49 @@ export async function mockSaveWorkoutDraft(uid: string, payload: WorkoutDraftDoc
 
 export async function mockClearWorkoutDraft(uid: string): Promise<void> {
   drafts.delete(uid);
+}
+
+export function mockSubscribeWeightEntries(
+  uid: string,
+  onUpdate: (rows: { id: string; data: WeightEntryDoc }[]) => void,
+): () => void {
+  seedWeightEntries(uid);
+  if (!weightListeners.has(uid)) weightListeners.set(uid, new Set());
+  weightListeners.get(uid)!.add(onUpdate);
+  onUpdate(weightEntries.get(uid) ?? []);
+  return () => weightListeners.get(uid)?.delete(onUpdate);
+}
+
+export async function mockAddWeightEntry(
+  uid: string,
+  input: { weightKg: number; loggedAt?: Date; note?: string },
+): Promise<string> {
+  seedWeightEntries(uid);
+  const when = input.loggedAt ?? new Date();
+  const id = `we_${Date.now()}`;
+  const row = {
+    id,
+    data: {
+      weightKg: input.weightKg,
+      loggedAt: ts(when),
+      ...(input.note?.trim() ? { note: input.note.trim() } : {}),
+    } as WeightEntryDoc,
+  };
+  const list = [...(weightEntries.get(uid) ?? []), row];
+  list.sort((a, b) => b.data.loggedAt.toMillis() - a.data.loggedAt.toMillis());
+  weightEntries.set(uid, list);
+  emitWeightEntries(uid);
+  return id;
+}
+
+export async function mockDeleteWeightEntry(uid: string, entryId: string): Promise<void> {
+  const list = weightEntries.get(uid);
+  if (!list) return;
+  weightEntries.set(
+    uid,
+    list.filter((x) => x.id !== entryId),
+  );
+  emitWeightEntries(uid);
 }
 
 /** Build a Firebase `User` object sufficient for the UI (mock mode only). */

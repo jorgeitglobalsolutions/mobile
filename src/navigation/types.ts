@@ -31,6 +31,7 @@ export type RootStackParamList = {
   WorkoutSessionDetail: { workoutId: string };
   Settings: undefined;
   BodyMetrics: { required?: boolean } | undefined;
+  WeightTracking: undefined;
 };
 
 export type RoutinesScreenProps<T extends keyof RoutinesStackParamList> = NativeStackScreenProps<

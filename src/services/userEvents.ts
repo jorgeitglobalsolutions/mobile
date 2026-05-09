@@ -12,7 +12,8 @@ export type UserEventType =
   | 'habit_water_updated'
   | 'habit_workout_completed'
   | 'habit_mood_updated'
-  | 'workout_saved';
+  | 'workout_saved'
+  | 'weight_logged';
 
 /**
  * Writes a lightweight audit/event record under users/{uid}/events.
