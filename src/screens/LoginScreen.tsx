@@ -40,7 +40,6 @@ export default function LoginScreen({ navigation }: Props) {
     setBusy(true);
     try {
       await signIn(email, password);
-      navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
     } catch (e: unknown) {
       Alert.alert('Sign in', friendlySignInError(e));
     } finally {

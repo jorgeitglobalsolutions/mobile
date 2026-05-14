@@ -54,7 +54,6 @@ export default function SignUpScreen({ navigation, route }: Props) {
     setBusy(true);
     try {
       await signUp(email, password, profile);
-      navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
     } catch (e: unknown) {
       Alert.alert('Create account', friendlySignUpError(e));
     } finally {

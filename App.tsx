@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, createNavigationContainerRef } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -25,9 +25,12 @@ import { colors } from './src/theme';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
+const navigationRef = createNavigationContainerRef<RootStackParamList>();
+
 function AppNavigation() {
-  const { firebaseReady, firebaseConfigured, user, userDoc, accessLevel } = useAuth();
+  const { firebaseReady, firebaseConfigured, user, userDoc, userDocHydrated, accessLevel } = useAuth();
   const [wizardDone, setWizardDone] = useState<boolean | null>(null);
+  const [navReady, setNavReady] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -41,6 +44,27 @@ function AppNavigation() {
     };
   }, []);
 
+  useEffect(() => {
+    if (user?.uid && !userDocHydrated) {
+      setNavReady(false);
+    }
+  }, [user?.uid, userDocHydrated]);
+
+  useEffect(() => {
+    if (!navReady || !firebaseReady || wizardDone === null) return;
+    if (!user?.uid || !userDocHydrated) return;
+    if (userDoc?.profile) return;
+    if (!navigationRef.isReady()) return;
+    const root = navigationRef.getRootState();
+    const idx = root?.index ?? 0;
+    const routeName = root?.routes[idx]?.name;
+    if (routeName === 'BodyMetrics') return;
+    navigationRef.reset({
+      index: 0,
+      routes: [{ name: 'BodyMetrics', params: { required: true } }],
+    });
+  }, [navReady, firebaseReady, wizardDone, user?.uid, userDocHydrated, userDoc]);
+
   if (!firebaseReady || wizardDone === null) {
     return (
       <View style={styles.boot}>
@@ -53,7 +77,16 @@ function AppNavigation() {
     return <MissingFirebaseScreen />;
   }
 
-  const needsProfile = Boolean(user && !userDoc?.profile);
+  // First Firestore snapshot for this uid — avoids wrong route (Main vs Body metrics) during load.
+  if (user?.uid && !userDocHydrated) {
+    return (
+      <View style={styles.boot}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
+  const needsProfile = Boolean(user && (!userDoc || !userDoc.profile));
   const initialRouteName: keyof RootStackParamList = user
     ? needsProfile
       ? 'BodyMetrics'
@@ -63,11 +96,11 @@ function AppNavigation() {
       : 'Onboarding';
 
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef} onReady={() => setNavReady(true)}>
       <Stack.Navigator
         screenOptions={{ headerShown: false }}
         initialRouteName={initialRouteName}
-        key={`${user?.uid ?? 'guest'}-${wizardDone ? 'w' : 'nw'}-${needsProfile ? 'np' : 'p'}`}
+        key={`${user?.uid ?? 'guest'}-${wizardDone ? 'w' : 'nw'}`}
       >
         <Stack.Screen name="Onboarding" component={OnboardingScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />

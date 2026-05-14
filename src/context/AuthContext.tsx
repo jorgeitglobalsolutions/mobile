@@ -29,6 +29,8 @@ type AuthContextValue = {
   useMockData: boolean;
   user: User | null;
   userDoc: UserDocument | null;
+  /** False while signed-in user's Firestore doc has not emitted its first snapshot for this session (uid). Always true when logged out. */
+  userDocHydrated: boolean;
   accessLevel: AccessLevel;
   subscriptionStatus: string;
   signIn: (email: string, password: string) => Promise<void>;
@@ -42,6 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [firebaseReady, setFirebaseReady] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [userDoc, setUserDoc] = useState<UserDocument | null>(null);
+  const [userDocHydrated, setUserDocHydrated] = useState(true);
   const pushRegisterUid = useRef<string | null>(null);
 
   const configured = useMemo(() => isFirebaseConfigured(getFirebasePublicConfig()), []);
@@ -67,13 +70,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!user) {
       setUserDoc(null);
+      setUserDocHydrated(true);
       return;
     }
+    setUserDocHydrated(false);
+    setUserDoc(null);
     let cancelled = false;
     let unsubDoc: (() => void) | undefined;
+    const applySnapshot = (d: UserDocument | null) => {
+      setUserDoc(d);
+      setUserDocHydrated(true);
+    };
     void (async () => {
       if (mockMode) {
-        unsubDoc = subscribeUserDocument(user.uid, setUserDoc);
+        unsubDoc = subscribeUserDocument(user.uid, applySnapshot);
         return;
       }
       try {
@@ -82,7 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // ignore; listener may still populate later
       }
       if (cancelled) return;
-      unsubDoc = subscribeUserDocument(user.uid, setUserDoc);
+      unsubDoc = subscribeUserDocument(user.uid, applySnapshot);
     })();
     return () => {
       cancelled = true;
@@ -114,7 +124,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const auth = getFirebaseAuth();
       if (!auth) throw new Error('Firebase is not configured');
       const cred = await signInWithEmailAndPassword(auth, email.trim(), password);
-      await trackUserEvent(cred.user.uid, 'auth_sign_in', { email: email.trim() });
+      try {
+        await trackUserEvent(cred.user.uid, 'auth_sign_in', { email: email.trim() });
+      } catch {
+        // Never block sign-in if audit logging fails (e.g. rules / network).
+      }
     },
     [],
   );
@@ -137,6 +151,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (isMockDataMode()) {
       setUser(null);
       setUserDoc(null);
+      setUserDocHydrated(true);
       return;
     }
     const auth = getFirebaseAuth();
@@ -168,13 +183,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       useMockData: mockMode,
       user,
       userDoc,
+      userDocHydrated,
       accessLevel: level,
       subscriptionStatus: status,
       signIn,
       signUp,
       signOutUser,
     };
-  }, [firebaseReady, dataLayerOk, mockMode, user, userDoc, signIn, signUp, signOutUser]);
+  }, [
+    firebaseReady,
+    dataLayerOk,
+    mockMode,
+    user,
+    userDoc,
+    userDocHydrated,
+    signIn,
+    signUp,
+    signOutUser,
+  ]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
