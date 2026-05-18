@@ -20,6 +20,7 @@ import SettingsScreen from './src/screens/SettingsScreen';
 import BodyMetricsScreen from './src/screens/BodyMetricsScreen';
 import WeightTrackingScreen from './src/screens/WeightTrackingScreen';
 import NutritionScreen from './src/screens/NutritionScreen';
+import NutritionDashboardScreen from './src/screens/NutritionDashboardScreen';
 import MissingFirebaseScreen from './src/screens/MissingFirebaseScreen';
 import { ONBOARDING_WIZARD_KEY } from './src/constants/storageKeys';
 import { colors } from './src/theme';
@@ -131,6 +132,7 @@ function AppNavigation() {
           options={({ route }) => ({ gestureEnabled: !route.params?.required })}
         />
         <Stack.Screen name="WeightTracking" component={WeightTrackingScreen} />
+        <Stack.Screen name="NutritionDashboard" component={NutritionDashboardScreen} />
         <Stack.Screen name="Nutrition" component={NutritionScreen} />
       </Stack.Navigator>
     </NavigationContainer>

@@ -18,17 +18,16 @@ import type { RootStackParamList } from '../navigation/types';
 import { colors, radius, spacing } from '../theme';
 import { useAuth } from '../context/AuthContext';
 import {
-  defaultHabitGoalsFromProfile,
   incrementCalories,
   incrementCarbs,
   incrementFat,
   incrementProtein,
   logMeal,
   removeMeal,
-  subscribeHabitDay,
 } from '../services/habitsRepo';
+import { useTodayNutrition } from '../hooks/useTodayNutrition';
 import { caloriesFromMacros } from '../services/nutritionTargets';
-import type { HabitDayDoc, MealEntry } from '../types/domain';
+import type { MealEntry } from '../types/domain';
 import { localDateKey } from '../utils/dateKey';
 import { friendlyAppError } from '../utils/appError';
 import MacroRing from '../components/MacroRing';
@@ -49,7 +48,7 @@ function formatTime(ms: number): string {
 
 export default function NutritionScreen({ navigation }: Props) {
   const { user, userDoc } = useAuth();
-  const [habitDay, setHabitDay] = useState<HabitDayDoc | null>(null);
+  const { habitDay, defaults, snapshot } = useTodayNutrition(user?.uid, userDoc?.profile ?? null);
   const [busy, setBusy] = useState(false);
   const [saving, setSaving] = useState(false);
   const [mealName, setMealName] = useState('');
@@ -57,36 +56,18 @@ export default function NutritionScreen({ navigation }: Props) {
   const [mealCarbs, setMealCarbs] = useState('');
   const [mealFat, setMealFat] = useState('');
 
-  const defaults = useMemo(
-    () => defaultHabitGoalsFromProfile(userDoc?.profile ?? null),
-    [userDoc?.profile?.goal, userDoc?.profile?.weightKg, userDoc?.profile?.heightCm],
-  );
-
-  useEffect(() => {
-    if (!user?.uid) {
-      setHabitDay(null);
-      return;
-    }
-    const date = localDateKey();
-    const unsub = subscribeHabitDay(user.uid, date, defaults, setHabitDay);
-    return () => unsub();
-  }, [
-    user?.uid,
-    defaults.proteinGoalG,
-    defaults.waterGoalMl,
-    defaults.caloriesGoalKcal,
-    defaults.carbsGoalG,
-    defaults.fatGoalG,
-  ]);
-
-  const caloriesCur = habitDay?.caloriesKcal ?? 0;
-  const caloriesGoal = habitDay?.caloriesGoalKcal || defaults.caloriesGoalKcal;
-  const proteinCur = habitDay?.proteinG ?? 0;
-  const proteinGoal = habitDay?.proteinGoalG || defaults.proteinGoalG;
-  const carbsCur = habitDay?.carbsG ?? 0;
-  const carbsGoal = habitDay?.carbsGoalG || defaults.carbsGoalG;
-  const fatCur = habitDay?.fatG ?? 0;
-  const fatGoal = habitDay?.fatGoalG || defaults.fatGoalG;
+  const {
+    caloriesCur,
+    caloriesGoal,
+    proteinCur,
+    proteinGoal,
+    carbsCur,
+    carbsGoal,
+    fatCur,
+    fatGoal,
+    caloriesRemaining,
+    caloriesOver,
+  } = snapshot;
 
   const meals = useMemo(() => {
     const list = habitDay?.meals ?? [];
@@ -188,9 +169,6 @@ export default function NutritionScreen({ navigation }: Props) {
     );
   }
 
-  const caloriesRemaining = Math.max(0, Math.round(caloriesGoal - caloriesCur));
-  const caloriesOver = Math.max(0, Math.round(caloriesCur - caloriesGoal));
-
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <KeyboardAvoidingView
@@ -202,8 +180,10 @@ export default function NutritionScreen({ navigation }: Props) {
           <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={12}>
             <Ionicons name="chevron-back" size={26} color={colors.text} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Nutrition</Text>
-          <View style={{ width: 26 }} />
+          <Text style={styles.headerTitle}>Log food</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('NutritionDashboard')} hitSlop={12}>
+            <Ionicons name="pie-chart-outline" size={24} color={colors.primary} />
+          </TouchableOpacity>
         </View>
 
         <ScrollView
@@ -211,6 +191,16 @@ export default function NutritionScreen({ navigation }: Props) {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
+          <TouchableOpacity
+            style={styles.dashLink}
+            activeOpacity={0.85}
+            onPress={() => navigation.navigate('NutritionDashboard')}
+          >
+            <Ionicons name="stats-chart-outline" size={18} color={colors.primary} />
+            <Text style={styles.dashLinkText}>View nutrition dashboard</Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} style={{ marginLeft: 'auto' }} />
+          </TouchableOpacity>
+
           <View style={styles.kcalCard}>
             <View style={{ flex: 1 }}>
               <Text style={styles.kcalLabel}>Calories today</Text>
@@ -436,6 +426,16 @@ const styles = StyleSheet.create({
   },
   headerTitle: { fontSize: 18, fontWeight: '800', color: colors.text },
   scroll: { paddingHorizontal: spacing.xl, paddingBottom: 24 },
+  dashLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primarySoft,
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+    gap: spacing.sm,
+  },
+  dashLinkText: { fontSize: 14, fontWeight: '700', color: colors.primary },
   kcalCard: {
     backgroundColor: colors.white,
     borderRadius: radius.lg,

@@ -32,6 +32,7 @@ export type RootStackParamList = {
   Settings: undefined;
   BodyMetrics: { required?: boolean } | undefined;
   WeightTracking: undefined;
+  NutritionDashboard: undefined;
   Nutrition: undefined;
 };
 

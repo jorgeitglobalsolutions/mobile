@@ -118,10 +118,20 @@ export default function ProfileScreen() {
         <TouchableOpacity
           style={styles.row}
           activeOpacity={0.85}
+          onPress={() => navigation.navigate('NutritionDashboard')}
+        >
+          <Ionicons name="pie-chart-outline" size={22} color={colors.text} />
+          <Text style={styles.rowLabel}>Nutrition dashboard</Text>
+          <Ionicons name="chevron-forward" size={20} color={colors.textMuted} style={{ marginLeft: 'auto' }} />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.row}
+          activeOpacity={0.85}
           onPress={() => navigation.navigate('Nutrition')}
         >
           <Ionicons name="nutrition-outline" size={22} color={colors.text} />
-          <Text style={styles.rowLabel}>Nutrition</Text>
+          <Text style={styles.rowLabel}>Log food</Text>
           <Ionicons name="chevron-forward" size={20} color={colors.textMuted} style={{ marginLeft: 'auto' }} />
         </TouchableOpacity>
 

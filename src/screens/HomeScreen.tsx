@@ -110,6 +110,12 @@ export default function HomeScreen() {
   const caloriesCur = habitDay?.caloriesKcal ?? 0;
   const caloriesGoal = habitDay?.caloriesGoalKcal || habitDefaults.caloriesGoalKcal;
   const caloriesPct = caloriesGoal > 0 ? Math.min(1, caloriesCur / caloriesGoal) : 0;
+  const carbsCur = habitDay?.carbsG ?? 0;
+  const carbsGoal = habitDay?.carbsGoalG || habitDefaults.carbsGoalG;
+  const carbsPct = carbsGoal > 0 ? Math.min(1, carbsCur / carbsGoal) : 0;
+  const fatCur = habitDay?.fatG ?? 0;
+  const fatGoal = habitDay?.fatGoalG || habitDefaults.fatGoalG;
+  const fatPct = fatGoal > 0 ? Math.min(1, fatCur / fatGoal) : 0;
 
   const proteinDone = proteinCur >= proteinGoal;
   const waterDone = waterCur >= waterGoalMl;
@@ -224,7 +230,7 @@ export default function HomeScreen() {
             label="Nutrition"
             color={colors.orange}
             disabled={busy}
-            onPress={() => rootNavigation.navigate('Nutrition')}
+            onPress={() => rootNavigation.navigate('NutritionDashboard')}
           />
           <QuickAction
             icon="water"
@@ -244,7 +250,7 @@ export default function HomeScreen() {
         <View style={styles.progressCard}>
           <TouchableOpacity
             activeOpacity={0.85}
-            onPress={() => rootNavigation.navigate('Nutrition')}
+            onPress={() => rootNavigation.navigate('NutritionDashboard')}
           >
             <ProgressRow
               icon="flame"
@@ -255,6 +261,24 @@ export default function HomeScreen() {
           </TouchableOpacity>
           <View style={{ height: spacing.lg }} />
           <ProgressRow icon="nutrition" label="Protein" value={proteinDisplay} pct={proteinPct} />
+          <View style={{ height: spacing.lg }} />
+          <TouchableOpacity activeOpacity={0.85} onPress={() => rootNavigation.navigate('NutritionDashboard')}>
+            <ProgressRow
+              icon="leaf"
+              label="Carbs"
+              value={`${Math.round(carbsCur)} / ${Math.round(carbsGoal)} g`}
+              pct={carbsPct}
+            />
+          </TouchableOpacity>
+          <View style={{ height: spacing.lg }} />
+          <TouchableOpacity activeOpacity={0.85} onPress={() => rootNavigation.navigate('NutritionDashboard')}>
+            <ProgressRow
+              icon="water"
+              label="Fat"
+              value={`${Math.round(fatCur)} / ${Math.round(fatGoal)} g`}
+              pct={fatPct}
+            />
+          </TouchableOpacity>
           <View style={{ height: spacing.lg }} />
           <ProgressRow icon="water" label="Water" value={waterDisplay} pct={waterPct} />
         </View>
