@@ -7,6 +7,7 @@ import type { RootStackParamList } from '../navigation/types';
 import { useAuth } from '../context/AuthContext';
 import { callGrantDevSubscription } from '../services/grantDevSubscription';
 import { purchaseEmFitSubscription, restoreSubscriptionsAndVerify } from '../services/nativeSubscriptionPurchase';
+import { isExpoGo, canUseNativeInAppPurchases } from '../config/expoRuntime';
 import { getLegalUrls, subscriptionManageUrl } from '../config/legalLinks';
 import { colors, radius, spacing } from '../theme';
 import { friendlyAppError, friendlyPurchaseError } from '../utils/appError';
@@ -37,10 +38,13 @@ const FEATURES = [
 ];
 
 export default function PaywallScreen({ navigation }: Props) {
-  const { user, useMockData, accessLevel } = useAuth();
+  const { user, useMockData, accessLevel, grantDevAccessLocally } = useAuth();
   const [plan, setPlan] = useState<'month' | 'year'>('month');
   const [busy, setBusy] = useState(false);
   const legal = getLegalUrls();
+  const expoGo = isExpoGo();
+  const nativeIap = canUseNativeInAppPurchases();
+  const showDevUnlock = __DEV__ && !useMockData;
 
   const openUrl = async (url: string) => {
     try {
@@ -57,17 +61,42 @@ export default function PaywallScreen({ navigation }: Props) {
       Alert.alert('Session expired', 'Please sign in again to continue.');
       return;
     }
-    setBusy(true);
-    try {
-      if (useMockData) {
+    if (useMockData) {
+      setBusy(true);
+      try {
         await callGrantDevSubscription(user.uid);
         navigation.goBack();
-        return;
+      } catch (e: unknown) {
+        Alert.alert('Subscription', friendlyAppError(e, 'Could not unlock subscription.'));
+      } finally {
+        setBusy(false);
       }
+      return;
+    }
+    if (expoGo && showDevUnlock) {
+      await onQaGrantSubscription();
+      return;
+    }
+    setBusy(true);
+    try {
       await purchaseEmFitSubscription(plan);
       navigation.goBack();
     } catch (e: unknown) {
       Alert.alert('Subscription', friendlyPurchaseError(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const onLocalDevUnlock = async () => {
+    setBusy(true);
+    try {
+      await grantDevAccessLocally();
+      Alert.alert(
+        'Dev unlock',
+        'Premium access is enabled on this device for development. Sign out clears this override. Firestore subscription is unchanged.',
+      );
+      navigation.goBack();
     } finally {
       setBusy(false);
     }
@@ -81,13 +110,17 @@ export default function PaywallScreen({ navigation }: Props) {
     setBusy(true);
     try {
       await callGrantDevSubscription(user.uid);
-      Alert.alert(
-        'QA unlock',
-        'Uses Cloud Function grantDevSubscription. Enable ALLOW_DEV_SUBSCRIPTION on that function (or use the emulator).',
-      );
       navigation.goBack();
     } catch (e: unknown) {
-      Alert.alert('QA unlock', friendlyAppError(e, 'Could not unlock subscription for QA.'));
+      const msg = friendlyAppError(e, 'Could not unlock subscription for QA.');
+      if (showDevUnlock) {
+        Alert.alert('QA unlock', `${msg}\n\nYou can still unlock on this device for UI testing.`, [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Unlock on device', onPress: () => void onLocalDevUnlock() },
+        ]);
+      } else {
+        Alert.alert('QA unlock', msg);
+      }
     } finally {
       setBusy(false);
     }
@@ -149,6 +182,16 @@ export default function PaywallScreen({ navigation }: Props) {
           </View>
         </View>
 
+        {expoGo && showDevUnlock ? (
+          <View style={styles.expoBanner}>
+            <Ionicons name="information-circle-outline" size={20} color={colors.paywallPurple} />
+            <Text style={styles.expoBannerText}>
+              You are in Expo Go. Real App Store purchases need a development or store build. Use the button below to
+              unlock for testing.
+            </Text>
+          </View>
+        ) : null}
+
         {FEATURES.map((f) => (
           <View key={f.title} style={styles.featureRow}>
             <View style={styles.featureIcon}>
@@ -204,10 +247,16 @@ export default function PaywallScreen({ navigation }: Props) {
         <TouchableOpacity
           style={[styles.cta, busy && { opacity: 0.75 }]}
           activeOpacity={0.9}
-          onPress={onSubscribe}
+          onPress={() => void onSubscribe()}
           disabled={busy}
         >
-          <Text style={styles.ctaText}>{busy ? 'Processing…' : 'Start 7-Day Free Trial'}</Text>
+          <Text style={styles.ctaText}>
+            {busy
+              ? 'Processing…'
+              : expoGo && showDevUnlock
+                ? 'Unlock for testing'
+                : 'Start 7-Day Free Trial'}
+          </Text>
         </TouchableOpacity>
         <View style={styles.lockRow}>
           <Ionicons name="lock-closed-outline" size={14} color={colors.textMuted} style={{ marginRight: 6 }} />
@@ -218,18 +267,29 @@ export default function PaywallScreen({ navigation }: Props) {
           <Text style={styles.secondaryBtnText}>Manage subscription (App Store / Play)</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.secondaryBtn} onPress={onRestore} disabled={busy}>
-          <Text style={styles.secondaryBtnText}>Restore purchase</Text>
-        </TouchableOpacity>
-
-        {__DEV__ && !useMockData ? (
-          <TouchableOpacity
-            style={styles.secondaryBtn}
-            onPress={() => void onQaGrantSubscription()}
-            disabled={busy}
-          >
-            <Text style={[styles.secondaryBtnText, styles.qaHint]}>QA: unlock without store (requires backend)</Text>
+        {nativeIap ? (
+          <TouchableOpacity style={styles.secondaryBtn} onPress={() => void onRestore()} disabled={busy}>
+            <Text style={styles.secondaryBtnText}>Restore purchase</Text>
           </TouchableOpacity>
+        ) : null}
+
+        {showDevUnlock ? (
+          <>
+            <TouchableOpacity
+              style={styles.secondaryBtn}
+              onPress={() => void onQaGrantSubscription()}
+              disabled={busy}
+            >
+              <Text style={styles.secondaryBtnText}>QA unlock via Firebase (backend)</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.secondaryBtn}
+              onPress={() => void onLocalDevUnlock()}
+              disabled={busy}
+            >
+              <Text style={[styles.secondaryBtnText, styles.qaHint]}>Unlock on this device only (no store)</Text>
+            </TouchableOpacity>
+          </>
         ) : null}
 
         <View style={styles.trustRow}>
@@ -291,6 +351,18 @@ const styles = StyleSheet.create({
   },
   trialTitle: { fontSize: 16, fontWeight: '800', color: colors.paywallPurple },
   trialSub: { fontSize: 13, color: colors.textSecondary, marginTop: 2 },
+  expoBanner: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.sm,
+    backgroundColor: colors.paywallSoft,
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    marginBottom: spacing.lg,
+    borderWidth: 1,
+    borderColor: colors.paywallPurple + '44',
+  },
+  expoBannerText: { flex: 1, fontSize: 13, color: colors.textSecondary, lineHeight: 19 },
   featureRow: { flexDirection: 'row', marginBottom: spacing.lg },
   featureIcon: {
     width: 40,

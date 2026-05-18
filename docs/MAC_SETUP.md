@@ -121,6 +121,20 @@ npm run firebase:deploy
 
 Ensure **`firebase/.firebaserc`** targets the correct project ID.
 
+### QA subscription unlock (Paywall testing)
+
+The repo includes **`firebase/functions/.env.em-fit-system-c0d3d`** with `ALLOW_DEV_SUBSCRIPTION=true`. That enables the callable **`grantDevSubscription`** used by the paywall **QA unlock via Firebase** button.
+
+After changing Functions env, redeploy:
+
+```bash
+npm run firebase:deploy
+```
+
+In **Expo Go**, use **Unlock for testing** or **QA unlock via Firebase**. For UI-only testing without backend, use **Unlock on this device only**.
+
+Remove or set `ALLOW_DEV_SUBSCRIPTION=false` before a production App Store release (see `docs/PRODUCTION_CHECKLIST.md`).
+
 ---
 
 ## 9. What behaves differently on iOS vs Simulator

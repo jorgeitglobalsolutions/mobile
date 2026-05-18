@@ -1,6 +1,7 @@
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import * as IAP from 'expo-iap';
+import { isExpoGo } from '../config/expoRuntime';
 import type { Purchase } from 'expo-iap';
 import { isMockDataMode } from '../config/mockMode';
 import { mockGrantActiveSubscription, MOCK_UID } from '../mock/inMemoryBackend';
@@ -11,8 +12,6 @@ function extraString(key: string, fallback: string): string {
   const v = extra[key];
   return typeof v === 'string' && v.length > 0 ? v : fallback;
 }
-
-const isExpoGo = Constants.appOwnership === 'expo';
 
 function listenForPurchase(sku: string, timeoutMs: number): Promise<Purchase> {
   return new Promise((resolve, reject) => {
@@ -53,7 +52,7 @@ export async function purchaseEmFitSubscription(plan: 'month' | 'year'): Promise
     mockGrantActiveSubscription(MOCK_UID);
     return;
   }
-  if (isExpoGo) {
+  if (isExpoGo()) {
     throw new Error('In-app purchases need a development or store build (Expo Go does not include native IAP).');
   }
 
@@ -98,7 +97,7 @@ export async function restoreSubscriptionsAndVerify(): Promise<void> {
     mockGrantActiveSubscription(MOCK_UID);
     return;
   }
-  if (isExpoGo) {
+  if (isExpoGo()) {
     throw new Error('In-app purchases need a development or store build (Expo Go does not include native IAP).');
   }
   await IAP.initConnection();

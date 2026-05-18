@@ -19,6 +19,7 @@ import {
 import { registerForPushNotificationsAsync } from '../services/notifications';
 import type { UserDocument, UserProfile } from '../types/firestoreUser';
 import { trackUserEvent } from '../services/userEvents';
+import { getDevSubscriptionOverride, setDevSubscriptionOverride } from '../services/devSubscriptionOverride';
 
 type AccessLevel = ReturnType<typeof computeAccessLevel>['level'];
 
@@ -36,6 +37,9 @@ type AuthContextValue = {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, profile: UserProfile | null) => Promise<void>;
   signOutUser: () => Promise<void>;
+  /** Dev-only: unlock paywall locally when Expo Go / backend grant is unavailable. */
+  grantDevAccessLocally: () => Promise<void>;
+  devSubscriptionOverride: boolean;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -45,6 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [userDoc, setUserDoc] = useState<UserDocument | null>(null);
   const [userDocHydrated, setUserDocHydrated] = useState(true);
+  const [devSubscriptionOverride, setDevSubOverride] = useState(false);
   const pushRegisterUid = useRef<string | null>(null);
 
   const configured = useMemo(() => isFirebaseConfigured(getFirebasePublicConfig()), []);
@@ -101,6 +106,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user?.uid, mockMode]);
 
   useEffect(() => {
+    if (!__DEV__) {
+      setDevSubOverride(false);
+      return;
+    }
+    let cancelled = false;
+    void getDevSubscriptionOverride().then((on) => {
+      if (!cancelled) setDevSubOverride(on);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.uid]);
+
+  useEffect(() => {
     if (!user?.uid) {
       pushRegisterUid.current = null;
       return;
@@ -147,11 +166,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await createUserDocument(cred.user, profile);
   }, []);
 
+  const grantDevAccessLocally = useCallback(async () => {
+    if (!__DEV__) return;
+    await setDevSubscriptionOverride(true);
+    setDevSubOverride(true);
+  }, []);
+
   const signOutUser = useCallback(async () => {
     if (isMockDataMode()) {
       setUser(null);
       setUserDoc(null);
       setUserDocHydrated(true);
+      setDevSubOverride(false);
       return;
     }
     const auth = getFirebaseAuth();
@@ -159,6 +185,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (user?.uid) {
       await trackUserEvent(user.uid, 'auth_sign_out');
     }
+    await setDevSubscriptionOverride(false);
+    setDevSubOverride(false);
     await signOut(auth);
   }, [user?.uid]);
 
@@ -177,6 +205,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       level = r.level;
       status = r.status;
     }
+    if (__DEV__ && devSubscriptionOverride && user) {
+      level = 'full';
+      status = 'dev_override';
+    }
     return {
       firebaseReady,
       firebaseConfigured: dataLayerOk,
@@ -189,6 +221,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signIn,
       signUp,
       signOutUser,
+      grantDevAccessLocally,
+      devSubscriptionOverride,
     };
   }, [
     firebaseReady,
@@ -197,9 +231,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user,
     userDoc,
     userDocHydrated,
+    devSubscriptionOverride,
     signIn,
     signUp,
     signOutUser,
+    grantDevAccessLocally,
   ]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
