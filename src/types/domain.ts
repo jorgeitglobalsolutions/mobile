@@ -46,7 +46,28 @@ export type HabitDayDoc = {
   mood?: MoodValue | null;
   proteinGoalG: number;
   waterGoalMl: number;
+  /** Optional macro / calorie tracking (Phase 2 Module 2). Treated as 0 when absent. */
+  caloriesKcal?: number;
+  carbsG?: number;
+  fatG?: number;
+  caloriesGoalKcal?: number;
+  carbsGoalG?: number;
+  fatGoalG?: number;
+  /** Light meal log so we keep simple history without a full food DB. */
+  meals?: MealEntry[];
   updatedAt: Timestamp;
+};
+
+export type MealEntry = {
+  id: string;
+  /** Optional descriptive name like "Chicken bowl". */
+  name?: string;
+  caloriesKcal: number;
+  proteinG: number;
+  carbsG: number;
+  fatG: number;
+  /** ms epoch — small and lets us sort without Firestore timestamps inside arrays. */
+  loggedAtMs: number;
 };
 
 /** Single body-weight log (users/{uid}/weightEntries). */

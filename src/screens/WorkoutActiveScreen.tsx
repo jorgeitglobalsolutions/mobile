@@ -18,7 +18,7 @@ import { useAuth } from '../context/AuthContext';
 import { getRoutine, routineToWorkoutBlocks, saveUserRoutine } from '../services/routinesRepo';
 import { saveWorkoutSession } from '../services/workoutsRepo';
 import { clearWorkoutDraft, getWorkoutDraft, saveWorkoutDraft } from '../services/workoutDraftRepo';
-import { defaultGoalsFromProfile, setWorkoutCompleted } from '../services/habitsRepo';
+import { defaultHabitGoalsFromProfile, setWorkoutCompleted } from '../services/habitsRepo';
 import { localDateKey } from '../utils/dateKey';
 import type { LoggedExercise, RoutineDoc } from '../types/domain';
 import { friendlyAppError } from '../utils/appError';
@@ -195,11 +195,8 @@ export default function WorkoutActiveScreen({ navigation, route }: Props) {
           sets: ex.sets.filter((s) => rowHasInput(s)),
         })),
       });
-      const defs = defaultGoalsFromProfile(userDoc?.profile?.weightKg, userDoc?.profile?.goal);
-      await setWorkoutCompleted(user.uid, localDateKey(), true, {
-        proteinGoalG: defs.proteinG,
-        waterGoalMl: defs.waterMl,
-      });
+      const defs = defaultHabitGoalsFromProfile(userDoc?.profile ?? null);
+      await setWorkoutCompleted(user.uid, localDateKey(), true, defs);
       await clearWorkoutDraft(user.uid);
       navigation.popToTop();
     } catch (e: unknown) {

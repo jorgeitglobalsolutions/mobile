@@ -32,6 +32,7 @@ export type RootStackParamList = {
   Settings: undefined;
   BodyMetrics: { required?: boolean } | undefined;
   WeightTracking: undefined;
+  Nutrition: undefined;
 };
 
 export type RoutinesScreenProps<T extends keyof RoutinesStackParamList> = NativeStackScreenProps<

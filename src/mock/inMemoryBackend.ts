@@ -1,6 +1,6 @@
 import { Timestamp } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
-import type { HabitDayDoc, LoggedExercise, MoodValue, RoutineDoc, WeightEntryDoc, WorkoutDoc } from '../types/domain';
+import type { HabitDayDoc, LoggedExercise, MealEntry, MoodValue, RoutineDoc, WeightEntryDoc, WorkoutDoc } from '../types/domain';
 import type { SubscriptionFields, UserDocument, UserProfile, UserSettings } from '../types/firestoreUser';
 import { PREDEFINED_ROUTINES_SEED } from '../data/predefinedRoutinesSeed';
 import type { WorkoutDraftDoc } from '../services/workoutDraftRepo';
@@ -339,24 +339,53 @@ function emitHabit(uid: string, date: string) {
   habitListeners.get(key)?.forEach((fn) => fn(d));
 }
 
+export type MockHabitDefaults = {
+  proteinGoalG: number;
+  waterGoalMl: number;
+  caloriesGoalKcal?: number;
+  carbsGoalG?: number;
+  fatGoalG?: number;
+};
+
+function blankHabitDay(date: string, defaults: MockHabitDefaults): HabitDayDoc {
+  return {
+    date,
+    proteinG: 0,
+    waterMl: 0,
+    caloriesKcal: 0,
+    carbsG: 0,
+    fatG: 0,
+    workoutCompleted: false,
+    mood: null,
+    proteinGoalG: defaults.proteinGoalG,
+    waterGoalMl: defaults.waterGoalMl,
+    caloriesGoalKcal: defaults.caloriesGoalKcal ?? 0,
+    carbsGoalG: defaults.carbsGoalG ?? 0,
+    fatGoalG: defaults.fatGoalG ?? 0,
+    meals: [],
+    updatedAt: ts(),
+  };
+}
+
+function applyGoalDefaults(cur: HabitDayDoc, defaults: MockHabitDefaults): Partial<HabitDayDoc> {
+  return {
+    proteinGoalG: cur.proteinGoalG || defaults.proteinGoalG,
+    waterGoalMl: cur.waterGoalMl || defaults.waterGoalMl,
+    caloriesGoalKcal: cur.caloriesGoalKcal || defaults.caloriesGoalKcal || 0,
+    carbsGoalG: cur.carbsGoalG || defaults.carbsGoalG || 0,
+    fatGoalG: cur.fatGoalG || defaults.fatGoalG || 0,
+  };
+}
+
 export async function mockGetOrCreateHabitDay(
   uid: string,
   date: string,
-  defaults: { proteinGoalG: number; waterGoalMl: number },
+  defaults: MockHabitDefaults,
 ): Promise<HabitDayDoc> {
   const map = getHabitMap(uid);
   let d = map.get(date);
   if (!d) {
-    d = {
-      date,
-      proteinG: 0,
-      waterMl: 0,
-      workoutCompleted: false,
-      mood: null,
-      proteinGoalG: defaults.proteinGoalG,
-      waterGoalMl: defaults.waterGoalMl,
-      updatedAt: ts(),
-    };
+    d = blankHabitDay(date, defaults);
     map.set(date, d);
     emitHabit(uid, date);
   }
@@ -366,7 +395,7 @@ export async function mockGetOrCreateHabitDay(
 export function mockSubscribeHabitDay(
   uid: string,
   date: string,
-  defaults: { proteinGoalG: number; waterGoalMl: number },
+  defaults: MockHabitDefaults,
   onData: (d: HabitDayDoc | null) => void,
 ): () => void {
   const key = habitKey(uid, date);
@@ -375,65 +404,103 @@ export function mockSubscribeHabitDay(
   const map = getHabitMap(uid);
   let doc = map.get(date);
   if (!doc) {
-    doc = {
-      date,
-      proteinG: 0,
-      waterMl: 0,
-      workoutCompleted: false,
-      mood: null,
-      proteinGoalG: defaults.proteinGoalG,
-      waterGoalMl: defaults.waterGoalMl,
-      updatedAt: ts(),
-    };
+    doc = blankHabitDay(date, defaults);
     map.set(date, doc);
   }
   onData(doc);
   return () => habitListeners.get(key)?.delete(onData);
 }
 
-export async function mockIncrementProtein(uid: string, date: string, deltaG: number, defaults: { proteinGoalG: number; waterGoalMl: number }) {
+export async function mockIncrementProtein(uid: string, date: string, deltaG: number, defaults: MockHabitDefaults) {
   const map = getHabitMap(uid);
-  const cur =
-    map.get(date) ??
-    ({
-      date,
-      proteinG: 0,
-      waterMl: 0,
-      workoutCompleted: false,
-      mood: null,
-      proteinGoalG: defaults.proteinGoalG,
-      waterGoalMl: defaults.waterGoalMl,
-      updatedAt: ts(),
-    } as HabitDayDoc);
+  const cur = map.get(date) ?? blankHabitDay(date, defaults);
   map.set(date, {
     ...cur,
-    proteinG: Math.max(0, cur.proteinG + deltaG),
-    proteinGoalG: cur.proteinGoalG || defaults.proteinGoalG,
-    waterGoalMl: cur.waterGoalMl || defaults.waterGoalMl,
+    proteinG: Math.max(0, (cur.proteinG ?? 0) + deltaG),
+    ...applyGoalDefaults(cur, defaults),
     updatedAt: ts(),
   });
   emitHabit(uid, date);
 }
 
-export async function mockIncrementWater(uid: string, date: string, deltaMl: number, defaults: { proteinGoalG: number; waterGoalMl: number }) {
+export async function mockIncrementCarbs(uid: string, date: string, deltaG: number, defaults: MockHabitDefaults) {
   const map = getHabitMap(uid);
-  const cur =
-    map.get(date) ??
-    ({
-      date,
-      proteinG: 0,
-      waterMl: 0,
-      workoutCompleted: false,
-      mood: null,
-      proteinGoalG: defaults.proteinGoalG,
-      waterGoalMl: defaults.waterGoalMl,
-      updatedAt: ts(),
-    } as HabitDayDoc);
+  const cur = map.get(date) ?? blankHabitDay(date, defaults);
   map.set(date, {
     ...cur,
-    waterMl: Math.max(0, cur.waterMl + deltaMl),
-    proteinGoalG: cur.proteinGoalG || defaults.proteinGoalG,
-    waterGoalMl: cur.waterGoalMl || defaults.waterGoalMl,
+    carbsG: Math.max(0, (cur.carbsG ?? 0) + deltaG),
+    ...applyGoalDefaults(cur, defaults),
+    updatedAt: ts(),
+  });
+  emitHabit(uid, date);
+}
+
+export async function mockIncrementFat(uid: string, date: string, deltaG: number, defaults: MockHabitDefaults) {
+  const map = getHabitMap(uid);
+  const cur = map.get(date) ?? blankHabitDay(date, defaults);
+  map.set(date, {
+    ...cur,
+    fatG: Math.max(0, (cur.fatG ?? 0) + deltaG),
+    ...applyGoalDefaults(cur, defaults),
+    updatedAt: ts(),
+  });
+  emitHabit(uid, date);
+}
+
+export async function mockIncrementCalories(uid: string, date: string, deltaKcal: number, defaults: MockHabitDefaults) {
+  const map = getHabitMap(uid);
+  const cur = map.get(date) ?? blankHabitDay(date, defaults);
+  map.set(date, {
+    ...cur,
+    caloriesKcal: Math.max(0, (cur.caloriesKcal ?? 0) + deltaKcal),
+    ...applyGoalDefaults(cur, defaults),
+    updatedAt: ts(),
+  });
+  emitHabit(uid, date);
+}
+
+export async function mockIncrementWater(uid: string, date: string, deltaMl: number, defaults: MockHabitDefaults) {
+  const map = getHabitMap(uid);
+  const cur = map.get(date) ?? blankHabitDay(date, defaults);
+  map.set(date, {
+    ...cur,
+    waterMl: Math.max(0, (cur.waterMl ?? 0) + deltaMl),
+    ...applyGoalDefaults(cur, defaults),
+    updatedAt: ts(),
+  });
+  emitHabit(uid, date);
+}
+
+export async function mockAppendMeal(uid: string, date: string, entry: MealEntry, defaults: MockHabitDefaults) {
+  const map = getHabitMap(uid);
+  const cur = map.get(date) ?? blankHabitDay(date, defaults);
+  map.set(date, {
+    ...cur,
+    meals: [...(cur.meals ?? []), entry],
+    proteinG: Math.max(0, (cur.proteinG ?? 0) + entry.proteinG),
+    carbsG: Math.max(0, (cur.carbsG ?? 0) + entry.carbsG),
+    fatG: Math.max(0, (cur.fatG ?? 0) + entry.fatG),
+    caloriesKcal: Math.max(0, (cur.caloriesKcal ?? 0) + entry.caloriesKcal),
+    ...applyGoalDefaults(cur, defaults),
+    updatedAt: ts(),
+  });
+  emitHabit(uid, date);
+}
+
+export async function mockRemoveMeal(uid: string, date: string, mealId: string, defaults: MockHabitDefaults) {
+  const map = getHabitMap(uid);
+  const cur = map.get(date);
+  if (!cur) return;
+  const existing = (cur.meals ?? []).find((m) => m.id === mealId);
+  if (!existing) return;
+  map.set(date, {
+    ...cur,
+    meals: (cur.meals ?? []).filter((m) => m.id !== mealId),
+    proteinG: Math.max(0, (cur.proteinG ?? 0) - existing.proteinG),
+    carbsG: Math.max(0, (cur.carbsG ?? 0) - existing.carbsG),
+    fatG: Math.max(0, (cur.fatG ?? 0) - existing.fatG),
+    caloriesKcal: Math.max(0, (cur.caloriesKcal ?? 0) - existing.caloriesKcal),
+    ...applyGoalDefaults(cur, defaults),
     updatedAt: ts(),
   });
   emitHabit(uid, date);
@@ -443,41 +510,23 @@ export async function mockSetWorkoutCompleted(
   uid: string,
   date: string,
   completed: boolean,
-  defaults: { proteinGoalG: number; waterGoalMl: number },
+  defaults: MockHabitDefaults,
 ) {
   const map = getHabitMap(uid);
   const cur = map.get(date);
   if (!cur) {
-    map.set(date, {
-      date,
-      proteinG: 0,
-      waterMl: 0,
-      workoutCompleted: completed,
-      mood: null,
-      proteinGoalG: defaults.proteinGoalG,
-      waterGoalMl: defaults.waterGoalMl,
-      updatedAt: ts(),
-    });
+    map.set(date, { ...blankHabitDay(date, defaults), workoutCompleted: completed });
   } else {
     map.set(date, { ...cur, workoutCompleted: completed, updatedAt: ts() });
   }
   emitHabit(uid, date);
 }
 
-export async function mockSetMood(uid: string, date: string, mood: MoodValue | null, defaults: { proteinGoalG: number; waterGoalMl: number }) {
+export async function mockSetMood(uid: string, date: string, mood: MoodValue | null, defaults: MockHabitDefaults) {
   const map = getHabitMap(uid);
   const cur = map.get(date);
   if (!cur) {
-    map.set(date, {
-      date,
-      proteinG: 0,
-      waterMl: 0,
-      workoutCompleted: false,
-      mood,
-      proteinGoalG: defaults.proteinGoalG,
-      waterGoalMl: defaults.waterGoalMl,
-      updatedAt: ts(),
-    });
+    map.set(date, { ...blankHabitDay(date, defaults), mood });
   } else {
     map.set(date, { ...cur, mood, updatedAt: ts() });
   }

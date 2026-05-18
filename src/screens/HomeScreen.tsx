@@ -5,11 +5,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import type { MainTabParamList } from '../navigation/types';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { MainTabParamList, RootStackParamList } from '../navigation/types';
 import {
-  defaultGoalsFromProfile,
+  defaultHabitGoalsFromProfile,
   subscribeHabitDay,
-  incrementProtein,
   incrementWater,
   setMood,
 } from '../services/habitsRepo';
@@ -69,6 +69,7 @@ function moodValueColor(m: MoodValue | null | undefined): string {
 
 export default function HomeScreen() {
   const navigation = useNavigation<BottomTabNavigationProp<MainTabParamList>>();
+  const rootNavigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { user, userDoc } = useAuth();
   const [habitDay, setHabitDay] = useState<HabitDayDoc | null>(null);
   const [busy, setBusy] = useState(false);
@@ -78,10 +79,10 @@ export default function HomeScreen() {
     (user?.email && user.email.includes('@') ? user.email.split('@')[0] : null) ||
     'Alex';
 
-  const habitDefaults = useMemo(() => {
-    const d = defaultGoalsFromProfile(userDoc?.profile?.weightKg, userDoc?.profile?.goal);
-    return { proteinGoalG: d.proteinG, waterGoalMl: d.waterMl };
-  }, [userDoc?.profile?.goal, userDoc?.profile?.weightKg]);
+  const habitDefaults = useMemo(
+    () => defaultHabitGoalsFromProfile(userDoc?.profile ?? null),
+    [userDoc?.profile?.goal, userDoc?.profile?.weightKg, userDoc?.profile?.heightCm],
+  );
 
   const metric = userDoc?.settings?.unitsMetric !== false;
 
@@ -93,12 +94,22 @@ export default function HomeScreen() {
     const date = localDateKey();
     const unsub = subscribeHabitDay(user.uid, date, habitDefaults, setHabitDay);
     return () => unsub();
-  }, [user?.uid, habitDefaults.proteinGoalG, habitDefaults.waterGoalMl]);
+  }, [
+    user?.uid,
+    habitDefaults.proteinGoalG,
+    habitDefaults.waterGoalMl,
+    habitDefaults.caloriesGoalKcal,
+    habitDefaults.carbsGoalG,
+    habitDefaults.fatGoalG,
+  ]);
 
   const proteinGoal = habitDay?.proteinGoalG ?? habitDefaults.proteinGoalG;
   const waterGoalMl = habitDay?.waterGoalMl ?? habitDefaults.waterGoalMl;
   const proteinCur = habitDay?.proteinG ?? 0;
   const waterCur = habitDay?.waterMl ?? 0;
+  const caloriesCur = habitDay?.caloriesKcal ?? 0;
+  const caloriesGoal = habitDay?.caloriesGoalKcal || habitDefaults.caloriesGoalKcal;
+  const caloriesPct = caloriesGoal > 0 ? Math.min(1, caloriesCur / caloriesGoal) : 0;
 
   const proteinDone = proteinCur >= proteinGoal;
   const waterDone = waterCur >= waterGoalMl;
@@ -209,15 +220,11 @@ export default function HomeScreen() {
             onPress={() => navigation.navigate('Routines')}
           />
           <QuickAction
-            icon="nutrition"
-            label="+10g protein"
-            color={colors.green}
-            disabled={busy || !user?.uid}
-            onPress={() =>
-              onQuick(async () => {
-                await incrementProtein(user!.uid, localDateKey(), 10, habitDefaults);
-              })
-            }
+            icon="flame"
+            label="Nutrition"
+            color={colors.orange}
+            disabled={busy}
+            onPress={() => rootNavigation.navigate('Nutrition')}
           />
           <QuickAction
             icon="water"
@@ -235,6 +242,18 @@ export default function HomeScreen() {
 
         <Text style={styles.sectionTitle}>Daily Progress</Text>
         <View style={styles.progressCard}>
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => rootNavigation.navigate('Nutrition')}
+          >
+            <ProgressRow
+              icon="flame"
+              label="Calories"
+              value={`${Math.round(caloriesCur)} / ${Math.round(caloriesGoal)} kcal`}
+              pct={caloriesPct}
+            />
+          </TouchableOpacity>
+          <View style={{ height: spacing.lg }} />
           <ProgressRow icon="nutrition" label="Protein" value={proteinDisplay} pct={proteinPct} />
           <View style={{ height: spacing.lg }} />
           <ProgressRow icon="water" label="Water" value={waterDisplay} pct={waterPct} />

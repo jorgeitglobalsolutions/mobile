@@ -12,6 +12,11 @@ export type UserEventType =
   | 'habit_water_updated'
   | 'habit_workout_completed'
   | 'habit_mood_updated'
+  | 'habit_calories_updated'
+  | 'habit_carbs_updated'
+  | 'habit_fat_updated'
+  | 'meal_logged'
+  | 'meal_removed'
   | 'workout_saved'
   | 'weight_logged';
 
