@@ -230,7 +230,7 @@ export default function HomeScreen() {
             label="Nutrition"
             color={colors.orange}
             disabled={busy}
-            onPress={() => rootNavigation.navigate('NutritionDashboard')}
+            onPress={() => rootNavigation.navigate('Nutrition')}
           />
           <QuickAction
             icon="water"
@@ -250,7 +250,7 @@ export default function HomeScreen() {
         <View style={styles.progressCard}>
           <TouchableOpacity
             activeOpacity={0.85}
-            onPress={() => rootNavigation.navigate('NutritionDashboard')}
+            onPress={() => rootNavigation.navigate('Nutrition')}
           >
             <ProgressRow
               icon="flame"
@@ -262,7 +262,7 @@ export default function HomeScreen() {
           <View style={{ height: spacing.lg }} />
           <ProgressRow icon="nutrition" label="Protein" value={proteinDisplay} pct={proteinPct} />
           <View style={{ height: spacing.lg }} />
-          <TouchableOpacity activeOpacity={0.85} onPress={() => rootNavigation.navigate('NutritionDashboard')}>
+          <TouchableOpacity activeOpacity={0.85} onPress={() => rootNavigation.navigate('Nutrition')}>
             <ProgressRow
               icon="leaf"
               label="Carbs"
@@ -271,7 +271,7 @@ export default function HomeScreen() {
             />
           </TouchableOpacity>
           <View style={{ height: spacing.lg }} />
-          <TouchableOpacity activeOpacity={0.85} onPress={() => rootNavigation.navigate('NutritionDashboard')}>
+          <TouchableOpacity activeOpacity={0.85} onPress={() => rootNavigation.navigate('Nutrition')}>
             <ProgressRow
               icon="water"
               label="Fat"
