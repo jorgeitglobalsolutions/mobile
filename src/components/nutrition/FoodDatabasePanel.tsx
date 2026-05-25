@@ -93,12 +93,12 @@ export default function FoodDatabasePanel({ uid, defaults }: Props) {
 
   const onAddToMeal = async () => {
     if (!selected || !portionPreview) {
-      Alert.alert('Porción', 'Selecciona un alimento e indica los gramos.');
+      Alert.alert('Portion', 'Select a food and enter the amount in grams.');
       return;
     }
     const g = parseFloat(grams);
     if (!Number.isFinite(g) || g <= 0) {
-      Alert.alert('Porción', 'Introduce una cantidad válida en gramos.');
+      Alert.alert('Portion', 'Enter a valid amount in grams.');
       return;
     }
     setSaving(true);
@@ -124,7 +124,7 @@ export default function FoodDatabasePanel({ uid, defaults }: Props) {
       setGrams(DEFAULT_GRAMS);
       setQuery('');
     } catch (e: unknown) {
-      Alert.alert('Comida', friendlyAppError(e, 'No se pudo registrar la comida.'));
+      Alert.alert('Meal', friendlyAppError(e, 'Could not log meal.'));
     } finally {
       setSaving(false);
     }
@@ -136,11 +136,11 @@ export default function FoodDatabasePanel({ uid, defaults }: Props) {
     const fat = parseFloat(customFat) || 0;
     const calories = customCalories.trim() ? parseFloat(customCalories) : undefined;
     if (!customName.trim()) {
-      Alert.alert('Alimento', 'Escribe el nombre del alimento.');
+      Alert.alert('Food', 'Enter a food name.');
       return;
     }
     if (![protein, carbs, fat].some((n) => n > 0) && !(calories && calories > 0)) {
-      Alert.alert('Alimento', 'Añade al menos un macronutriente o las calorías.');
+      Alert.alert('Food', 'Add at least one macro or calories.');
       return;
     }
     setSaving(true);
@@ -185,7 +185,7 @@ export default function FoodDatabasePanel({ uid, defaults }: Props) {
       setCustomCalories('');
       setMode('search');
     } catch (e: unknown) {
-      Alert.alert('Alimento', friendlyAppError(e, 'No se pudo guardar el alimento.'));
+      Alert.alert('Food', friendlyAppError(e, 'Could not save food.'));
     } finally {
       setSaving(false);
     }
@@ -240,7 +240,7 @@ export default function FoodDatabasePanel({ uid, defaults }: Props) {
             {formatMacros(macros.protein, macros.carbs, macros.fat, macros.calories)} / 100g
           </Text>
           {item.source === 'custom' ? (
-            <Text style={styles.foodTag}>Personalizado</Text>
+            <Text style={styles.foodTag}>Custom</Text>
           ) : null}
         </View>
         {isSelected ? (
@@ -255,12 +255,12 @@ export default function FoodDatabasePanel({ uid, defaults }: Props) {
   return (
     <View>
       <Text style={styles.hint}>
-        Busca en la base de datos o crea alimentos personalizados. Los valores son por 100g.
+        Search the food database or create custom foods. Values are per 100g.
       </Text>
 
       <View style={styles.modeRow}>
-        <ModePill label="Buscar" active={mode === 'search'} onPress={() => setMode('search')} />
-        <ModePill label="Crear personalizado" active={mode === 'custom'} onPress={() => setMode('custom')} />
+        <ModePill label="Search" active={mode === 'search'} onPress={() => setMode('search')} />
+        <ModePill label="Create custom" active={mode === 'custom'} onPress={() => setMode('custom')} />
       </View>
 
       {mode === 'search' ? (
@@ -268,7 +268,7 @@ export default function FoodDatabasePanel({ uid, defaults }: Props) {
           <View style={styles.searchWrap}>
             <Ionicons name="search" size={18} color={colors.textMuted} style={{ marginRight: 8 }} />
             <TextInput
-              placeholder="Buscar alimento (pollo, arroz, huevo...)"
+              placeholder="Search food (chicken, rice, egg...)"
               placeholderTextColor={colors.textMuted}
               style={styles.searchInput}
               value={query}
@@ -298,7 +298,7 @@ export default function FoodDatabasePanel({ uid, defaults }: Props) {
 
           {customFoods.length > 0 && !query.trim() ? (
             <>
-              <Text style={styles.sectionTitle}>Tus alimentos guardados</Text>
+              <Text style={styles.sectionTitle}>Your saved foods</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: spacing.md }}>
                 <View style={{ flexDirection: 'row', gap: spacing.sm }}>
                   {customFoods.slice(0, 8).map((row) => (
@@ -326,18 +326,18 @@ export default function FoodDatabasePanel({ uid, defaults }: Props) {
             renderItem={renderFoodRow}
             scrollEnabled={false}
             ListEmptyComponent={
-              <Text style={styles.empty}>No hay resultados. Prueba otro término o categoría.</Text>
+              <Text style={styles.empty}>No results. Try another term or category.</Text>
             }
             ItemSeparatorComponent={() => <View style={{ height: spacing.sm }} />}
           />
           {listData.length > 40 ? (
-            <Text style={styles.moreHint}>Mostrando 40 de {listData.length} — afina la búsqueda.</Text>
+            <Text style={styles.moreHint}>Showing 40 of {listData.length} — refine your search.</Text>
           ) : null}
 
           {selected ? (
             <View style={styles.portionCard}>
               <Text style={styles.portionTitle}>{foodName(selected)}</Text>
-              <Text style={styles.portionSub}>Cantidad (gramos)</Text>
+              <Text style={styles.portionSub}>Amount (grams)</Text>
               <View style={styles.gramsRow}>
                 {[50, 100, 150, 200].map((preset) => (
                   <TouchableOpacity
@@ -385,7 +385,7 @@ export default function FoodDatabasePanel({ uid, defaults }: Props) {
                 {saving ? (
                   <ActivityIndicator color={colors.white} />
                 ) : (
-                  <Text style={styles.primaryBtnText}>Añadir a la comida de hoy</Text>
+                  <Text style={styles.primaryBtnText}>Add to today's meal</Text>
                 )}
               </TouchableOpacity>
             </View>
@@ -393,29 +393,29 @@ export default function FoodDatabasePanel({ uid, defaults }: Props) {
         </>
       ) : (
         <View style={styles.formCard}>
-          <Text style={styles.sectionTitle}>Alimento personalizado</Text>
-          <Text style={styles.formHint}>Macros por 100g. Se guardará en tu historial para reutilizar.</Text>
+          <Text style={styles.sectionTitle}>Custom food</Text>
+          <Text style={styles.formHint}>Macros per 100g. Saved to your history for reuse.</Text>
           <TextInput
             style={styles.nameInput}
-            placeholder="Nombre del alimento"
+            placeholder="Food name"
             placeholderTextColor={colors.textMuted}
             value={customName}
             onChangeText={setCustomName}
           />
           <View style={styles.macroInputsRow}>
-            <MacroField label="Proteínas" suffix="g" value={customProtein} onChange={setCustomProtein} color={colors.green} />
-            <MacroField label="Carbos" suffix="g" value={customCarbs} onChange={setCustomCarbs} color={colors.primary} />
-            <MacroField label="Grasas" suffix="g" value={customFat} onChange={setCustomFat} color={colors.yellow} />
+            <MacroField label="Protein" suffix="g" value={customProtein} onChange={setCustomProtein} color={colors.green} />
+            <MacroField label="Carbs" suffix="g" value={customCarbs} onChange={setCustomCarbs} color={colors.primary} />
+            <MacroField label="Fat" suffix="g" value={customFat} onChange={setCustomFat} color={colors.yellow} />
           </View>
           <MacroField
-            label="Calorías (opcional)"
+            label="Calories (optional)"
             suffix="kcal"
             value={customCalories}
             onChange={setCustomCalories}
             color={colors.orange}
             fullWidth
           />
-          <Text style={styles.portionSub}>Porción a registrar hoy</Text>
+          <Text style={styles.portionSub}>Portion to log today</Text>
           <View style={styles.gramsInputWrap}>
             <TextInput
               style={styles.gramsInput}
@@ -437,7 +437,7 @@ export default function FoodDatabasePanel({ uid, defaults }: Props) {
               size={22}
               color={colors.primary}
             />
-            <Text style={styles.saveToggleText}>Guardar en mi historial</Text>
+            <Text style={styles.saveToggleText}>Save to my history</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.primaryBtn, saving && { opacity: 0.7 }]}
@@ -447,7 +447,7 @@ export default function FoodDatabasePanel({ uid, defaults }: Props) {
             {saving ? (
               <ActivityIndicator color={colors.white} />
             ) : (
-              <Text style={styles.primaryBtnText}>Guardar y registrar comida</Text>
+              <Text style={styles.primaryBtnText}>Save and log meal</Text>
             )}
           </TouchableOpacity>
         </View>

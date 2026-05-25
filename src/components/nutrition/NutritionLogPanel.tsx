@@ -143,12 +143,12 @@ export default function NutritionLogPanel({ uid, defaults, habitDay }: Props) {
   return (
     <View>
       <Text style={styles.hint}>
-        Busca alimentos o crea entradas personalizadas. Los totales se actualizan al instante en Resumen.
+        Search foods or create custom entries. Totals update instantly on Overview.
       </Text>
 
       <FoodDatabasePanel uid={uid} defaults={defaults} />
 
-      <Text style={[styles.sectionTitle, { marginTop: spacing.lg }]}>Añadir rápido</Text>
+      <Text style={[styles.sectionTitle, { marginTop: spacing.lg }]}>Quick add</Text>
       <View style={styles.quickGrid}>
         <QuickPill
           icon="nutrition"
@@ -185,22 +185,22 @@ export default function NutritionLogPanel({ uid, defaults, habitDay }: Props) {
         onPress={() => setShowManual((v) => !v)}
         activeOpacity={0.85}
       >
-        <Text style={styles.sectionTitle}>Macros manual (avanzado)</Text>
+        <Text style={styles.sectionTitle}>Manual macros (advanced)</Text>
         <Ionicons name={showManual ? 'chevron-up' : 'chevron-down'} size={20} color={colors.textMuted} />
       </TouchableOpacity>
       {showManual ? (
         <View style={styles.formCard}>
           <TextInput
             style={styles.nameInput}
-            placeholder="Nombre de comida (opcional)"
+            placeholder="Meal name (optional)"
             placeholderTextColor={colors.textMuted}
             value={mealName}
             onChangeText={setMealName}
           />
           <View style={styles.macroInputsRow}>
-            <MacroInput label="Proteínas" suffix="g" value={mealProtein} onChange={setMealProtein} color={colors.green} />
-            <MacroInput label="Carbos" suffix="g" value={mealCarbs} onChange={setMealCarbs} color={colors.primary} />
-            <MacroInput label="Grasas" suffix="g" value={mealFat} onChange={setMealFat} color={colors.yellow} />
+            <MacroInput label="Protein" suffix="g" value={mealProtein} onChange={setMealProtein} color={colors.green} />
+            <MacroInput label="Carbs" suffix="g" value={mealCarbs} onChange={setMealCarbs} color={colors.primary} />
+            <MacroInput label="Fat" suffix="g" value={mealFat} onChange={setMealFat} color={colors.yellow} />
           </View>
           <Text style={styles.kcalPreview}>≈ {previewKcal} kcal</Text>
           <TouchableOpacity
@@ -212,15 +212,15 @@ export default function NutritionLogPanel({ uid, defaults, habitDay }: Props) {
             {saving ? (
               <ActivityIndicator color={colors.white} />
             ) : (
-              <Text style={styles.primaryBtnText}>Registrar comida</Text>
+              <Text style={styles.primaryBtnText}>Log meal</Text>
             )}
           </TouchableOpacity>
         </View>
       ) : null}
 
-      <Text style={[styles.sectionTitle, { marginTop: spacing.lg }]}>Comidas de hoy</Text>
+      <Text style={[styles.sectionTitle, { marginTop: spacing.lg }]}>Today's meals</Text>
       {meals.length === 0 ? (
-        <Text style={styles.empty}>Sin comidas — busca un alimento o usa añadir rápido.</Text>
+        <Text style={styles.empty}>No meals yet — search a food or use quick add.</Text>
       ) : (
         meals.map((m, idx) => (
           <View key={m.id}>

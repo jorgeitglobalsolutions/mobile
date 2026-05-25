@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { englishNameForFood, englishSubcategory } from './foodTranslations.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, '..');
@@ -50,11 +51,12 @@ for (const line of lines) {
   const calories = parseFloat(parts[4]);
   if (Number.isNaN(protein) || Number.isNaN(calories)) continue;
   const catKey = Object.keys(catMap).find((k) => category.toUpperCase().includes(k.split(' ')[0]));
+  const id = slug(name);
   foods.push({
-    id: slug(name),
-    name,
-    category: catMap[catKey] ?? 'otros',
-    subcategory,
+    id,
+    name: englishNameForFood(id, name),
+    category: catMap[catKey] ?? 'other',
+    subcategory: englishSubcategory(subcategory),
     macrosPer100g: { protein, carbs, fat, calories },
   });
 }
@@ -72,17 +74,17 @@ for (const f of foods) {
 
 const ts = `import type { FoodCatalogItem } from '../types/food';
 
-/** Auto-generated from docs/base_datos_alimentos_app.md — run: node scripts/generateFoodsCatalog.mjs */
+/** Auto-generated from docs/base_datos_alimentos_app.md (English UI) — run: node scripts/generateFoodsCatalog.mjs */
 export const FOODS_CATALOG: FoodCatalogItem[] = ${JSON.stringify(foods, null, 2)} as FoodCatalogItem[];
 
 export const FOOD_CATEGORIES = [
-  { id: 'all', label: 'Todos' },
-  { id: 'proteinas', label: 'Proteínas' },
-  { id: 'carbohidratos', label: 'Carbohidratos' },
-  { id: 'grasas', label: 'Grasas' },
-  { id: 'frutas', label: 'Frutas' },
-  { id: 'vegetales', label: 'Vegetales' },
-  { id: 'suplementos', label: 'Suplementos' },
+  { id: 'all', label: 'All' },
+  { id: 'proteinas', label: 'Protein' },
+  { id: 'carbohidratos', label: 'Carbs' },
+  { id: 'grasas', label: 'Fats' },
+  { id: 'frutas', label: 'Fruit' },
+  { id: 'vegetales', label: 'Vegetables' },
+  { id: 'suplementos', label: 'Supplements' },
 ] as const;
 
 export type FoodCategoryFilter = (typeof FOOD_CATEGORIES)[number]['id'];

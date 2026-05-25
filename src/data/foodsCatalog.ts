@@ -1,12 +1,12 @@
 import type { FoodCatalogItem } from '../types/food';
 
-/** Auto-generated from docs/base_datos_alimentos_app.md — run: node scripts/generateFoodsCatalog.mjs */
+/** Auto-generated from docs/base_datos_alimentos_app.md (English UI) — run: node scripts/generateFoodsCatalog.mjs */
 export const FOODS_CATALOG: FoodCatalogItem[] = [
   {
     "id": "huevo-entero",
-    "name": "Huevo entero",
+    "name": "Whole egg",
     "category": "proteinas",
-    "subcategory": "HUEVOS Y LÁCTEOS",
+    "subcategory": "Eggs & dairy",
     "macrosPer100g": {
       "protein": 12.6,
       "carbs": 1.2,
@@ -16,9 +16,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "clara-de-huevo",
-    "name": "Clara de huevo",
+    "name": "Egg white",
     "category": "proteinas",
-    "subcategory": "HUEVOS Y LÁCTEOS",
+    "subcategory": "Eggs & dairy",
     "macrosPer100g": {
       "protein": 12,
       "carbs": 0.7,
@@ -28,9 +28,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "queso-bajo-en-grasa",
-    "name": "Queso bajo en grasa",
+    "name": "Low-fat cheese",
     "category": "proteinas",
-    "subcategory": "HUEVOS Y LÁCTEOS",
+    "subcategory": "Eggs & dairy",
     "macrosPer100g": {
       "protein": 32,
       "carbs": 3.5,
@@ -40,9 +40,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "queso-cottage",
-    "name": "Queso cottage",
+    "name": "Cottage cheese",
     "category": "proteinas",
-    "subcategory": "HUEVOS Y LÁCTEOS",
+    "subcategory": "Eggs & dairy",
     "macrosPer100g": {
       "protein": 11,
       "carbs": 3.4,
@@ -52,9 +52,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "ricotta-light",
-    "name": "Ricotta light",
+    "name": "Light ricotta",
     "category": "proteinas",
-    "subcategory": "HUEVOS Y LÁCTEOS",
+    "subcategory": "Eggs & dairy",
     "macrosPer100g": {
       "protein": 11.4,
       "carbs": 3,
@@ -64,9 +64,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "queso-fresco-bajo-en-grasa",
-    "name": "Queso fresco bajo en grasa",
+    "name": "Low-fat fresh cheese",
     "category": "proteinas",
-    "subcategory": "HUEVOS Y LÁCTEOS",
+    "subcategory": "Eggs & dairy",
     "macrosPer100g": {
       "protein": 13.5,
       "carbs": 2.7,
@@ -76,9 +76,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "queso-feta",
-    "name": "Queso feta",
+    "name": "Feta cheese",
     "category": "proteinas",
-    "subcategory": "HUEVOS Y LÁCTEOS",
+    "subcategory": "Eggs & dairy",
     "macrosPer100g": {
       "protein": 14.2,
       "carbs": 4.1,
@@ -88,9 +88,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "queso-blanco-bajo-en-grasa",
-    "name": "Queso blanco bajo en grasa",
+    "name": "Low-fat white cheese",
     "category": "proteinas",
-    "subcategory": "HUEVOS Y LÁCTEOS",
+    "subcategory": "Eggs & dairy",
     "macrosPer100g": {
       "protein": 18,
       "carbs": 3.5,
@@ -100,9 +100,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "parmesano",
-    "name": "Parmesano",
+    "name": "Parmesan",
     "category": "proteinas",
-    "subcategory": "HUEVOS Y LÁCTEOS",
+    "subcategory": "Eggs & dairy",
     "macrosPer100g": {
       "protein": 35.8,
       "carbs": 3.2,
@@ -112,9 +112,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "yogur-griego-natural",
-    "name": "Yogur griego natural",
+    "name": "Plain Greek yogurt",
     "category": "proteinas",
-    "subcategory": "HUEVOS Y LÁCTEOS",
+    "subcategory": "Eggs & dairy",
     "macrosPer100g": {
       "protein": 10,
       "carbs": 3.6,
@@ -124,9 +124,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "yogur-natural-sin-azucar",
-    "name": "Yogur natural sin azúcar",
+    "name": "Plain yogurt, unsweetened",
     "category": "proteinas",
-    "subcategory": "HUEVOS Y LÁCTEOS",
+    "subcategory": "Eggs & dairy",
     "macrosPer100g": {
       "protein": 3.5,
       "carbs": 4.7,
@@ -136,9 +136,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "yogur-vegetal-sin-azucar",
-    "name": "Yogur vegetal sin azúcar",
+    "name": "Unsweetened plant yogurt",
     "category": "proteinas",
-    "subcategory": "HUEVOS Y LÁCTEOS",
+    "subcategory": "Eggs & dairy",
     "macrosPer100g": {
       "protein": 3,
       "carbs": 5,
@@ -148,9 +148,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "pechuga-de-pollo-cocida",
-    "name": "Pechuga de pollo cocida",
+    "name": "Cooked chicken breast",
     "category": "proteinas",
-    "subcategory": "CARNES",
+    "subcategory": "Meats",
     "macrosPer100g": {
       "protein": 31,
       "carbs": 0,
@@ -160,9 +160,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "pollo-desmenuzado",
-    "name": "Pollo desmenuzado",
+    "name": "Shredded chicken",
     "category": "proteinas",
-    "subcategory": "CARNES",
+    "subcategory": "Meats",
     "macrosPer100g": {
       "protein": 31,
       "carbs": 0,
@@ -172,9 +172,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "muslos-de-pollo-sin-piel-cocidos",
-    "name": "Muslos de pollo sin piel cocidos",
+    "name": "Cooked chicken thighs, skinless",
     "category": "proteinas",
-    "subcategory": "CARNES",
+    "subcategory": "Meats",
     "macrosPer100g": {
       "protein": 26,
       "carbs": 0,
@@ -184,9 +184,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "pechuga-de-pavo-cocida",
-    "name": "Pechuga de pavo cocida",
+    "name": "Cooked turkey breast",
     "category": "proteinas",
-    "subcategory": "CARNES",
+    "subcategory": "Meats",
     "macrosPer100g": {
       "protein": 29,
       "carbs": 0,
@@ -196,9 +196,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "pavo-desmenuzado",
-    "name": "Pavo desmenuzado",
+    "name": "Shredded turkey",
     "category": "proteinas",
-    "subcategory": "CARNES",
+    "subcategory": "Meats",
     "macrosPer100g": {
       "protein": 29,
       "carbs": 0,
@@ -208,9 +208,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "jamon-de-pavo",
-    "name": "Jamón de pavo",
+    "name": "Turkey ham",
     "category": "proteinas",
-    "subcategory": "CARNES",
+    "subcategory": "Meats",
     "macrosPer100g": {
       "protein": 18,
       "carbs": 1.5,
@@ -220,9 +220,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "jamon-serrano",
-    "name": "Jamón serrano",
+    "name": "Serrano ham",
     "category": "proteinas",
-    "subcategory": "CARNES",
+    "subcategory": "Meats",
     "macrosPer100g": {
       "protein": 30.5,
       "carbs": 0,
@@ -232,9 +232,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "carne-magra-de-res-cocida",
-    "name": "Carne magra de res cocida",
+    "name": "Cooked lean beef",
     "category": "proteinas",
-    "subcategory": "CARNES",
+    "subcategory": "Meats",
     "macrosPer100g": {
       "protein": 26.1,
       "carbs": 0,
@@ -244,9 +244,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "carne-magra-de-cerdo-cocida",
-    "name": "Carne magra de cerdo cocida",
+    "name": "Cooked lean pork",
     "category": "proteinas",
-    "subcategory": "CARNES",
+    "subcategory": "Meats",
     "macrosPer100g": {
       "protein": 27.3,
       "carbs": 0,
@@ -256,9 +256,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "carne-magra-molida-cocida",
-    "name": "Carne magra molida cocida",
+    "name": "Cooked lean ground meat",
     "category": "proteinas",
-    "subcategory": "CARNES",
+    "subcategory": "Meats",
     "macrosPer100g": {
       "protein": 26,
       "carbs": 0,
@@ -268,9 +268,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "pescado-blanco-cocido",
-    "name": "Pescado blanco cocido",
+    "name": "Cooked white fish",
     "category": "proteinas",
-    "subcategory": "PESCADOS",
+    "subcategory": "Fish & seafood",
     "macrosPer100g": {
       "protein": 24,
       "carbs": 0,
@@ -280,9 +280,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "salmon-cocido",
-    "name": "Salmón cocido",
+    "name": "Cooked salmon",
     "category": "proteinas",
-    "subcategory": "PESCADOS",
+    "subcategory": "Fish & seafood",
     "macrosPer100g": {
       "protein": 25.4,
       "carbs": 0,
@@ -292,9 +292,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "atun-natural-en-lata-escurrido",
-    "name": "Atún natural en lata (escurrido)",
+    "name": "Canned tuna in water, drained",
     "category": "proteinas",
-    "subcategory": "PESCADOS",
+    "subcategory": "Fish & seafood",
     "macrosPer100g": {
       "protein": 23.5,
       "carbs": 0,
@@ -304,9 +304,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "sardinas-al-natural-lata",
-    "name": "Sardinas al natural (lata)",
+    "name": "Canned sardines in water",
     "category": "proteinas",
-    "subcategory": "PESCADOS",
+    "subcategory": "Fish & seafood",
     "macrosPer100g": {
       "protein": 24.6,
       "carbs": 0,
@@ -316,9 +316,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "lentejas-cocidas",
-    "name": "Lentejas cocidas",
+    "name": "Cooked lentils",
     "category": "proteinas",
-    "subcategory": "LEGUMBRES (COCIDAS)",
+    "subcategory": "Cooked legumes",
     "macrosPer100g": {
       "protein": 9,
       "carbs": 20.1,
@@ -328,9 +328,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "garbanzos-cocidos",
-    "name": "Garbanzos cocidos",
+    "name": "Cooked chickpeas",
     "category": "proteinas",
-    "subcategory": "LEGUMBRES (COCIDAS)",
+    "subcategory": "Cooked legumes",
     "macrosPer100g": {
       "protein": 8.9,
       "carbs": 27.4,
@@ -340,9 +340,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "frijoles-negros-cocidos",
-    "name": "Frijoles negros cocidos",
+    "name": "Cooked black beans",
     "category": "proteinas",
-    "subcategory": "LEGUMBRES (COCIDAS)",
+    "subcategory": "Cooked legumes",
     "macrosPer100g": {
       "protein": 8.9,
       "carbs": 23.7,
@@ -352,9 +352,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "legumbres-cocidas-promedio",
-    "name": "Legumbres cocidas (promedio)",
+    "name": "Cooked legumes (average)",
     "category": "proteinas",
-    "subcategory": "LEGUMBRES (COCIDAS)",
+    "subcategory": "Cooked legumes",
     "macrosPer100g": {
       "protein": 9,
       "carbs": 23,
@@ -364,9 +364,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "tofu-firme",
-    "name": "Tofu firme",
+    "name": "Firm tofu",
     "category": "proteinas",
-    "subcategory": "DERIVADOS DE SOYA",
+    "subcategory": "Soy products",
     "macrosPer100g": {
       "protein": 8,
       "carbs": 1.9,
@@ -376,9 +376,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "tofu-grillado",
-    "name": "Tofu grillado",
+    "name": "Grilled tofu",
     "category": "proteinas",
-    "subcategory": "DERIVADOS DE SOYA",
+    "subcategory": "Soy products",
     "macrosPer100g": {
       "protein": 8.5,
       "carbs": 2,
@@ -390,7 +390,7 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
     "id": "tempeh",
     "name": "Tempeh",
     "category": "proteinas",
-    "subcategory": "DERIVADOS DE SOYA",
+    "subcategory": "Soy products",
     "macrosPer100g": {
       "protein": 19,
       "carbs": 9,
@@ -402,7 +402,7 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
     "id": "whey-protein",
     "name": "Whey protein",
     "category": "proteinas",
-    "subcategory": "PROTEÍNAS EN POLVO (por 30g de polvo)",
+    "subcategory": "Protein powder (per 30g)",
     "macrosPer100g": {
       "protein": 24,
       "carbs": 3,
@@ -412,9 +412,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "whey-vegetal",
-    "name": "Whey vegetal",
+    "name": "Plant-based whey",
     "category": "proteinas",
-    "subcategory": "PROTEÍNAS EN POLVO (por 30g de polvo)",
+    "subcategory": "Protein powder (per 30g)",
     "macrosPer100g": {
       "protein": 22,
       "carbs": 4,
@@ -424,9 +424,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "proteina-vegetal-en-polvo",
-    "name": "Proteína vegetal en polvo",
+    "name": "Plant protein powder",
     "category": "proteinas",
-    "subcategory": "PROTEÍNAS EN POLVO (por 30g de polvo)",
+    "subcategory": "Protein powder (per 30g)",
     "macrosPer100g": {
       "protein": 21,
       "carbs": 5,
@@ -436,9 +436,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "pan-integral",
-    "name": "Pan integral",
+    "name": "Whole wheat bread",
     "category": "carbohidratos",
-    "subcategory": "PANES Y TORTILLAS (por 100g)",
+    "subcategory": "Breads & tortillas (per 100g)",
     "macrosPer100g": {
       "protein": 9,
       "carbs": 49,
@@ -448,9 +448,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "pan-integral-sin-gluten",
-    "name": "Pan integral sin gluten",
+    "name": "Gluten-free whole bread",
     "category": "carbohidratos",
-    "subcategory": "PANES Y TORTILLAS (por 100g)",
+    "subcategory": "Breads & tortillas (per 100g)",
     "macrosPer100g": {
       "protein": 5,
       "carbs": 50,
@@ -460,9 +460,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "pan-de-centeno",
-    "name": "Pan de centeno",
+    "name": "Rye bread",
     "category": "carbohidratos",
-    "subcategory": "PANES Y TORTILLAS (por 100g)",
+    "subcategory": "Breads & tortillas (per 100g)",
     "macrosPer100g": {
       "protein": 8.5,
       "carbs": 48,
@@ -472,9 +472,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "wrap-tortilla-de-maiz",
-    "name": "Wrap/tortilla de maíz",
+    "name": "Corn wrap/tortilla",
     "category": "carbohidratos",
-    "subcategory": "PANES Y TORTILLAS (por 100g)",
+    "subcategory": "Breads & tortillas (per 100g)",
     "macrosPer100g": {
       "protein": 6,
       "carbs": 48,
@@ -484,9 +484,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "tortilla-integral",
-    "name": "Tortilla integral",
+    "name": "Whole wheat tortilla",
     "category": "carbohidratos",
-    "subcategory": "PANES Y TORTILLAS (por 100g)",
+    "subcategory": "Breads & tortillas (per 100g)",
     "macrosPer100g": {
       "protein": 7.5,
       "carbs": 45,
@@ -496,9 +496,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "arepa-integral",
-    "name": "Arepa integral",
+    "name": "Whole grain arepa",
     "category": "carbohidratos",
-    "subcategory": "PANES Y TORTILLAS (por 100g)",
+    "subcategory": "Breads & tortillas (per 100g)",
     "macrosPer100g": {
       "protein": 6,
       "carbs": 47,
@@ -508,9 +508,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "galletas-de-arroz",
-    "name": "Galletas de arroz",
+    "name": "Rice cakes",
     "category": "carbohidratos",
-    "subcategory": "PANES Y TORTILLAS (por 100g)",
+    "subcategory": "Breads & tortillas (per 100g)",
     "macrosPer100g": {
       "protein": 7.8,
       "carbs": 81.1,
@@ -520,9 +520,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "arroz-blanco-cocido",
-    "name": "Arroz blanco cocido",
+    "name": "Cooked white rice",
     "category": "carbohidratos",
-    "subcategory": "CEREALES Y GRANOS",
+    "subcategory": "Cereals & grains",
     "macrosPer100g": {
       "protein": 2.7,
       "carbs": 28,
@@ -532,9 +532,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "arroz-integral-cocido",
-    "name": "Arroz integral cocido",
+    "name": "Cooked brown rice",
     "category": "carbohidratos",
-    "subcategory": "CEREALES Y GRANOS",
+    "subcategory": "Cereals & grains",
     "macrosPer100g": {
       "protein": 2.6,
       "carbs": 23,
@@ -544,9 +544,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "quinoa-cocida",
-    "name": "Quinoa cocida",
+    "name": "Cooked quinoa",
     "category": "carbohidratos",
-    "subcategory": "CEREALES Y GRANOS",
+    "subcategory": "Cereals & grains",
     "macrosPer100g": {
       "protein": 4.4,
       "carbs": 21.3,
@@ -556,9 +556,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "avena-cruda",
-    "name": "Avena cruda",
+    "name": "Raw oats",
     "category": "carbohidratos",
-    "subcategory": "CEREALES Y GRANOS",
+    "subcategory": "Cereals & grains",
     "macrosPer100g": {
       "protein": 13.2,
       "carbs": 55.7,
@@ -568,9 +568,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "avena-sin-gluten-cruda",
-    "name": "Avena sin gluten cruda",
+    "name": "Raw gluten-free oats",
     "category": "carbohidratos",
-    "subcategory": "CEREALES Y GRANOS",
+    "subcategory": "Cereals & grains",
     "macrosPer100g": {
       "protein": 13,
       "carbs": 56,
@@ -580,9 +580,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "avena-instantanea",
-    "name": "Avena instantánea",
+    "name": "Instant oats",
     "category": "carbohidratos",
-    "subcategory": "CEREALES Y GRANOS",
+    "subcategory": "Cereals & grains",
     "macrosPer100g": {
       "protein": 11,
       "carbs": 58,
@@ -592,9 +592,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "harina-de-avena",
-    "name": "Harina de avena",
+    "name": "Oat flour",
     "category": "carbohidratos",
-    "subcategory": "CEREALES Y GRANOS",
+    "subcategory": "Cereals & grains",
     "macrosPer100g": {
       "protein": 13.2,
       "carbs": 66.3,
@@ -604,9 +604,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "maiz-para-palomitas",
-    "name": "Maíz para palomitas",
+    "name": "Popcorn kernels",
     "category": "carbohidratos",
-    "subcategory": "CEREALES Y GRANOS",
+    "subcategory": "Cereals & grains",
     "macrosPer100g": {
       "protein": 12,
       "carbs": 74,
@@ -616,9 +616,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "espaguetti-cocido",
-    "name": "Espaguetti cocido",
+    "name": "Cooked spaghetti",
     "category": "carbohidratos",
-    "subcategory": "PASTAS (COCIDAS)",
+    "subcategory": "Cooked pasta",
     "macrosPer100g": {
       "protein": 5,
       "carbs": 25,
@@ -628,9 +628,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "espaguetti-sin-gluten-cocido",
-    "name": "Espaguetti sin gluten cocido",
+    "name": "Cooked gluten-free spaghetti",
     "category": "carbohidratos",
-    "subcategory": "PASTAS (COCIDAS)",
+    "subcategory": "Cooked pasta",
     "macrosPer100g": {
       "protein": 3.5,
       "carbs": 27,
@@ -640,9 +640,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "pasta-integral-cocida",
-    "name": "Pasta integral cocida",
+    "name": "Cooked whole wheat pasta",
     "category": "carbohidratos",
-    "subcategory": "PASTAS (COCIDAS)",
+    "subcategory": "Cooked pasta",
     "macrosPer100g": {
       "protein": 5.3,
       "carbs": 26,
@@ -652,9 +652,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "papa-cocida",
-    "name": "Papa cocida",
+    "name": "Cooked potato",
     "category": "carbohidratos",
-    "subcategory": "TUBÉRCULOS Y RAÍCES (COCIDOS)",
+    "subcategory": "Cooked tubers & roots",
     "macrosPer100g": {
       "protein": 2,
       "carbs": 21,
@@ -664,9 +664,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "batata-cocida",
-    "name": "Batata cocida",
+    "name": "Cooked sweet potato",
     "category": "carbohidratos",
-    "subcategory": "TUBÉRCULOS Y RAÍCES (COCIDOS)",
+    "subcategory": "Cooked tubers & roots",
     "macrosPer100g": {
       "protein": 2,
       "carbs": 20.1,
@@ -676,9 +676,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "camote-cocido",
-    "name": "Camote cocido",
+    "name": "Cooked yam",
     "category": "carbohidratos",
-    "subcategory": "TUBÉRCULOS Y RAÍCES (COCIDOS)",
+    "subcategory": "Cooked tubers & roots",
     "macrosPer100g": {
       "protein": 2,
       "carbs": 20.7,
@@ -688,9 +688,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "boniato-cocido",
-    "name": "Boniato cocido",
+    "name": "Cooked sweet potato (boniato)",
     "category": "carbohidratos",
-    "subcategory": "TUBÉRCULOS Y RAÍCES (COCIDOS)",
+    "subcategory": "Cooked tubers & roots",
     "macrosPer100g": {
       "protein": 1.6,
       "carbs": 20.1,
@@ -700,9 +700,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "platano-cocido",
-    "name": "Plátano cocido",
+    "name": "Cooked plantain",
     "category": "carbohidratos",
-    "subcategory": "TUBÉRCULOS Y RAÍCES (COCIDOS)",
+    "subcategory": "Cooked tubers & roots",
     "macrosPer100g": {
       "protein": 1.1,
       "carbs": 31.9,
@@ -712,9 +712,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "yuca-cocida",
-    "name": "Yuca cocida",
+    "name": "Cooked cassava",
     "category": "carbohidratos",
-    "subcategory": "TUBÉRCULOS Y RAÍCES (COCIDOS)",
+    "subcategory": "Cooked tubers & roots",
     "macrosPer100g": {
       "protein": 0.8,
       "carbs": 38.1,
@@ -724,9 +724,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "aceite-de-oliva",
-    "name": "Aceite de oliva",
+    "name": "Olive oil",
     "category": "grasas",
-    "subcategory": "ACEITES",
+    "subcategory": "Oils",
     "macrosPer100g": {
       "protein": 0,
       "carbs": 0,
@@ -736,9 +736,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "aceite-de-coco",
-    "name": "Aceite de coco",
+    "name": "Coconut oil",
     "category": "grasas",
-    "subcategory": "ACEITES",
+    "subcategory": "Oils",
     "macrosPer100g": {
       "protein": 0,
       "carbs": 0,
@@ -748,9 +748,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "aguacate",
-    "name": "Aguacate",
+    "name": "Avocado",
     "category": "grasas",
-    "subcategory": "FRUTOS SECOS Y SEMILLAS (por 100g)",
+    "subcategory": "Nuts & seeds (per 100g)",
     "macrosPer100g": {
       "protein": 2,
       "carbs": 9,
@@ -760,9 +760,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "nueces",
-    "name": "Nueces",
+    "name": "Walnuts",
     "category": "grasas",
-    "subcategory": "FRUTOS SECOS Y SEMILLAS (por 100g)",
+    "subcategory": "Nuts & seeds (per 100g)",
     "macrosPer100g": {
       "protein": 15.2,
       "carbs": 13.7,
@@ -772,9 +772,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "almendras",
-    "name": "Almendras",
+    "name": "Almonds",
     "category": "grasas",
-    "subcategory": "FRUTOS SECOS Y SEMILLAS (por 100g)",
+    "subcategory": "Nuts & seeds (per 100g)",
     "macrosPer100g": {
       "protein": 21.2,
       "carbs": 21.6,
@@ -784,9 +784,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "frutos-secos-mixtos",
-    "name": "Frutos secos mixtos",
+    "name": "Mixed nuts",
     "category": "grasas",
-    "subcategory": "FRUTOS SECOS Y SEMILLAS (por 100g)",
+    "subcategory": "Nuts & seeds (per 100g)",
     "macrosPer100g": {
       "protein": 18,
       "carbs": 15,
@@ -796,9 +796,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "semillas-de-chia",
-    "name": "Semillas de chía",
+    "name": "Chia seeds",
     "category": "grasas",
-    "subcategory": "FRUTOS SECOS Y SEMILLAS (por 100g)",
+    "subcategory": "Nuts & seeds (per 100g)",
     "macrosPer100g": {
       "protein": 16.5,
       "carbs": 42.1,
@@ -808,9 +808,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "semillas-de-linaza",
-    "name": "Semillas de linaza",
+    "name": "Flax seeds",
     "category": "grasas",
-    "subcategory": "FRUTOS SECOS Y SEMILLAS (por 100g)",
+    "subcategory": "Nuts & seeds (per 100g)",
     "macrosPer100g": {
       "protein": 18.3,
       "carbs": 28.9,
@@ -820,9 +820,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "mantequilla-de-mani",
-    "name": "Mantequilla de maní",
+    "name": "Peanut butter",
     "category": "grasas",
-    "subcategory": "CREMAS Y MANTEQUILLAS (por 100g)",
+    "subcategory": "Nut butters & spreads (per 100g)",
     "macrosPer100g": {
       "protein": 25.8,
       "carbs": 20,
@@ -832,9 +832,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "mantequilla-de-almendras",
-    "name": "Mantequilla de almendras",
+    "name": "Almond butter",
     "category": "grasas",
-    "subcategory": "CREMAS Y MANTEQUILLAS (por 100g)",
+    "subcategory": "Nut butters & spreads (per 100g)",
     "macrosPer100g": {
       "protein": 21,
       "carbs": 19,
@@ -844,9 +844,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "crema-de-pistacho",
-    "name": "Crema de pistacho",
+    "name": "Pistachio butter",
     "category": "grasas",
-    "subcategory": "CREMAS Y MANTEQUILLAS (por 100g)",
+    "subcategory": "Nut butters & spreads (per 100g)",
     "macrosPer100g": {
       "protein": 20.6,
       "carbs": 27.5,
@@ -856,9 +856,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "crema-de-cacahuete",
-    "name": "Crema de cacahuete",
+    "name": "Peanut butter (smooth)",
     "category": "grasas",
-    "subcategory": "CREMAS Y MANTEQUILLAS (por 100g)",
+    "subcategory": "Nut butters & spreads (per 100g)",
     "macrosPer100g": {
       "protein": 25.8,
       "carbs": 20,
@@ -870,7 +870,7 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
     "id": "hummus",
     "name": "Hummus",
     "category": "grasas",
-    "subcategory": "CREMAS Y MANTEQUILLAS (por 100g)",
+    "subcategory": "Nut butters & spreads (per 100g)",
     "macrosPer100g": {
       "protein": 8,
       "carbs": 14.3,
@@ -880,9 +880,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "omega-3",
-    "name": "Omega 3",
+    "name": "Omega-3",
     "category": "grasas",
-    "subcategory": "SUPLEMENTOS DE GRASA",
+    "subcategory": "Fat supplements",
     "macrosPer100g": {
       "protein": 0,
       "carbs": 0,
@@ -892,7 +892,7 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "manzana-mediana",
-    "name": "Manzana mediana",
+    "name": "Medium apple",
     "category": "frutas",
     "subcategory": "",
     "macrosPer100g": {
@@ -904,7 +904,7 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "banana-platano",
-    "name": "Banana/plátano",
+    "name": "Banana",
     "category": "frutas",
     "subcategory": "",
     "macrosPer100g": {
@@ -916,7 +916,7 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "banana-pequena",
-    "name": "Banana pequeña",
+    "name": "Small banana",
     "category": "frutas",
     "subcategory": "",
     "macrosPer100g": {
@@ -928,7 +928,7 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "pera-mediana",
-    "name": "Pera mediana",
+    "name": "Medium pear",
     "category": "frutas",
     "subcategory": "",
     "macrosPer100g": {
@@ -952,7 +952,7 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "naranja-mediana",
-    "name": "Naranja mediana",
+    "name": "Medium orange",
     "category": "frutas",
     "subcategory": "",
     "macrosPer100g": {
@@ -976,7 +976,7 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "frutos-rojos-promedio",
-    "name": "Frutos rojos (promedio)",
+    "name": "Berries (average)",
     "category": "frutas",
     "subcategory": "",
     "macrosPer100g": {
@@ -988,7 +988,7 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "fresas",
-    "name": "Fresas",
+    "name": "Strawberries",
     "category": "frutas",
     "subcategory": "",
     "macrosPer100g": {
@@ -1000,9 +1000,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "lechuga",
-    "name": "Lechuga",
+    "name": "Lettuce",
     "category": "vegetales",
-    "subcategory": "VEGETALES DE HOJA VERDE (CRUDOS, por 100g)",
+    "subcategory": "Leafy greens, raw (per 100g)",
     "macrosPer100g": {
       "protein": 1.4,
       "carbs": 2.9,
@@ -1012,9 +1012,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "espinaca",
-    "name": "Espinaca",
+    "name": "Spinach",
     "category": "vegetales",
-    "subcategory": "VEGETALES DE HOJA VERDE (CRUDOS, por 100g)",
+    "subcategory": "Leafy greens, raw (per 100g)",
     "macrosPer100g": {
       "protein": 2.9,
       "carbs": 3.6,
@@ -1024,9 +1024,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "ensalada-verde-mix",
-    "name": "Ensalada verde (mix)",
+    "name": "Mixed green salad",
     "category": "vegetales",
-    "subcategory": "VEGETALES DE HOJA VERDE (CRUDOS, por 100g)",
+    "subcategory": "Leafy greens, raw (per 100g)",
     "macrosPer100g": {
       "protein": 1.5,
       "carbs": 3,
@@ -1036,9 +1036,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "brocoli",
-    "name": "Brócoli",
+    "name": "Broccoli",
     "category": "vegetales",
-    "subcategory": "VEGETALES COCIDOS (por 100g)",
+    "subcategory": "Cooked vegetables (per 100g)",
     "macrosPer100g": {
       "protein": 2.4,
       "carbs": 7.2,
@@ -1048,9 +1048,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "coliflor",
-    "name": "Coliflor",
+    "name": "Cauliflower",
     "category": "vegetales",
-    "subcategory": "VEGETALES COCIDOS (por 100g)",
+    "subcategory": "Cooked vegetables (per 100g)",
     "macrosPer100g": {
       "protein": 1.9,
       "carbs": 5,
@@ -1060,9 +1060,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "zanahoria",
-    "name": "Zanahoria",
+    "name": "Carrot",
     "category": "vegetales",
-    "subcategory": "VEGETALES COCIDOS (por 100g)",
+    "subcategory": "Cooked vegetables (per 100g)",
     "macrosPer100g": {
       "protein": 0.9,
       "carbs": 9.6,
@@ -1072,9 +1072,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "zanahoria-rallada-cruda",
-    "name": "Zanahoria rallada (cruda)",
+    "name": "Grated raw carrot",
     "category": "vegetales",
-    "subcategory": "VEGETALES COCIDOS (por 100g)",
+    "subcategory": "Cooked vegetables (per 100g)",
     "macrosPer100g": {
       "protein": 0.9,
       "carbs": 9.6,
@@ -1084,9 +1084,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "calabacin",
-    "name": "Calabacín",
+    "name": "Zucchini",
     "category": "vegetales",
-    "subcategory": "VEGETALES COCIDOS (por 100g)",
+    "subcategory": "Cooked vegetables (per 100g)",
     "macrosPer100g": {
       "protein": 1.2,
       "carbs": 3.1,
@@ -1096,9 +1096,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "calabaza",
-    "name": "Calabaza",
+    "name": "Pumpkin",
     "category": "vegetales",
-    "subcategory": "VEGETALES COCIDOS (por 100g)",
+    "subcategory": "Cooked vegetables (per 100g)",
     "macrosPer100g": {
       "protein": 1,
       "carbs": 6.5,
@@ -1108,9 +1108,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "berenjena",
-    "name": "Berenjena",
+    "name": "Eggplant",
     "category": "vegetales",
-    "subcategory": "VEGETALES COCIDOS (por 100g)",
+    "subcategory": "Cooked vegetables (per 100g)",
     "macrosPer100g": {
       "protein": 1,
       "carbs": 5.9,
@@ -1120,9 +1120,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "esparragos",
-    "name": "Espárragos",
+    "name": "Asparagus",
     "category": "vegetales",
-    "subcategory": "VEGETALES COCIDOS (por 100g)",
+    "subcategory": "Cooked vegetables (per 100g)",
     "macrosPer100g": {
       "protein": 2.2,
       "carbs": 3.9,
@@ -1132,9 +1132,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "pepino",
-    "name": "Pepino",
+    "name": "Cucumber",
     "category": "vegetales",
-    "subcategory": "VEGETALES FRESCOS (CRUDOS, por 100g)",
+    "subcategory": "Fresh vegetables, raw (per 100g)",
     "macrosPer100g": {
       "protein": 0.7,
       "carbs": 3.6,
@@ -1144,9 +1144,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "tomate",
-    "name": "Tomate",
+    "name": "Tomato",
     "category": "vegetales",
-    "subcategory": "VEGETALES FRESCOS (CRUDOS, por 100g)",
+    "subcategory": "Fresh vegetables, raw (per 100g)",
     "macrosPer100g": {
       "protein": 0.9,
       "carbs": 3.9,
@@ -1156,9 +1156,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "cebolla",
-    "name": "Cebolla",
+    "name": "Onion",
     "category": "vegetales",
-    "subcategory": "VEGETALES FRESCOS (CRUDOS, por 100g)",
+    "subcategory": "Fresh vegetables, raw (per 100g)",
     "macrosPer100g": {
       "protein": 1.1,
       "carbs": 9.3,
@@ -1168,9 +1168,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "champinones-setas",
-    "name": "Champiñones/setas",
+    "name": "Mushrooms",
     "category": "vegetales",
-    "subcategory": "VEGETALES FRESCOS (CRUDOS, por 100g)",
+    "subcategory": "Fresh vegetables, raw (per 100g)",
     "macrosPer100g": {
       "protein": 3.1,
       "carbs": 3.3,
@@ -1180,9 +1180,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "creatina",
-    "name": "Creatina",
+    "name": "Creatine",
     "category": "suplementos",
-    "subcategory": "SUPLEMENTOS NUTRICIONALES",
+    "subcategory": "Nutritional supplements",
     "macrosPer100g": {
       "protein": 5,
       "carbs": 0,
@@ -1192,9 +1192,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "propoleo",
-    "name": "Propóleo",
+    "name": "Propolis",
     "category": "suplementos",
-    "subcategory": "SUPLEMENTOS NUTRICIONALES",
+    "subcategory": "Nutritional supplements",
     "macrosPer100g": {
       "protein": 10,
       "carbs": 0,
@@ -1204,9 +1204,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "vitamina-c",
-    "name": "Vitamina C",
+    "name": "Vitamin C",
     "category": "suplementos",
-    "subcategory": "SUPLEMENTOS NUTRICIONALES",
+    "subcategory": "Nutritional supplements",
     "macrosPer100g": {
       "protein": 500,
       "carbs": 0,
@@ -1216,9 +1216,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "complejo-b",
-    "name": "Complejo B",
+    "name": "B-complex vitamins",
     "category": "suplementos",
-    "subcategory": "SUPLEMENTOS NUTRICIONALES",
+    "subcategory": "Nutritional supplements",
     "macrosPer100g": {
       "protein": 1,
       "carbs": 0,
@@ -1228,9 +1228,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "citrato-de-magnesio",
-    "name": "Citrato de magnesio",
+    "name": "Magnesium citrate",
     "category": "suplementos",
-    "subcategory": "SUPLEMENTOS NUTRICIONALES",
+    "subcategory": "Nutritional supplements",
     "macrosPer100g": {
       "protein": 1,
       "carbs": 0,
@@ -1240,9 +1240,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "cafeina",
-    "name": "Cafeína",
+    "name": "Caffeine",
     "category": "suplementos",
-    "subcategory": "SUPLEMENTOS NUTRICIONALES",
+    "subcategory": "Nutritional supplements",
     "macrosPer100g": {
       "protein": 150,
       "carbs": 0,
@@ -1252,9 +1252,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "multivitaminico",
-    "name": "Multivitamínico",
+    "name": "Multivitamin",
     "category": "suplementos",
-    "subcategory": "SUPLEMENTOS NUTRICIONALES",
+    "subcategory": "Nutritional supplements",
     "macrosPer100g": {
       "protein": 1,
       "carbs": 0,
@@ -1264,9 +1264,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "miel",
-    "name": "Miel",
+    "name": "Honey",
     "category": "suplementos",
-    "subcategory": "ENDULZANTES Y CONDIMENTOS (por 100g)",
+    "subcategory": "Sweeteners & seasonings (per 100g)",
     "macrosPer100g": {
       "protein": 0.3,
       "carbs": 82.4,
@@ -1278,7 +1278,7 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
     "id": "stevia",
     "name": "Stevia",
     "category": "suplementos",
-    "subcategory": "ENDULZANTES Y CONDIMENTOS (por 100g)",
+    "subcategory": "Sweeteners & seasonings (per 100g)",
     "macrosPer100g": {
       "protein": 0,
       "carbs": 0,
@@ -1288,9 +1288,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "mostaza",
-    "name": "Mostaza",
+    "name": "Mustard",
     "category": "suplementos",
-    "subcategory": "ENDULZANTES Y CONDIMENTOS (por 100g)",
+    "subcategory": "Sweeteners & seasonings (per 100g)",
     "macrosPer100g": {
       "protein": 4.4,
       "carbs": 5.3,
@@ -1300,9 +1300,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "canela",
-    "name": "Canela",
+    "name": "Cinnamon",
     "category": "suplementos",
-    "subcategory": "ENDULZANTES Y CONDIMENTOS (por 100g)",
+    "subcategory": "Sweeteners & seasonings (per 100g)",
     "macrosPer100g": {
       "protein": 4,
       "carbs": 80.6,
@@ -1312,9 +1312,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "cacao-puro",
-    "name": "Cacao puro",
+    "name": "Pure cocoa",
     "category": "suplementos",
-    "subcategory": "ENDULZANTES Y CONDIMENTOS (por 100g)",
+    "subcategory": "Sweeteners & seasonings (per 100g)",
     "macrosPer100g": {
       "protein": 19.6,
       "carbs": 57.9,
@@ -1324,9 +1324,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "chocolate-85-cacao",
-    "name": "Chocolate 85% cacao",
+    "name": "85% dark chocolate",
     "category": "suplementos",
-    "subcategory": "ENDULZANTES Y CONDIMENTOS (por 100g)",
+    "subcategory": "Sweeteners & seasonings (per 100g)",
     "macrosPer100g": {
       "protein": 10,
       "carbs": 30,
@@ -1336,9 +1336,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "cafe-sin-azucar",
-    "name": "Café (sin azúcar)",
+    "name": "Coffee (unsweetened)",
     "category": "suplementos",
-    "subcategory": "BEBIDAS (por 100ml)",
+    "subcategory": "Beverages (per 100ml)",
     "macrosPer100g": {
       "protein": 0.1,
       "carbs": 0,
@@ -1348,9 +1348,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "infusion-manzanilla-valeriana-mate",
-    "name": "Infusión (manzanilla, valeriana, mate)",
+    "name": "Herbal tea (chamomile, valerian, mate)",
     "category": "suplementos",
-    "subcategory": "BEBIDAS (por 100ml)",
+    "subcategory": "Beverages (per 100ml)",
     "macrosPer100g": {
       "protein": 0,
       "carbs": 0.5,
@@ -1360,9 +1360,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "bebida-vegetal-sin-azucar",
-    "name": "Bebida vegetal sin azúcar",
+    "name": "Unsweetened plant milk drink",
     "category": "suplementos",
-    "subcategory": "BEBIDAS (por 100ml)",
+    "subcategory": "Beverages (per 100ml)",
     "macrosPer100g": {
       "protein": 0.5,
       "carbs": 3,
@@ -1372,9 +1372,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "leche-vegetal-sin-azucar",
-    "name": "Leche vegetal sin azúcar",
+    "name": "Unsweetened plant milk",
     "category": "suplementos",
-    "subcategory": "BEBIDAS (por 100ml)",
+    "subcategory": "Beverages (per 100ml)",
     "macrosPer100g": {
       "protein": 0.5,
       "carbs": 3,
@@ -1384,9 +1384,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "agua",
-    "name": "Agua",
+    "name": "Water",
     "category": "suplementos",
-    "subcategory": "BEBIDAS (por 100ml)",
+    "subcategory": "Beverages (per 100ml)",
     "macrosPer100g": {
       "protein": 0,
       "carbs": 0,
@@ -1396,9 +1396,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "barra-de-proteina-20g-o-mas",
-    "name": "Barra de proteína (20g o más)",
+    "name": "Protein bar (20g+ protein)",
     "category": "suplementos",
-    "subcategory": "OTROS",
+    "subcategory": "Other",
     "macrosPer100g": {
       "protein": 33.3,
       "carbs": 41.7,
@@ -1408,9 +1408,9 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
   },
   {
     "id": "granola-sin-azucar",
-    "name": "Granola sin azúcar",
+    "name": "Unsweetened granola",
     "category": "suplementos",
-    "subcategory": "OTROS",
+    "subcategory": "Other",
     "macrosPer100g": {
       "protein": 10,
       "carbs": 60,
@@ -1421,13 +1421,13 @@ export const FOODS_CATALOG: FoodCatalogItem[] = [
 ] as FoodCatalogItem[];
 
 export const FOOD_CATEGORIES = [
-  { id: 'all', label: 'Todos' },
-  { id: 'proteinas', label: 'Proteínas' },
-  { id: 'carbohidratos', label: 'Carbohidratos' },
-  { id: 'grasas', label: 'Grasas' },
-  { id: 'frutas', label: 'Frutas' },
-  { id: 'vegetales', label: 'Vegetales' },
-  { id: 'suplementos', label: 'Suplementos' },
+  { id: 'all', label: 'All' },
+  { id: 'proteinas', label: 'Protein' },
+  { id: 'carbohidratos', label: 'Carbs' },
+  { id: 'grasas', label: 'Fats' },
+  { id: 'frutas', label: 'Fruit' },
+  { id: 'vegetales', label: 'Vegetables' },
+  { id: 'suplementos', label: 'Supplements' },
 ] as const;
 
 export type FoodCategoryFilter = (typeof FOOD_CATEGORIES)[number]['id'];
