@@ -41,7 +41,7 @@ export default function NutritionOverviewPanel({
 
       <TouchableOpacity style={styles.logCta} activeOpacity={0.9} onPress={onLogFood}>
         <Ionicons name="add-circle" size={22} color={colors.white} />
-        <Text style={styles.logCtaText}>Log food or quick-add macros</Text>
+        <Text style={styles.logCtaText}>Buscar alimento o registrar comida</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.linkRow} activeOpacity={0.85} onPress={onEditMetrics}>

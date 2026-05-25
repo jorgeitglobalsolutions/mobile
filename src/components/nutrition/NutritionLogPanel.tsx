@@ -23,6 +23,7 @@ import type { HabitDayDoc, MealEntry } from '../../types/domain';
 import type { HabitDefaults } from '../../services/habitsRepo';
 import { localDateKey } from '../../utils/dateKey';
 import { friendlyAppError } from '../../utils/appError';
+import FoodDatabasePanel from './FoodDatabasePanel';
 
 type MacroId = 'protein' | 'carbs' | 'fat';
 
@@ -45,6 +46,7 @@ function formatTime(ms: number): string {
 export default function NutritionLogPanel({ uid, defaults, habitDay }: Props) {
   const [busy, setBusy] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [showManual, setShowManual] = useState(false);
   const [mealName, setMealName] = useState('');
   const [mealProtein, setMealProtein] = useState('');
   const [mealCarbs, setMealCarbs] = useState('');
@@ -140,9 +142,13 @@ export default function NutritionLogPanel({ uid, defaults, habitDay }: Props) {
 
   return (
     <View>
-      <Text style={styles.hint}>Logging here updates your Overview progress immediately.</Text>
+      <Text style={styles.hint}>
+        Busca alimentos o crea entradas personalizadas. Los totales se actualizan al instante en Resumen.
+      </Text>
 
-      <Text style={styles.sectionTitle}>Quick add</Text>
+      <FoodDatabasePanel uid={uid} defaults={defaults} />
+
+      <Text style={[styles.sectionTitle, { marginTop: spacing.lg }]}>Añadir rápido</Text>
       <View style={styles.quickGrid}>
         <QuickPill
           icon="nutrition"
@@ -174,34 +180,47 @@ export default function NutritionLogPanel({ uid, defaults, habitDay }: Props) {
         />
       </View>
 
-      <Text style={styles.sectionTitle}>Log a meal</Text>
-      <View style={styles.formCard}>
-        <TextInput
-          style={styles.nameInput}
-          placeholder="Meal name (optional)"
-          placeholderTextColor={colors.textMuted}
-          value={mealName}
-          onChangeText={setMealName}
-        />
-        <View style={styles.macroInputsRow}>
-          <MacroInput label="Protein" suffix="g" value={mealProtein} onChange={setMealProtein} color={colors.green} />
-          <MacroInput label="Carbs" suffix="g" value={mealCarbs} onChange={setMealCarbs} color={colors.primary} />
-          <MacroInput label="Fat" suffix="g" value={mealFat} onChange={setMealFat} color={colors.yellow} />
+      <TouchableOpacity
+        style={styles.manualToggle}
+        onPress={() => setShowManual((v) => !v)}
+        activeOpacity={0.85}
+      >
+        <Text style={styles.sectionTitle}>Macros manual (avanzado)</Text>
+        <Ionicons name={showManual ? 'chevron-up' : 'chevron-down'} size={20} color={colors.textMuted} />
+      </TouchableOpacity>
+      {showManual ? (
+        <View style={styles.formCard}>
+          <TextInput
+            style={styles.nameInput}
+            placeholder="Nombre de comida (opcional)"
+            placeholderTextColor={colors.textMuted}
+            value={mealName}
+            onChangeText={setMealName}
+          />
+          <View style={styles.macroInputsRow}>
+            <MacroInput label="Proteínas" suffix="g" value={mealProtein} onChange={setMealProtein} color={colors.green} />
+            <MacroInput label="Carbos" suffix="g" value={mealCarbs} onChange={setMealCarbs} color={colors.primary} />
+            <MacroInput label="Grasas" suffix="g" value={mealFat} onChange={setMealFat} color={colors.yellow} />
+          </View>
+          <Text style={styles.kcalPreview}>≈ {previewKcal} kcal</Text>
+          <TouchableOpacity
+            style={[styles.primaryBtn, saving && { opacity: 0.7 }]}
+            activeOpacity={0.9}
+            onPress={() => void onLogMeal()}
+            disabled={saving}
+          >
+            {saving ? (
+              <ActivityIndicator color={colors.white} />
+            ) : (
+              <Text style={styles.primaryBtnText}>Registrar comida</Text>
+            )}
+          </TouchableOpacity>
         </View>
-        <Text style={styles.kcalPreview}>≈ {previewKcal} kcal</Text>
-        <TouchableOpacity
-          style={[styles.primaryBtn, saving && { opacity: 0.7 }]}
-          activeOpacity={0.9}
-          onPress={() => void onLogMeal()}
-          disabled={saving}
-        >
-          {saving ? <ActivityIndicator color={colors.white} /> : <Text style={styles.primaryBtnText}>Log meal</Text>}
-        </TouchableOpacity>
-      </View>
+      ) : null}
 
-      <Text style={styles.sectionTitle}>Today's meals</Text>
+      <Text style={[styles.sectionTitle, { marginTop: spacing.lg }]}>Comidas de hoy</Text>
       {meals.length === 0 ? (
-        <Text style={styles.empty}>No meals yet — use quick add or log a meal above.</Text>
+        <Text style={styles.empty}>Sin comidas — busca un alimento o usa añadir rápido.</Text>
       ) : (
         meals.map((m, idx) => (
           <View key={m.id}>
@@ -210,6 +229,7 @@ export default function NutritionLogPanel({ uid, defaults, habitDay }: Props) {
               <View style={{ flex: 1 }}>
                 <Text style={styles.mealTitle}>{m.name || 'Meal'}</Text>
                 <Text style={styles.mealMeta}>
+                  {m.grams ? `${m.grams}g · ` : ''}
                   {Math.round(m.caloriesKcal)} kcal • {Math.round(m.proteinG)}P / {Math.round(m.carbsG)}C /{' '}
                   {Math.round(m.fatG)}F
                 </Text>
@@ -303,6 +323,13 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   sectionTitle: { fontSize: 16, fontWeight: '800', color: colors.text, marginBottom: spacing.sm },
+  manualToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: spacing.lg,
+    marginBottom: spacing.sm,
+  },
   quickGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',

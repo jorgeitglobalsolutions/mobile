@@ -337,12 +337,21 @@ export async function setMood(
 export async function logMeal(
   uid: string,
   date: string,
-  input: { name?: string; proteinG: number; carbsG: number; fatG: number; caloriesKcal?: number },
+  input: {
+    name?: string;
+    proteinG: number;
+    carbsG: number;
+    fatG: number;
+    caloriesKcal?: number;
+    catalogFoodId?: string;
+    customFoodId?: string;
+    grams?: number;
+  },
   defaults: HabitDefaults,
 ): Promise<MealEntry> {
-  const protein = Math.max(0, Math.round(input.proteinG));
-  const carbs = Math.max(0, Math.round(input.carbsG));
-  const fat = Math.max(0, Math.round(input.fatG));
+  const protein = Math.max(0, Math.round(input.proteinG * 10) / 10);
+  const carbs = Math.max(0, Math.round(input.carbsG * 10) / 10);
+  const fat = Math.max(0, Math.round(input.fatG * 10) / 10);
   const kcal = Math.max(0, Math.round(input.caloriesKcal ?? caloriesFromMacros(protein, carbs, fat)));
   const entry: MealEntry = {
     id: `m_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
@@ -352,6 +361,9 @@ export async function logMeal(
     fatG: fat,
     caloriesKcal: kcal,
     loggedAtMs: Date.now(),
+    ...(input.catalogFoodId ? { catalogFoodId: input.catalogFoodId } : {}),
+    ...(input.customFoodId ? { customFoodId: input.customFoodId } : {}),
+    ...(input.grams != null && input.grams > 0 ? { grams: input.grams } : {}),
   };
   if (isMockDataMode()) {
     await mem.mockAppendMeal(uid, date, entry, defaults);

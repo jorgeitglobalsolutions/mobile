@@ -68,6 +68,12 @@ export type MealEntry = {
   fatG: number;
   /** ms epoch — small and lets us sort without Firestore timestamps inside arrays. */
   loggedAtMs: number;
+  /** Set when logged from the built-in food database. */
+  catalogFoodId?: string;
+  /** Set when logged from the user's saved custom foods. */
+  customFoodId?: string;
+  /** Portion size in grams used to scale per-100g macros. */
+  grams?: number;
 };
 
 /** Single body-weight log (users/{uid}/weightEntries). */

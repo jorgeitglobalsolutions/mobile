@@ -1,6 +1,7 @@
 import { Timestamp } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
 import type { HabitDayDoc, LoggedExercise, MealEntry, MoodValue, RoutineDoc, WeightEntryDoc, WorkoutDoc } from '../types/domain';
+import type { CustomFoodDoc } from '../types/food';
 import type { SubscriptionFields, UserDocument, UserProfile, UserSettings } from '../types/firestoreUser';
 import { PREDEFINED_ROUTINES_SEED } from '../data/predefinedRoutinesSeed';
 import type { WorkoutDraftDoc } from '../services/workoutDraftRepo';
@@ -45,6 +46,8 @@ const habitDays = new Map<string, Map<string, HabitDayDoc>>();
 const drafts = new Map<string, WorkoutDraftDoc | null>();
 const weightEntries = new Map<string, { id: string; data: WeightEntryDoc }[]>();
 const weightListeners = new Map<string, Set<(rows: { id: string; data: WeightEntryDoc }[]) => void>>();
+const customFoods = new Map<string, { id: string; data: CustomFoodDoc }[]>();
+const customFoodListeners = new Map<string, Set<(rows: { id: string; data: CustomFoodDoc }[]) => void>>();
 
 const userDocListeners = new Map<string, Set<(d: UserDocument | null) => void>>();
 const routineListeners = new Map<string, Set<(rows: { id: string; data: RoutineDoc }[]) => void>>();
@@ -586,6 +589,58 @@ export async function mockDeleteWeightEntry(uid: string, entryId: string): Promi
     list.filter((x) => x.id !== entryId),
   );
   emitWeightEntries(uid);
+}
+
+function emitCustomFoods(uid: string) {
+  const rows = customFoods.get(uid) ?? [];
+  customFoodListeners.get(uid)?.forEach((cb) => cb(rows));
+}
+
+export function mockSubscribeCustomFoods(
+  uid: string,
+  onUpdate: (rows: { id: string; data: CustomFoodDoc }[]) => void,
+): () => void {
+  if (!customFoodListeners.has(uid)) customFoodListeners.set(uid, new Set());
+  customFoodListeners.get(uid)!.add(onUpdate);
+  onUpdate(customFoods.get(uid) ?? []);
+  return () => customFoodListeners.get(uid)?.delete(onUpdate);
+}
+
+export async function mockSaveCustomFood(
+  uid: string,
+  payload: CustomFoodDoc,
+  existingId?: string,
+): Promise<string> {
+  const list = [...(customFoods.get(uid) ?? [])];
+  if (existingId) {
+    const idx = list.findIndex((x) => x.id === existingId);
+    if (idx >= 0) {
+      list[idx] = {
+        id: existingId,
+        data: { ...payload, createdAtMs: list[idx].data.createdAtMs, updatedAtMs: Date.now() },
+      };
+    } else {
+      list.unshift({ id: existingId, data: payload });
+    }
+    customFoods.set(uid, list);
+    emitCustomFoods(uid);
+    return existingId;
+  }
+  const id = `cf_${Date.now()}`;
+  list.unshift({ id, data: payload });
+  customFoods.set(uid, list);
+  emitCustomFoods(uid);
+  return id;
+}
+
+export async function mockDeleteCustomFood(uid: string, foodId: string): Promise<void> {
+  const list = customFoods.get(uid);
+  if (!list) return;
+  customFoods.set(
+    uid,
+    list.filter((x) => x.id !== foodId),
+  );
+  emitCustomFoods(uid);
 }
 
 /** Build a Firebase `User` object sufficient for the UI (mock mode only). */
