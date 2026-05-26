@@ -7,7 +7,8 @@ import { colors, radius, spacing } from '../theme';
 import { useAuth } from '../context/AuthContext';
 import { deleteRoutine, getRoutine } from '../services/routinesRepo';
 import type { RoutineDoc } from '../types/domain';
-import { EXERCISES_CATALOG } from '../data/exercisesCatalog';
+import { getCatalogExerciseByName } from '../data/exercisesCatalog';
+import ExerciseGifThumb from '../components/ExerciseGifThumb';
 
 type Props = RoutinesScreenProps<'RoutineDetail'>;
 
@@ -67,8 +68,7 @@ export default function RoutineDetailScreen({ navigation, route }: Props) {
     `Focus on ${muscles.toLowerCase()} with compound movements and isolation work.`;
 
   const openExercise = (name: string) => {
-    const key = name.trim().toLowerCase();
-    const hit = EXERCISES_CATALOG.find((e) => e.name.trim().toLowerCase() === key);
+    const hit = getCatalogExerciseByName(name);
     if (!hit) {
       Alert.alert('Exercise', 'Details for this exercise are not available yet.');
       return;
@@ -115,9 +115,11 @@ export default function RoutineDetailScreen({ navigation, route }: Props) {
             onPress={() => openExercise(ex.name)}
           >
             <Text style={styles.exNum}>{i + 1}</Text>
-            <View style={styles.exThumb}>
-              <Ionicons name="fitness-outline" size={22} color={colors.primary} />
-            </View>
+            <ExerciseGifThumb
+              exerciseId={getCatalogExerciseByName(ex.name)?.id ?? ''}
+              size={44}
+              style={{ marginRight: spacing.md }}
+            />
             <View style={{ flex: 1 }}>
               <Text style={styles.exName}>{ex.name}</Text>
               <Text style={styles.exMeta}>

@@ -58,8 +58,8 @@ function habitKey(uid: string, date: string) {
 }
 
 function seedRoutines(uid: string) {
-  if (routines.has(uid)) return;
-  const map = new Map<string, RoutineDoc>();
+  if (!routines.has(uid)) routines.set(uid, new Map());
+  const map = routines.get(uid)!;
   for (const s of PREDEFINED_ROUTINES_SEED) {
     map.set(s.id, {
       title: s.title,
@@ -73,7 +73,6 @@ function seedRoutines(uid: string) {
       updatedAt: ts(),
     });
   }
-  routines.set(uid, map);
 }
 
 function emitWeightEntries(uid: string) {
