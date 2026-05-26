@@ -155,28 +155,32 @@ export default function NutritionLogPanel({ uid, defaults, habitDay, onOpenFoodS
       <View style={styles.quickGrid}>
         <QuickPill
           icon="nutrition"
-          label={`+${MACRO_QUICK_GRAMS}g protein`}
+          amount={`+${MACRO_QUICK_GRAMS}g`}
+          macro="Protein"
           color={colors.green}
           disabled={busy}
           onPress={() => void onQuickMacro('protein')}
         />
         <QuickPill
           icon="leaf"
-          label={`+${MACRO_QUICK_GRAMS}g carbs`}
+          amount={`+${MACRO_QUICK_GRAMS}g`}
+          macro="Carbs"
           color={colors.primary}
           disabled={busy}
           onPress={() => void onQuickMacro('carbs')}
         />
         <QuickPill
           icon="water"
-          label={`+${MACRO_QUICK_GRAMS}g fat`}
+          amount={`+${MACRO_QUICK_GRAMS}g`}
+          macro="Fat"
           color={colors.yellow}
           disabled={busy}
           onPress={() => void onQuickMacro('fat')}
         />
         <QuickPill
           icon="flame"
-          label="+100 kcal"
+          amount="+100"
+          macro="kcal"
           color={colors.orange}
           disabled={busy}
           onPress={() => void onQuickKcal(100)}
@@ -257,13 +261,15 @@ export default function NutritionLogPanel({ uid, defaults, habitDay, onOpenFoodS
 
 function QuickPill({
   icon,
-  label,
+  amount,
+  macro,
   color,
   onPress,
   disabled,
 }: {
   icon: keyof typeof Ionicons.glyphMap;
-  label: string;
+  amount: string;
+  macro: string;
   color: string;
   onPress: () => void;
   disabled?: boolean;
@@ -274,11 +280,17 @@ function QuickPill({
       activeOpacity={0.85}
       onPress={onPress}
       disabled={disabled}
+      accessibilityLabel={`${amount} ${macro}`}
     >
       <View style={[styles.quickPillIcon, { backgroundColor: color }]}>
-        <Ionicons name={icon} size={18} color={colors.white} />
+        <Ionicons name={icon} size={16} color={colors.white} />
       </View>
-      <Text style={styles.quickPillLabel}>{label}</Text>
+      <Text style={styles.quickPillAmount} numberOfLines={1}>
+        {amount}
+      </Text>
+      <Text style={styles.quickPillMacro} numberOfLines={1}>
+        {macro}
+      </Text>
     </TouchableOpacity>
   );
 }
@@ -348,29 +360,30 @@ const styles = StyleSheet.create({
   },
   quickGrid: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
+    gap: spacing.xs,
     marginBottom: spacing.lg,
   },
   quickPill: {
-    flexDirection: 'row',
+    flex: 1,
+    minWidth: 0,
     alignItems: 'center',
     backgroundColor: colors.white,
     paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: radius.full,
+    paddingHorizontal: spacing.xs,
+    borderRadius: radius.lg,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.border,
   },
   quickPillIcon: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: spacing.sm,
+    marginBottom: 4,
   },
-  quickPillLabel: { fontSize: 13, fontWeight: '700', color: colors.text },
+  quickPillAmount: { fontSize: 12, fontWeight: '800', color: colors.text },
+  quickPillMacro: { fontSize: 10, fontWeight: '700', color: colors.textSecondary, marginTop: 1 },
   formCard: {
     backgroundColor: colors.white,
     borderRadius: radius.lg,

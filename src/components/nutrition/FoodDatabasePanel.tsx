@@ -274,7 +274,7 @@ export default function FoodDatabasePanel({
   );
 
   const portionCard = selected ? (
-    <View style={styles.portionCard}>
+    <View style={[styles.portionCard, isModal && styles.portionCardModal]}>
       <Text style={styles.portionTitle}>{foodName(selected)}</Text>
       <Text style={styles.portionSub}>Amount (grams)</Text>
       <View style={styles.gramsRow}>
@@ -460,6 +460,7 @@ export default function FoodDatabasePanel({
   if (isModal) {
     return (
       <View style={styles.modalRoot}>
+        {portionCard}
         {modeRow}
         <FlatList
           style={styles.modalList}
@@ -475,7 +476,6 @@ export default function FoodDatabasePanel({
               {listData.length > 40 && visibleList.length >= 40 ? (
                 <Text style={styles.moreHint}>Refine your search to narrow results.</Text>
               ) : null}
-              {portionCard}
               <View style={{ height: spacing.xl }} />
             </>
           }
@@ -664,6 +664,10 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.primary,
+  },
+  portionCardModal: {
+    marginTop: 0,
+    marginBottom: spacing.md,
   },
   portionTitle: { fontSize: 17, fontWeight: '800', color: colors.text },
   portionSub: { fontSize: 13, color: colors.textSecondary, fontWeight: '700', marginTop: spacing.md, marginBottom: spacing.sm },
