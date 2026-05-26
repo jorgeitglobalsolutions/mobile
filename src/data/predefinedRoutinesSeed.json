@@ -1,17 +1,4 @@
-import type { RoutineExerciseTemplate } from '../types/domain';
-
-export type SeedRoutine = {
-  id: string;
-  title: string;
-  muscles: string;
-  minutes: number;
-  category: string;
-  description: string;
-  exercises: RoutineExerciseTemplate[];
-};
-
-/** Auto-generated — run: node scripts/generatePredefinedRoutinesSeed.mjs */
-export const PREDEFINED_ROUTINES_SEED: SeedRoutine[] = [
+[
   {
     "id": "seed_push_chest",
     "title": "Push – Chest Focus",
@@ -748,4 +735,4 @@ export const PREDEFINED_ROUTINES_SEED: SeedRoutine[] = [
       }
     ]
   }
-];
+]

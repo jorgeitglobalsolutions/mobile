@@ -4,3 +4,5 @@ lib/
 # Local overrides (not deployed). Project file `.env.<projectId>` may be committed for QA flags.
 .env
 .env.local
+certs/firebase-admin.json
+certs/service-account.json

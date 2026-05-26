@@ -8,7 +8,6 @@ import { useAuth } from '../context/AuthContext';
 import { deleteRoutine, getRoutine } from '../services/routinesRepo';
 import type { RoutineDoc } from '../types/domain';
 import { getCatalogExerciseByName } from '../data/exercisesCatalog';
-import ExerciseGifThumb from '../components/ExerciseGifThumb';
 
 type Props = RoutinesScreenProps<'RoutineDetail'>;
 
@@ -115,11 +114,9 @@ export default function RoutineDetailScreen({ navigation, route }: Props) {
             onPress={() => openExercise(ex.name)}
           >
             <Text style={styles.exNum}>{i + 1}</Text>
-            <ExerciseGifThumb
-              exerciseId={getCatalogExerciseByName(ex.name)?.id ?? ''}
-              size={44}
-              style={{ marginRight: spacing.md }}
-            />
+            <View style={styles.exThumb}>
+              <Ionicons name="fitness-outline" size={22} color={colors.primary} />
+            </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.exName}>{ex.name}</Text>
               <Text style={styles.exMeta}>
