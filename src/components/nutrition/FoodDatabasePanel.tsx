@@ -27,6 +27,9 @@ type LogMode = 'search' | 'custom';
 type Props = {
   uid: string;
   defaults: HabitDefaults;
+  /** `modal` = full-screen list with scroll; `inline` = embedded in log panel (legacy). */
+  variant?: 'inline' | 'modal';
+  onClose?: () => void;
 };
 
 const DEFAULT_GRAMS = '100';
@@ -35,7 +38,13 @@ function formatMacros(p: number, c: number, f: number, kcal: number): string {
   return `${Math.round(kcal)} kcal · ${p}P / ${c}C / ${f}F`;
 }
 
-export default function FoodDatabasePanel({ uid, defaults }: Props) {
+export default function FoodDatabasePanel({
+  uid,
+  defaults,
+  variant = 'inline',
+  onClose,
+}: Props) {
+  const isModal = variant === 'modal';
   const [mode, setMode] = useState<LogMode>('search');
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<FoodCategoryFilter>('all');
@@ -123,6 +132,7 @@ export default function FoodDatabasePanel({ uid, defaults }: Props) {
       setSelected(null);
       setGrams(DEFAULT_GRAMS);
       setQuery('');
+      if (isModal) onClose?.();
     } catch (e: unknown) {
       Alert.alert('Meal', friendlyAppError(e, 'Could not log meal.'));
     } finally {
@@ -184,6 +194,7 @@ export default function FoodDatabasePanel({ uid, defaults }: Props) {
       setCustomFat('');
       setCustomCalories('');
       setMode('search');
+      if (isModal) onClose?.();
     } catch (e: unknown) {
       Alert.alert('Food', friendlyAppError(e, 'Could not save food.'));
     } finally {
@@ -252,206 +263,252 @@ export default function FoodDatabasePanel({ uid, defaults }: Props) {
     );
   };
 
+  const listLimit = isModal ? listData.length : 40;
+  const visibleList = listData.slice(0, listLimit);
+
+  const modeRow = (
+    <View style={[styles.modeRow, isModal && styles.modeRowModal]}>
+      <ModePill label="Search" active={mode === 'search'} onPress={() => setMode('search')} />
+      <ModePill label="Create custom" active={mode === 'custom'} onPress={() => setMode('custom')} />
+    </View>
+  );
+
+  const portionCard = selected ? (
+    <View style={styles.portionCard}>
+      <Text style={styles.portionTitle}>{foodName(selected)}</Text>
+      <Text style={styles.portionSub}>Amount (grams)</Text>
+      <View style={styles.gramsRow}>
+        {[50, 100, 150, 200].map((preset) => (
+          <TouchableOpacity
+            key={preset}
+            style={[styles.gramPreset, grams === String(preset) && styles.gramPresetActive]}
+            onPress={() => setGrams(String(preset))}
+          >
+            <Text
+              style={[styles.gramPresetText, grams === String(preset) && styles.gramPresetTextActive]}
+            >
+              {preset}g
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+      <View style={styles.gramsInputWrap}>
+        <TextInput
+          style={styles.gramsInput}
+          keyboardType="decimal-pad"
+          value={grams}
+          onChangeText={setGrams}
+          placeholder="100"
+          placeholderTextColor={colors.textMuted}
+        />
+        <Text style={styles.gramsSuffix}>g</Text>
+      </View>
+      {portionPreview ? (
+        <Text style={styles.previewMacros}>
+          {formatMacros(
+            portionPreview.protein,
+            portionPreview.carbs,
+            portionPreview.fat,
+            portionPreview.calories,
+          )}
+        </Text>
+      ) : null}
+      <TouchableOpacity
+        style={[styles.primaryBtn, saving && { opacity: 0.7 }]}
+        onPress={() => void onAddToMeal()}
+        disabled={saving}
+      >
+        {saving ? (
+          <ActivityIndicator color={colors.white} />
+        ) : (
+          <Text style={styles.primaryBtnText}>Add to today's meal</Text>
+        )}
+      </TouchableOpacity>
+    </View>
+  ) : null;
+
+  const customForm = (
+    <View style={styles.formCard}>
+      <Text style={styles.sectionTitle}>Custom food</Text>
+      <Text style={styles.formHint}>Macros per 100g. Saved to your history for reuse.</Text>
+      <TextInput
+        style={styles.nameInput}
+        placeholder="Food name"
+        placeholderTextColor={colors.textMuted}
+        value={customName}
+        onChangeText={setCustomName}
+      />
+      <View style={styles.macroInputsRow}>
+        <MacroField label="Protein" suffix="g" value={customProtein} onChange={setCustomProtein} color={colors.green} />
+        <MacroField label="Carbs" suffix="g" value={customCarbs} onChange={setCustomCarbs} color={colors.primary} />
+        <MacroField label="Fat" suffix="g" value={customFat} onChange={setCustomFat} color={colors.yellow} />
+      </View>
+      <MacroField
+        label="Calories (optional)"
+        suffix="kcal"
+        value={customCalories}
+        onChange={setCustomCalories}
+        color={colors.orange}
+        fullWidth
+      />
+      <Text style={styles.portionSub}>Portion to log today</Text>
+      <View style={styles.gramsInputWrap}>
+        <TextInput
+          style={styles.gramsInput}
+          keyboardType="decimal-pad"
+          value={grams}
+          onChangeText={setGrams}
+          placeholder="100"
+          placeholderTextColor={colors.textMuted}
+        />
+        <Text style={styles.gramsSuffix}>g</Text>
+      </View>
+      <TouchableOpacity
+        style={styles.saveToggle}
+        onPress={() => setSaveToHistory((v) => !v)}
+        activeOpacity={0.8}
+      >
+        <Ionicons
+          name={saveToHistory ? 'checkbox' : 'square-outline'}
+          size={22}
+          color={colors.primary}
+        />
+        <Text style={styles.saveToggleText}>Save to my history</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={[styles.primaryBtn, saving && { opacity: 0.7 }]}
+        onPress={() => void onSaveCustomAndLog()}
+        disabled={saving}
+      >
+        {saving ? (
+          <ActivityIndicator color={colors.white} />
+        ) : (
+          <Text style={styles.primaryBtnText}>Save and log meal</Text>
+        )}
+      </TouchableOpacity>
+    </View>
+  );
+
+  const searchFilters = (
+    <>
+      <View style={styles.searchWrap}>
+        <Ionicons name="search" size={18} color={colors.textMuted} style={{ marginRight: 8 }} />
+        <TextInput
+          placeholder="Search food (chicken, rice, egg...)"
+          placeholderTextColor={colors.textMuted}
+          style={styles.searchInput}
+          value={query}
+          onChangeText={(t) => {
+            setQuery(t);
+            if (!t.trim()) setSelected(null);
+          }}
+        />
+      </View>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.chipsScroll}
+        contentContainerStyle={styles.chipsRow}
+      >
+        {FOOD_CATEGORIES.map((c) => (
+          <TouchableOpacity
+            key={c.id}
+            onPress={() => setCategory(c.id)}
+            style={[styles.chip, category === c.id && styles.chipActive]}
+          >
+            <Text style={[styles.chipText, category === c.id && styles.chipTextActive]}>{c.label}</Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+      {customFoods.length > 0 && !query.trim() ? (
+        <>
+          <Text style={styles.sectionTitle}>Your saved foods</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: spacing.md }}>
+            <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+              {customFoods.slice(0, 8).map((row) => (
+                <TouchableOpacity key={row.id} style={styles.savedPill} onPress={() => onQuickReuse(row)}>
+                  <Ionicons name="bookmark" size={14} color={colors.orange} />
+                  <Text style={styles.savedPillText} numberOfLines={1}>
+                    {row.data.name}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </ScrollView>
+        </>
+      ) : null}
+    </>
+  );
+
+  if (mode === 'custom') {
+    return (
+      <ScrollView
+        style={isModal ? styles.modalRoot : undefined}
+        contentContainerStyle={isModal ? styles.modalScrollContent : undefined}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        {!isModal ? (
+          <Text style={styles.hint}>Search the food database or create custom foods. Values are per 100g.</Text>
+        ) : null}
+        {modeRow}
+        {customForm}
+      </ScrollView>
+    );
+  }
+
+  if (isModal) {
+    return (
+      <View style={styles.modalRoot}>
+        {modeRow}
+        <FlatList
+          style={styles.modalList}
+          data={visibleList}
+          keyExtractor={(item) =>
+            item.source === 'catalog' ? `c-${item.item.id}` : `u-${item.item.id}`
+          }
+          renderItem={renderFoodRow}
+          keyboardShouldPersistTaps="handled"
+          ListHeaderComponent={searchFilters}
+          ListFooterComponent={
+            <>
+              {listData.length > 40 && visibleList.length >= 40 ? (
+                <Text style={styles.moreHint}>Refine your search to narrow results.</Text>
+              ) : null}
+              {portionCard}
+              <View style={{ height: spacing.xl }} />
+            </>
+          }
+          ListEmptyComponent={
+            <Text style={styles.empty}>No results. Try another term or category.</Text>
+          }
+          ItemSeparatorComponent={() => <View style={{ height: spacing.sm }} />}
+        />
+      </View>
+    );
+  }
+
   return (
     <View>
-      <Text style={styles.hint}>
-        Search the food database or create custom foods. Values are per 100g.
-      </Text>
-
-      <View style={styles.modeRow}>
-        <ModePill label="Search" active={mode === 'search'} onPress={() => setMode('search')} />
-        <ModePill label="Create custom" active={mode === 'custom'} onPress={() => setMode('custom')} />
-      </View>
-
-      {mode === 'search' ? (
-        <>
-          <View style={styles.searchWrap}>
-            <Ionicons name="search" size={18} color={colors.textMuted} style={{ marginRight: 8 }} />
-            <TextInput
-              placeholder="Search food (chicken, rice, egg...)"
-              placeholderTextColor={colors.textMuted}
-              style={styles.searchInput}
-              value={query}
-              onChangeText={(t) => {
-                setQuery(t);
-                if (!t.trim()) setSelected(null);
-              }}
-            />
-          </View>
-
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.chipsScroll}
-            contentContainerStyle={styles.chipsRow}
-          >
-            {FOOD_CATEGORIES.map((c) => (
-              <TouchableOpacity
-                key={c.id}
-                onPress={() => setCategory(c.id)}
-                style={[styles.chip, category === c.id && styles.chipActive]}
-              >
-                <Text style={[styles.chipText, category === c.id && styles.chipTextActive]}>{c.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-
-          {customFoods.length > 0 && !query.trim() ? (
-            <>
-              <Text style={styles.sectionTitle}>Your saved foods</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: spacing.md }}>
-                <View style={{ flexDirection: 'row', gap: spacing.sm }}>
-                  {customFoods.slice(0, 8).map((row) => (
-                    <TouchableOpacity
-                      key={row.id}
-                      style={styles.savedPill}
-                      onPress={() => onQuickReuse(row)}
-                    >
-                      <Ionicons name="bookmark" size={14} color={colors.orange} />
-                      <Text style={styles.savedPillText} numberOfLines={1}>
-                        {row.data.name}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </ScrollView>
-            </>
-          ) : null}
-
-          <FlatList
-            data={listData.slice(0, 40)}
-            keyExtractor={(item) =>
-              item.source === 'catalog' ? `c-${item.item.id}` : `u-${item.item.id}`
-            }
-            renderItem={renderFoodRow}
-            scrollEnabled={false}
-            ListEmptyComponent={
-              <Text style={styles.empty}>No results. Try another term or category.</Text>
-            }
-            ItemSeparatorComponent={() => <View style={{ height: spacing.sm }} />}
-          />
-          {listData.length > 40 ? (
-            <Text style={styles.moreHint}>Showing 40 of {listData.length} — refine your search.</Text>
-          ) : null}
-
-          {selected ? (
-            <View style={styles.portionCard}>
-              <Text style={styles.portionTitle}>{foodName(selected)}</Text>
-              <Text style={styles.portionSub}>Amount (grams)</Text>
-              <View style={styles.gramsRow}>
-                {[50, 100, 150, 200].map((preset) => (
-                  <TouchableOpacity
-                    key={preset}
-                    style={[styles.gramPreset, grams === String(preset) && styles.gramPresetActive]}
-                    onPress={() => setGrams(String(preset))}
-                  >
-                    <Text
-                      style={[
-                        styles.gramPresetText,
-                        grams === String(preset) && styles.gramPresetTextActive,
-                      ]}
-                    >
-                      {preset}g
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-              <View style={styles.gramsInputWrap}>
-                <TextInput
-                  style={styles.gramsInput}
-                  keyboardType="decimal-pad"
-                  value={grams}
-                  onChangeText={setGrams}
-                  placeholder="100"
-                  placeholderTextColor={colors.textMuted}
-                />
-                <Text style={styles.gramsSuffix}>g</Text>
-              </View>
-              {portionPreview ? (
-                <Text style={styles.previewMacros}>
-                  {formatMacros(
-                    portionPreview.protein,
-                    portionPreview.carbs,
-                    portionPreview.fat,
-                    portionPreview.calories,
-                  )}
-                </Text>
-              ) : null}
-              <TouchableOpacity
-                style={[styles.primaryBtn, saving && { opacity: 0.7 }]}
-                onPress={() => void onAddToMeal()}
-                disabled={saving}
-              >
-                {saving ? (
-                  <ActivityIndicator color={colors.white} />
-                ) : (
-                  <Text style={styles.primaryBtnText}>Add to today's meal</Text>
-                )}
-              </TouchableOpacity>
-            </View>
-          ) : null}
-        </>
-      ) : (
-        <View style={styles.formCard}>
-          <Text style={styles.sectionTitle}>Custom food</Text>
-          <Text style={styles.formHint}>Macros per 100g. Saved to your history for reuse.</Text>
-          <TextInput
-            style={styles.nameInput}
-            placeholder="Food name"
-            placeholderTextColor={colors.textMuted}
-            value={customName}
-            onChangeText={setCustomName}
-          />
-          <View style={styles.macroInputsRow}>
-            <MacroField label="Protein" suffix="g" value={customProtein} onChange={setCustomProtein} color={colors.green} />
-            <MacroField label="Carbs" suffix="g" value={customCarbs} onChange={setCustomCarbs} color={colors.primary} />
-            <MacroField label="Fat" suffix="g" value={customFat} onChange={setCustomFat} color={colors.yellow} />
-          </View>
-          <MacroField
-            label="Calories (optional)"
-            suffix="kcal"
-            value={customCalories}
-            onChange={setCustomCalories}
-            color={colors.orange}
-            fullWidth
-          />
-          <Text style={styles.portionSub}>Portion to log today</Text>
-          <View style={styles.gramsInputWrap}>
-            <TextInput
-              style={styles.gramsInput}
-              keyboardType="decimal-pad"
-              value={grams}
-              onChangeText={setGrams}
-              placeholder="100"
-              placeholderTextColor={colors.textMuted}
-            />
-            <Text style={styles.gramsSuffix}>g</Text>
-          </View>
-          <TouchableOpacity
-            style={styles.saveToggle}
-            onPress={() => setSaveToHistory((v) => !v)}
-            activeOpacity={0.8}
-          >
-            <Ionicons
-              name={saveToHistory ? 'checkbox' : 'square-outline'}
-              size={22}
-              color={colors.primary}
-            />
-            <Text style={styles.saveToggleText}>Save to my history</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.primaryBtn, saving && { opacity: 0.7 }]}
-            onPress={() => void onSaveCustomAndLog()}
-            disabled={saving}
-          >
-            {saving ? (
-              <ActivityIndicator color={colors.white} />
-            ) : (
-              <Text style={styles.primaryBtnText}>Save and log meal</Text>
-            )}
-          </TouchableOpacity>
-        </View>
-      )}
+      <Text style={styles.hint}>Search the food database or create custom foods. Values are per 100g.</Text>
+      {modeRow}
+      {searchFilters}
+      <FlatList
+        data={visibleList}
+        keyExtractor={(item) =>
+          item.source === 'catalog' ? `c-${item.item.id}` : `u-${item.item.id}`
+        }
+        renderItem={renderFoodRow}
+        scrollEnabled={false}
+        ListEmptyComponent={
+          <Text style={styles.empty}>No results. Try another term or category.</Text>
+        }
+        ItemSeparatorComponent={() => <View style={{ height: spacing.sm }} />}
+      />
+      {listData.length > 40 ? (
+        <Text style={styles.moreHint}>Showing 40 of {listData.length} — refine your search.</Text>
+      ) : null}
+      {portionCard}
     </View>
   );
 }
@@ -520,6 +577,10 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     lineHeight: 18,
   },
+  modalRoot: { flex: 1, paddingHorizontal: spacing.xl },
+  modalScrollContent: { paddingBottom: spacing.xl },
+  modalList: { flex: 1 },
+  modeRowModal: { marginBottom: spacing.sm },
   modeRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md },
   modePill: {
     flex: 1,

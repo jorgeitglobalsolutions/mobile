@@ -19,6 +19,7 @@ import NutritionTodayStrip from '../components/nutrition/NutritionTodayStrip';
 import NutritionTabBar, { type NutritionTab } from '../components/nutrition/NutritionTabBar';
 import NutritionOverviewPanel from '../components/nutrition/NutritionOverviewPanel';
 import NutritionLogPanel from '../components/nutrition/NutritionLogPanel';
+import FoodSearchModal from '../components/nutrition/FoodSearchModal';
 type Props = NativeStackScreenProps<RootStackParamList, 'Nutrition'>;
 
 export default function NutritionScreen({ navigation, route }: Props) {
@@ -26,6 +27,9 @@ export default function NutritionScreen({ navigation, route }: Props) {
   const { habitDay, defaults, targets, snapshot } = useTodayNutrition(user?.uid, userDoc?.profile ?? null);
   const initialTab: NutritionTab = route.params?.tab === 'log' ? 'log' : 'overview';
   const [tab, setTab] = useState<NutritionTab>(initialTab);
+  const [foodModalOpen, setFoodModalOpen] = useState(false);
+
+  const openFoodSearch = () => setFoodModalOpen(true);
 
   useEffect(() => {
     if (route.params?.tab) {
@@ -72,16 +76,28 @@ export default function NutritionScreen({ navigation, route }: Props) {
                 snapshot={snapshot}
                 targets={targets}
                 profile={userDoc?.profile ?? null}
-                onLogFood={() => setTab('log')}
+                onLogFood={openFoodSearch}
                 onEditMetrics={() => navigation.navigate('BodyMetrics')}
               />
             </>
           ) : (
-            <NutritionLogPanel uid={user.uid} defaults={defaults} habitDay={habitDay} />
+            <NutritionLogPanel
+              uid={user.uid}
+              defaults={defaults}
+              habitDay={habitDay}
+              onOpenFoodSearch={openFoodSearch}
+            />
           )}
           <View style={{ height: 80 }} />
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <FoodSearchModal
+        visible={foodModalOpen}
+        uid={user.uid}
+        defaults={defaults}
+        onClose={() => setFoodModalOpen(false)}
+      />
     </SafeAreaView>
   );
 }

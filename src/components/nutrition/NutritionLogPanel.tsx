@@ -23,8 +23,6 @@ import type { HabitDayDoc, MealEntry } from '../../types/domain';
 import type { HabitDefaults } from '../../services/habitsRepo';
 import { localDateKey } from '../../utils/dateKey';
 import { friendlyAppError } from '../../utils/appError';
-import FoodDatabasePanel from './FoodDatabasePanel';
-
 type MacroId = 'protein' | 'carbs' | 'fat';
 
 const MACRO_QUICK_GRAMS = 10;
@@ -33,6 +31,7 @@ type Props = {
   uid: string;
   defaults: HabitDefaults;
   habitDay: HabitDayDoc | null;
+  onOpenFoodSearch: () => void;
 };
 
 function formatTime(ms: number): string {
@@ -43,7 +42,7 @@ function formatTime(ms: number): string {
   }
 }
 
-export default function NutritionLogPanel({ uid, defaults, habitDay }: Props) {
+export default function NutritionLogPanel({ uid, defaults, habitDay, onOpenFoodSearch }: Props) {
   const [busy, setBusy] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showManual, setShowManual] = useState(false);
@@ -143,10 +142,14 @@ export default function NutritionLogPanel({ uid, defaults, habitDay }: Props) {
   return (
     <View>
       <Text style={styles.hint}>
-        Search foods or create custom entries. Totals update instantly on Overview.
+        Search the food database or use quick add. Totals update instantly on Overview.
       </Text>
 
-      <FoodDatabasePanel uid={uid} defaults={defaults} />
+      <TouchableOpacity style={styles.foodSearchBtn} activeOpacity={0.9} onPress={onOpenFoodSearch}>
+        <Ionicons name="search" size={20} color={colors.primary} />
+        <Text style={styles.foodSearchBtnText}>Search food database</Text>
+        <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+      </TouchableOpacity>
 
       <Text style={[styles.sectionTitle, { marginTop: spacing.lg }]}>Quick add</Text>
       <View style={styles.quickGrid}>
@@ -319,9 +322,22 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.textSecondary,
     fontWeight: '600',
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
     lineHeight: 18,
   },
+  foodSearchBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    backgroundColor: colors.white,
+    borderRadius: radius.lg,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border,
+    marginBottom: spacing.lg,
+  },
+  foodSearchBtnText: { flex: 1, fontSize: 15, fontWeight: '800', color: colors.text },
   sectionTitle: { fontSize: 16, fontWeight: '800', color: colors.text, marginBottom: spacing.sm },
   manualToggle: {
     flexDirection: 'row',
