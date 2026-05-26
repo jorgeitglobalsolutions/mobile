@@ -12,11 +12,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
-import { EXERCISES_CATALOG, MUSCLE_CATEGORIES } from '../data/exercisesCatalog';
-import type { CatalogExercise } from '../types/exercise';
+import { EXERCISES_CATALOG, MUSCLE_CATEGORIES, type CatalogExercise } from '../data/exercisesCatalog';
 import { colors, radius, spacing } from '../theme';
 import { queuePickedExercise } from '../services/exercisePickerBridge';
-import ExerciseGifThumb from '../components/ExerciseGifThumb';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ExerciseLibrary'>;
 
@@ -53,7 +51,9 @@ export default function ExerciseLibraryScreen({ navigation, route }: Props) {
   const renderItem = useCallback(
     ({ item }: { item: CatalogExercise }) => (
       <TouchableOpacity style={styles.row} activeOpacity={0.85} onPress={() => onSelectExercise(item)}>
-        <ExerciseGifThumb exerciseId={item.id} size={48} style={{ marginRight: spacing.md }} />
+        <View style={styles.thumb}>
+          <Ionicons name="body-outline" size={24} color={colors.primary} />
+        </View>
         <View style={{ flex: 1 }}>
           <Text style={styles.name}>{item.name}</Text>
           <Text style={styles.muscle}>{item.muscle}</Text>
@@ -217,6 +217,15 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.border,
+  },
+  thumb: {
+    width: 48,
+    height: 48,
+    borderRadius: radius.md,
+    backgroundColor: colors.primarySoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.md,
   },
   name: { fontSize: 16, fontWeight: '700', color: colors.text },
   muscle: { fontSize: 13, color: colors.textSecondary, marginTop: 2 },

@@ -10,7 +10,6 @@ export type SeedRoutine = {
   exercises: RoutineExerciseTemplate[];
 };
 
-/** Uses exercise names from assets/exercises catalog (see exercisesCatalog.ts). */
 export const PREDEFINED_ROUTINES_SEED: SeedRoutine[] = [
   {
     id: 'seed_push',
@@ -20,12 +19,12 @@ export const PREDEFINED_ROUTINES_SEED: SeedRoutine[] = [
     category: 'Push',
     description: 'Focus on chest, shoulders, and triceps with compound movements and isolation work.',
     exercises: [
-      { name: 'Dumbbell chest press', targetSets: 4, targetRepMin: 6, targetRepMax: 10 },
-      { name: 'Incline dumbbell press', targetSets: 3, targetRepMin: 8, targetRepMax: 12 },
-      { name: 'Barbell overhead press', targetSets: 3, targetRepMin: 6, targetRepMax: 10 },
-      { name: 'Dumbbell lateral raise', targetSets: 3, targetRepMin: 12, targetRepMax: 15 },
-      { name: 'Rope triceps pushdown', targetSets: 3, targetRepMin: 10, targetRepMax: 15 },
-      { name: 'High cable chest fly', targetSets: 3, targetRepMin: 12, targetRepMax: 15 },
+      { name: 'Bench Press', targetSets: 4, targetRepMin: 6, targetRepMax: 10 },
+      { name: 'Incline Dumbbell Press', targetSets: 3, targetRepMin: 8, targetRepMax: 12 },
+      { name: 'Overhead Press', targetSets: 3, targetRepMin: 6, targetRepMax: 10 },
+      { name: 'Lateral Raise', targetSets: 3, targetRepMin: 12, targetRepMax: 15 },
+      { name: 'Triceps Pushdown', targetSets: 3, targetRepMin: 10, targetRepMax: 15 },
+      { name: 'Cable Fly', targetSets: 3, targetRepMin: 12, targetRepMax: 15 },
     ],
   },
   {
@@ -36,12 +35,12 @@ export const PREDEFINED_ROUTINES_SEED: SeedRoutine[] = [
     category: 'Pull',
     description: 'Back width and thickness with biceps assistance work.',
     exercises: [
-      { name: 'Incline barbell row', targetSets: 4, targetRepMin: 6, targetRepMax: 10 },
-      { name: 'Wide grip lat pulldown', targetSets: 3, targetRepMin: 8, targetRepMax: 12 },
-      { name: 'Seated cable row', targetSets: 3, targetRepMin: 8, targetRepMax: 12 },
-      { name: 'Reverse cable fly', targetSets: 3, targetRepMin: 12, targetRepMax: 15 },
-      { name: 'Dumbbell bicep curl', targetSets: 3, targetRepMin: 8, targetRepMax: 12 },
-      { name: 'Seated neutral grip alternating curl', targetSets: 3, targetRepMin: 10, targetRepMax: 15 },
+      { name: 'Barbell Row', targetSets: 4, targetRepMin: 6, targetRepMax: 10 },
+      { name: 'Lat Pulldown', targetSets: 3, targetRepMin: 8, targetRepMax: 12 },
+      { name: 'Seated Cable Row', targetSets: 3, targetRepMin: 8, targetRepMax: 12 },
+      { name: 'Face Pull', targetSets: 3, targetRepMin: 12, targetRepMax: 15 },
+      { name: 'Dumbbell Curl', targetSets: 3, targetRepMin: 8, targetRepMax: 12 },
+      { name: 'Hammer Curl', targetSets: 3, targetRepMin: 10, targetRepMax: 15 },
     ],
   },
   {
@@ -52,12 +51,12 @@ export const PREDEFINED_ROUTINES_SEED: SeedRoutine[] = [
     category: 'Legs',
     description: 'Lower body strength and hypertrophy.',
     exercises: [
-      { name: 'Smith machine squat', targetSets: 4, targetRepMin: 5, targetRepMax: 8 },
-      { name: 'Dumbbell Romanian deadlift', targetSets: 3, targetRepMin: 6, targetRepMax: 10 },
-      { name: 'Leg press', targetSets: 3, targetRepMin: 10, targetRepMax: 15 },
-      { name: 'Lying leg curl', targetSets: 3, targetRepMin: 10, targetRepMax: 15 },
-      { name: 'Dumbbell lunges', targetSets: 3, targetRepMin: 8, targetRepMax: 12 },
-      { name: 'Barbell hip thrust', targetSets: 3, targetRepMin: 8, targetRepMax: 12 },
+      { name: 'Back Squat', targetSets: 4, targetRepMin: 5, targetRepMax: 8 },
+      { name: 'Romanian Deadlift', targetSets: 3, targetRepMin: 6, targetRepMax: 10 },
+      { name: 'Leg Press', targetSets: 3, targetRepMin: 10, targetRepMax: 15 },
+      { name: 'Leg Curl', targetSets: 3, targetRepMin: 10, targetRepMax: 15 },
+      { name: 'Walking Lunge', targetSets: 3, targetRepMin: 8, targetRepMax: 12 },
+      { name: 'Standing Calf Raise', targetSets: 4, targetRepMin: 12, targetRepMax: 20 },
       { name: 'Plank', targetSets: 3, targetRepMin: 30, targetRepMax: 60 },
     ],
   },
@@ -69,14 +68,14 @@ export const PREDEFINED_ROUTINES_SEED: SeedRoutine[] = [
     category: 'Upper',
     description: 'Balanced upper session.',
     exercises: [
-      { name: 'Dumbbell chest press', targetSets: 3, targetRepMin: 6, targetRepMax: 10 },
-      { name: 'Dumbbell row', targetSets: 3, targetRepMin: 6, targetRepMax: 10 },
-      { name: 'Barbell overhead press', targetSets: 3, targetRepMin: 6, targetRepMax: 10 },
-      { name: 'Wide grip lat pulldown', targetSets: 3, targetRepMin: 8, targetRepMax: 12 },
-      { name: 'Dumbbell bicep curl', targetSets: 3, targetRepMin: 8, targetRepMax: 12 },
-      { name: 'Rope triceps pushdown', targetSets: 3, targetRepMin: 10, targetRepMax: 15 },
-      { name: 'Dumbbell lateral raise', targetSets: 3, targetRepMin: 12, targetRepMax: 15 },
-      { name: 'Reverse cable fly', targetSets: 2, targetRepMin: 12, targetRepMax: 15 },
+      { name: 'Bench Press', targetSets: 3, targetRepMin: 6, targetRepMax: 10 },
+      { name: 'Barbell Row', targetSets: 3, targetRepMin: 6, targetRepMax: 10 },
+      { name: 'Overhead Press', targetSets: 3, targetRepMin: 6, targetRepMax: 10 },
+      { name: 'Lat Pulldown', targetSets: 3, targetRepMin: 8, targetRepMax: 12 },
+      { name: 'Dumbbell Curl', targetSets: 3, targetRepMin: 8, targetRepMax: 12 },
+      { name: 'Triceps Pushdown', targetSets: 3, targetRepMin: 10, targetRepMax: 15 },
+      { name: 'Lateral Raise', targetSets: 3, targetRepMin: 12, targetRepMax: 15 },
+      { name: 'Face Pull', targetSets: 2, targetRepMin: 12, targetRepMax: 15 },
     ],
   },
   {
@@ -87,11 +86,11 @@ export const PREDEFINED_ROUTINES_SEED: SeedRoutine[] = [
     category: 'Full Body',
     description: 'Efficient full-body strength session.',
     exercises: [
-      { name: 'Smith machine squat', targetSets: 3, targetRepMin: 5, targetRepMax: 8 },
-      { name: 'Dumbbell chest press', targetSets: 3, targetRepMin: 6, targetRepMax: 10 },
-      { name: 'Dumbbell row', targetSets: 3, targetRepMin: 6, targetRepMax: 10 },
-      { name: 'Dumbbell Romanian deadlift', targetSets: 2, targetRepMin: 6, targetRepMax: 10 },
-      { name: 'Barbell overhead press', targetSets: 2, targetRepMin: 6, targetRepMax: 10 },
+      { name: 'Back Squat', targetSets: 3, targetRepMin: 5, targetRepMax: 8 },
+      { name: 'Bench Press', targetSets: 3, targetRepMin: 6, targetRepMax: 10 },
+      { name: 'Barbell Row', targetSets: 3, targetRepMin: 6, targetRepMax: 10 },
+      { name: 'Romanian Deadlift', targetSets: 2, targetRepMin: 6, targetRepMax: 10 },
+      { name: 'Overhead Press', targetSets: 2, targetRepMin: 6, targetRepMax: 10 },
     ],
   },
 ];

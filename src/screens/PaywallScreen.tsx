@@ -28,7 +28,7 @@ const FEATURES = [
   {
     icon: 'book-outline' as const,
     title: 'Exercise Library',
-    desc: 'Access 90+ exercises with demo animations and instructions.',
+    desc: 'Access 1000+ exercises with videos & instructions.',
   },
   {
     icon: 'cloud-upload-outline' as const,
