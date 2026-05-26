@@ -21,6 +21,7 @@ import { saveCustomFood, subscribeCustomFoods } from '../../services/customFoods
 import type { HabitDefaults } from '../../services/habitsRepo';
 import { localDateKey } from '../../utils/dateKey';
 import { friendlyAppError } from '../../utils/appError';
+import FoodPortionModal from './FoodPortionModal';
 
 type LogMode = 'search' | 'custom';
 
@@ -209,6 +210,11 @@ export default function FoodDatabasePanel({
     setGrams(DEFAULT_GRAMS);
   };
 
+  const dismissPortion = () => {
+    setSelected(null);
+    setGrams(DEFAULT_GRAMS);
+  };
+
   const renderFoodRow = ({ item }: { item: SearchableFood }) => {
     const name = foodName(item);
     const macros =
@@ -220,18 +226,9 @@ export default function FoodDatabasePanel({
             fat: item.item.data.fatPer100g,
             calories: item.item.data.caloriesPer100g,
           };
-    const isSelected =
-      selected &&
-      ((selected.source === 'catalog' &&
-        item.source === 'catalog' &&
-        selected.item.id === item.item.id) ||
-        (selected.source === 'custom' &&
-          item.source === 'custom' &&
-          selected.item.id === item.item.id));
-
     return (
       <TouchableOpacity
-        style={[styles.foodRow, isSelected && styles.foodRowSelected]}
+        style={styles.foodRow}
         activeOpacity={0.85}
         onPress={() => {
           setSelected(item);
@@ -254,11 +251,7 @@ export default function FoodDatabasePanel({
             <Text style={styles.foodTag}>Custom</Text>
           ) : null}
         </View>
-        {isSelected ? (
-          <Ionicons name="checkmark-circle" size={22} color={colors.primary} />
-        ) : (
-          <Ionicons name="add-circle-outline" size={22} color={colors.textMuted} />
-        )}
+        <Ionicons name="add-circle-outline" size={22} color={colors.textMuted} />
       </TouchableOpacity>
     );
   };
@@ -273,59 +266,18 @@ export default function FoodDatabasePanel({
     </View>
   );
 
-  const portionCard = selected ? (
-    <View style={[styles.portionCard, isModal && styles.portionCardModal]}>
-      <Text style={styles.portionTitle}>{foodName(selected)}</Text>
-      <Text style={styles.portionSub}>Amount (grams)</Text>
-      <View style={styles.gramsRow}>
-        {[50, 100, 150, 200].map((preset) => (
-          <TouchableOpacity
-            key={preset}
-            style={[styles.gramPreset, grams === String(preset) && styles.gramPresetActive]}
-            onPress={() => setGrams(String(preset))}
-          >
-            <Text
-              style={[styles.gramPresetText, grams === String(preset) && styles.gramPresetTextActive]}
-            >
-              {preset}g
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-      <View style={styles.gramsInputWrap}>
-        <TextInput
-          style={styles.gramsInput}
-          keyboardType="decimal-pad"
-          value={grams}
-          onChangeText={setGrams}
-          placeholder="100"
-          placeholderTextColor={colors.textMuted}
-        />
-        <Text style={styles.gramsSuffix}>g</Text>
-      </View>
-      {portionPreview ? (
-        <Text style={styles.previewMacros}>
-          {formatMacros(
-            portionPreview.protein,
-            portionPreview.carbs,
-            portionPreview.fat,
-            portionPreview.calories,
-          )}
-        </Text>
-      ) : null}
-      <TouchableOpacity
-        style={[styles.primaryBtn, saving && { opacity: 0.7 }]}
-        onPress={() => void onAddToMeal()}
-        disabled={saving}
-      >
-        {saving ? (
-          <ActivityIndicator color={colors.white} />
-        ) : (
-          <Text style={styles.primaryBtnText}>Add to today's meal</Text>
-        )}
-      </TouchableOpacity>
-    </View>
-  ) : null;
+  const portionModal = (
+    <FoodPortionModal
+      visible={!!selected}
+      title={selected ? foodName(selected) : ''}
+      grams={grams}
+      onGramsChange={setGrams}
+      preview={portionPreview}
+      saving={saving}
+      onAdd={() => void onAddToMeal()}
+      onClose={dismissPortion}
+    />
+  );
 
   const customForm = (
     <View style={styles.formCard}>
@@ -442,25 +394,28 @@ export default function FoodDatabasePanel({
 
   if (mode === 'custom') {
     return (
-      <ScrollView
-        style={isModal ? styles.modalRoot : undefined}
-        contentContainerStyle={isModal ? styles.modalScrollContent : undefined}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
-        {!isModal ? (
-          <Text style={styles.hint}>Search the food database or create custom foods. Values are per 100g.</Text>
-        ) : null}
-        {modeRow}
-        {customForm}
-      </ScrollView>
+      <>
+        {portionModal}
+        <ScrollView
+          style={isModal ? styles.modalRoot : undefined}
+          contentContainerStyle={isModal ? styles.modalScrollContent : undefined}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {!isModal ? (
+            <Text style={styles.hint}>Search the food database or create custom foods. Values are per 100g.</Text>
+          ) : null}
+          {modeRow}
+          {customForm}
+        </ScrollView>
+      </>
     );
   }
 
   if (isModal) {
     return (
       <View style={styles.modalRoot}>
-        {portionCard}
+        {portionModal}
         {modeRow}
         <FlatList
           style={styles.modalList}
@@ -490,6 +445,7 @@ export default function FoodDatabasePanel({
 
   return (
     <View>
+      {portionModal}
       <Text style={styles.hint}>Search the food database or create custom foods. Values are per 100g.</Text>
       {modeRow}
       {searchFilters}
@@ -508,7 +464,6 @@ export default function FoodDatabasePanel({
       {listData.length > 40 ? (
         <Text style={styles.moreHint}>Showing 40 of {listData.length} — refine your search.</Text>
       ) : null}
-      {portionCard}
     </View>
   );
 }
@@ -642,7 +597,6 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.border,
   },
-  foodRowSelected: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
   foodRowIcon: {
     width: 36,
     height: 36,
@@ -657,32 +611,7 @@ const styles = StyleSheet.create({
   foodTag: { fontSize: 11, color: colors.orange, fontWeight: '700', marginTop: 2 },
   empty: { color: colors.textSecondary, paddingVertical: spacing.lg, fontSize: 13, textAlign: 'center' },
   moreHint: { fontSize: 12, color: colors.textMuted, marginTop: spacing.sm, fontWeight: '600' },
-  portionCard: {
-    marginTop: spacing.lg,
-    backgroundColor: colors.white,
-    borderRadius: radius.lg,
-    padding: spacing.lg,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.primary,
-  },
-  portionCardModal: {
-    marginTop: 0,
-    marginBottom: spacing.md,
-  },
-  portionTitle: { fontSize: 17, fontWeight: '800', color: colors.text },
   portionSub: { fontSize: 13, color: colors.textSecondary, fontWeight: '700', marginTop: spacing.md, marginBottom: spacing.sm },
-  gramsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.sm },
-  gramPreset: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: 8,
-    borderRadius: radius.full,
-    backgroundColor: colors.bg,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  gramPresetActive: { backgroundColor: colors.primary, borderColor: colors.primary },
-  gramPresetText: { fontSize: 13, fontWeight: '700', color: colors.textSecondary },
-  gramPresetTextActive: { color: colors.white },
   gramsInputWrap: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -701,7 +630,6 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   gramsSuffix: { fontSize: 14, fontWeight: '700', color: colors.textMuted },
-  previewMacros: { fontSize: 14, fontWeight: '700', color: colors.text, marginBottom: spacing.md },
   primaryBtn: {
     backgroundColor: colors.primary,
     borderRadius: radius.lg,
