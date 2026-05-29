@@ -1,0 +1,21 @@
+# Docs and quotes — not needed for the app binary (avoids Windows lock issues on upload).
+docs/
+
+# Exercise GIFs are on Firebase Storage; skip local copies to speed up uploads.
+assets/exercises/
+
+# Play Console assets, scripts, and local build artifacts.
+play-store/
+scripts/
+*.aab
+build-view.json
+
+# Firebase backend (deployed separately; not part of the mobile bundle).
+firebase/functions/node_modules/
+firebase/functions/lib/
+firebase/functions/certs/
+
+# Git / tooling
+.git/
+.cursor/
+agent-transcripts/
