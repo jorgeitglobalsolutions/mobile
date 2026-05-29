@@ -1,11 +1,12 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { getCatalogExercise } from '../data/exercisesCatalog';
-import { getExerciseGif } from '../data/exerciseAssets.generated';
+import ExerciseGifImage from '../components/ExerciseGifImage';
+import { getExerciseGifUrl } from '../data/exerciseGifUrls';
 import { colors, radius, spacing } from '../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ExerciseDetail'>;
@@ -41,9 +42,15 @@ export default function ExerciseDetailScreen({ navigation, route }: Props) {
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll}>
-        {getExerciseGif(ex.id) ? (
+        {getExerciseGifUrl(ex.id) ? (
           <View style={styles.mediaCard}>
-            <Image source={getExerciseGif(ex.id)!} style={styles.gif} resizeMode="contain" />
+            <ExerciseGifImage
+              exerciseId={ex.id}
+              style={styles.gifWrap}
+              imageStyle={styles.gif}
+              resizeMode="contain"
+              fallbackSize={120}
+            />
           </View>
         ) : null}
         <View style={styles.pillRow}>
@@ -77,6 +84,7 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     alignItems: 'center',
   },
+  gifWrap: { width: '100%', height: 220, borderRadius: radius.md },
   gif: { width: '100%', height: 220 },
   pillRow: { marginBottom: spacing.lg },
   pill: {

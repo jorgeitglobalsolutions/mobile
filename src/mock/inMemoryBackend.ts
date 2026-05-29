@@ -642,6 +642,24 @@ export async function mockDeleteCustomFood(uid: string, foodId: string): Promise
   emitCustomFoods(uid);
 }
 
+/** Clears all in-memory data for a mock user (demo account deletion). */
+export function mockDeleteAccount(uid: string): void {
+  userDocs.delete(uid);
+  routines.delete(uid);
+  workouts.delete(uid);
+  habitDays.delete(uid);
+  drafts.delete(uid);
+  weightEntries.delete(uid);
+  weightListeners.delete(uid);
+  customFoods.delete(uid);
+  customFoodListeners.delete(uid);
+  userDocListeners.delete(uid);
+  routineListeners.delete(uid);
+  for (const key of [...habitListeners.keys()]) {
+    if (key.startsWith(`${uid}|`)) habitListeners.delete(key);
+  }
+}
+
 /** Build a Firebase `User` object sufficient for the UI (mock mode only). */
 export function createMockAuthUser(email: string, displayName: string | null): User {
   return {

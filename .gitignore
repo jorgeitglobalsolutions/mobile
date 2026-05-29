@@ -33,6 +33,9 @@ yarn-error.*
 # local env files
 .env
 .env*.local
+.eas-play-service-account.json
+*.aab
+build-view.json
 
 # typescript
 *.tsbuildinfo

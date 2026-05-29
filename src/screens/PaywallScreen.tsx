@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Linking, BackHandler } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Linking, BackHandler, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -13,6 +13,10 @@ import { colors, radius, spacing } from '../theme';
 import { friendlyAppError, friendlyPurchaseError } from '../utils/appError';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Paywall'>;
+
+const TRIAL_DAYS = 7;
+const PRICE_MONTHLY = '$9.99';
+const PRICE_YEARLY = '$79.99';
 
 const FEATURES = [
   {
@@ -45,6 +49,8 @@ export default function PaywallScreen({ navigation }: Props) {
   const expoGo = isExpoGo();
   const nativeIap = canUseNativeInAppPurchases();
   const showDevUnlock = __DEV__ && !useMockData;
+  const storeName = Platform.OS === 'ios' ? 'App Store' : 'Google Play';
+  const selectedPrice = plan === 'month' ? `${PRICE_MONTHLY}/month` : `${PRICE_YEARLY}/year`;
 
   const openUrl = async (url: string) => {
     try {
@@ -177,8 +183,10 @@ export default function PaywallScreen({ navigation }: Props) {
         <View style={styles.trialBox}>
           <Ionicons name="gift-outline" size={22} color={colors.paywallPurple} style={{ marginRight: 10 }} />
           <View style={{ flex: 1 }}>
-            <Text style={styles.trialTitle}>7-Day Free Trial</Text>
-            <Text style={styles.trialSub}>Cancel anytime. No commitment.</Text>
+            <Text style={styles.trialTitle}>{TRIAL_DAYS}-Day Free Trial</Text>
+            <Text style={styles.trialSub}>
+              Then {PRICE_MONTHLY}/mo or {PRICE_YEARLY}/yr. Cancel anytime in {storeName}.
+            </Text>
           </View>
         </View>
 
@@ -220,7 +228,7 @@ export default function PaywallScreen({ navigation }: Props) {
             />
             <View style={{ marginLeft: spacing.md, flex: 1 }}>
               <Text style={styles.planTitle}>Monthly</Text>
-              <Text style={styles.planPrice}>$9.99 / month</Text>
+              <Text style={styles.planPrice}>{PRICE_MONTHLY} / month</Text>
             </View>
           </View>
         </TouchableOpacity>
@@ -238,7 +246,7 @@ export default function PaywallScreen({ navigation }: Props) {
             />
             <View style={{ marginLeft: spacing.md, flex: 1 }}>
               <Text style={styles.planTitle}>Yearly</Text>
-              <Text style={styles.planPrice}>$79.99 / year</Text>
+              <Text style={styles.planPrice}>{PRICE_YEARLY} / year</Text>
               <Text style={styles.save}>Save 33%</Text>
             </View>
           </View>
@@ -255,12 +263,17 @@ export default function PaywallScreen({ navigation }: Props) {
               ? 'Processing…'
               : expoGo && showDevUnlock
                 ? 'Unlock for testing'
-                : 'Start 7-Day Free Trial'}
+                : `Start ${TRIAL_DAYS}-Day Free Trial`}
           </Text>
         </TouchableOpacity>
+        {expoGo && showDevUnlock ? null : (
+          <Text style={styles.disclosureText}>
+            Free for {TRIAL_DAYS} days, then {selectedPrice}. Subscription auto-renews until canceled in {storeName}.
+          </Text>
+        )}
         <View style={styles.lockRow}>
           <Ionicons name="lock-closed-outline" size={14} color={colors.textMuted} style={{ marginRight: 6 }} />
-          <Text style={styles.lockText}>Cancel anytime. No commitment.</Text>
+          <Text style={styles.lockText}>Payment charged to your {storeName} account after the trial.</Text>
         </View>
 
         <TouchableOpacity style={styles.secondaryBtn} onPress={() => void openUrl(subscriptionManageUrl())}>
@@ -294,8 +307,8 @@ export default function PaywallScreen({ navigation }: Props) {
 
         <View style={styles.trustRow}>
           <Trust icon="shield-checkmark-outline" label="Secure Checkout" />
-          <Trust icon="ribbon-outline" label="Trusted by 10,000+ users" />
-          <Trust icon="shield-outline" label="Your data is always protected" />
+          <Trust icon="refresh-outline" label={`Cancel in ${storeName}`} />
+          <Trust icon="shield-outline" label="Your data is protected" />
         </View>
 
         <View style={styles.links}>
@@ -413,8 +426,16 @@ const styles = StyleSheet.create({
   },
   secondaryBtnText: { fontSize: 14, fontWeight: '700', color: colors.paywallPurple },
   qaHint: { fontSize: 12, fontWeight: '600', color: colors.textMuted },
+  disclosureText: {
+    marginTop: spacing.sm,
+    fontSize: 12,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 18,
+    paddingHorizontal: spacing.sm,
+  },
   lockRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: spacing.sm },
-  lockText: { fontSize: 12, color: colors.textMuted },
+  lockText: { fontSize: 12, color: colors.textMuted, flexShrink: 1, textAlign: 'center' },
   trustRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',

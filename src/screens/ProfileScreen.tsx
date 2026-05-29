@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, Linking, ScrollView } from 'react-native';
-import { deleteUser } from 'firebase/auth';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { useAuth } from '../context/AuthContext';
-import { getFirebaseAuth } from '../lib/firebase';
 import { getLegalUrls, subscriptionManageUrl } from '../config/legalLinks';
+import { callDeleteAccount } from '../services/deleteAccount';
 import { colors, radius, spacing } from '../theme';
 import { friendlyAppError } from '../utils/appError';
 
@@ -36,27 +35,22 @@ export default function ProfileScreen() {
   const onDeleteAccount = () => {
     Alert.alert(
       'Delete account',
-      'This removes your Firebase Authentication account. Firestore data may still exist until cleaned up by your backend policy.',
+      'This permanently deletes your account, workouts, nutrition logs, and other saved data. This cannot be undone.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Delete',
           style: 'destructive',
           onPress: async () => {
-            const auth = getFirebaseAuth();
-            const u = auth?.currentUser;
-            if (!u) {
-              Alert.alert('Delete account', 'No signed-in user found.');
-              return;
-            }
+            setBusy(true);
             try {
-              await deleteUser(u);
+              await callDeleteAccount(user?.uid);
+              await signOutUser();
               navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
             } catch (e: unknown) {
-              Alert.alert(
-                'Delete account',
-                `${friendlyAppError(e, 'Could not delete account right now.')}\n\nIf needed, sign out and sign in again, then retry.`,
-              );
+              Alert.alert('Delete account', friendlyAppError(e, 'Could not delete account right now.'));
+            } finally {
+              setBusy(false);
             }
           },
         },
@@ -147,7 +141,12 @@ export default function ProfileScreen() {
           <Ionicons name="chevron-forward" size={20} color={colors.textMuted} style={{ marginLeft: 'auto' }} />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.rowDanger} activeOpacity={0.85} onPress={onDeleteAccount}>
+        <TouchableOpacity
+          style={[styles.rowDanger, busy && { opacity: 0.7 }]}
+          activeOpacity={0.85}
+          onPress={onDeleteAccount}
+          disabled={busy}
+        >
           <Ionicons name="trash-outline" size={22} color="#B91C1C" />
           <Text style={[styles.rowLabel, { color: '#B91C1C' }]}>Delete account</Text>
           <Ionicons name="chevron-forward" size={20} color="#B91C1C" style={{ marginLeft: 'auto' }} />

@@ -17,6 +17,7 @@ export type UserEventType =
   | 'habit_fat_updated'
   | 'meal_logged'
   | 'meal_removed'
+  | 'custom_food_saved'
   | 'workout_saved'
   | 'weight_logged';
 

@@ -2,6 +2,8 @@
 
 Use before tagging a release candidate or submitting to App Store / Play Console.
 
+**Play Console setup** (app, SKUs, Data safety, listing): [play-store/README.md](../play-store/README.md).
+
 ## Builds
 
 ```bash

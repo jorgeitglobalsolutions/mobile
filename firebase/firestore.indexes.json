@@ -1,12 +1,4 @@
 {
-  "indexes": [
-    {
-      "collectionGroup": "customFoods",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "updatedAtMs", "order": "DESCENDING" }
-      ]
-    }
-  ],
+  "indexes": [],
   "fieldOverrides": []
 }

@@ -23,6 +23,9 @@ function getDb(): Firestore {
 /** Must match the mobile client (`getFirebaseFunctions` / `EXPO_PUBLIC_FIREBASE_FUNCTIONS_REGION`). */
 const FUNCTIONS_REGION = 'us-central1';
 
+/** Bumped on deploy when only Functions env (.env) changes, so Cloud Run picks up new variables. */
+const FUNCTIONS_DEPLOY_REVISION = 1;
+
 type VerifyBody = {
   platform: string;
   productId: string;
@@ -112,6 +115,7 @@ export const verifyPurchase = onCall({ region: FUNCTIONS_REGION }, async (reques
     platform,
     plan,
     expiresAt: verified.expiresAt.toISOString(),
+    deployRevision: FUNCTIONS_DEPLOY_REVISION,
   });
   return { ok: true, stub: false };
 });
@@ -147,6 +151,44 @@ export const grantDevSubscription = onCall({ region: FUNCTIONS_REGION }, async (
     updatedAt: FieldValue.serverTimestamp(),
   });
   logger.info('grantDevSubscription', { uid });
+  return { ok: true };
+});
+
+/**
+ * Permanently deletes the signed-in user's Firestore data (user doc + subcollections) and Auth account.
+ * Required for Google Play account-deletion policy.
+ */
+export const deleteAccount = onCall({ region: FUNCTIONS_REGION }, async (request) => {
+  if (!request.auth?.uid) {
+    throw new HttpsError('unauthenticated', 'Sign in required');
+  }
+  const uid = request.auth.uid;
+  const db = getDb();
+  const userRef = db.doc(`users/${uid}`);
+
+  try {
+    await db.recursiveDelete(userRef);
+  } catch (e) {
+    logger.error('deleteAccount: firestore recursiveDelete failed', { uid, err: String(e) });
+    throw new HttpsError('internal', 'Could not delete account data. Please try again.');
+  }
+
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const adminAuth = require('firebase-admin/auth') as typeof import('firebase-admin/auth');
+    await adminAuth.getAuth().deleteUser(uid);
+  } catch (e) {
+    const code = (e as { code?: string }).code;
+    if (code !== 'auth/user-not-found') {
+      logger.error('deleteAccount: auth deleteUser failed', { uid, err: String(e) });
+      throw new HttpsError(
+        'internal',
+        'Account data was removed but sign-in could not be fully deleted. Contact support.',
+      );
+    }
+  }
+
+  logger.info('deleteAccount', { uid });
   return { ok: true };
 });
 

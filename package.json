@@ -8,8 +8,11 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
-    "firebase:deploy": "npm --prefix firebase/functions run build && npx firebase-tools deploy --only firestore,functions --config firebase/firebase.json",
-    "firebase:deploy:rules": "npx firebase-tools deploy --only firestore:rules --config firebase/firebase.json"
+    "exercises:generate": "node scripts/generateExercisesCatalog.mjs",
+    "exercises:upload": "node firebase/functions/scripts/uploadExerciseGifs.mjs",
+    "firebase:deploy": "npm --prefix firebase/functions run build && npx firebase-tools deploy --only firestore,functions,storage --config firebase/firebase.json",
+    "firebase:deploy:rules": "npx firebase-tools deploy --only firestore:rules --config firebase/firebase.json",
+    "firebase:deploy:storage": "npx firebase-tools deploy --only storage --config firebase/firebase.json"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

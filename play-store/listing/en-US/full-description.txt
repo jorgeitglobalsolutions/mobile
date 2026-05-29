@@ -1,0 +1,26 @@
+EM Fit System helps you train smarter and stay consistent — routines, live workouts, daily habits, and progress tracking in one place.
+
+WORKOUTS & ROUTINES
+• Browse predefined routines or build your own
+• Log sets, reps, and weight during active workouts
+• Rest timer and session history with weekly stats
+
+DAILY HABITS
+• Track protein, water, calories, carbs, and fat
+• Log meals and custom foods
+• Mood and workout completion streaks
+
+PROGRESS
+• Weight log and body metrics
+• Charts and insights over time
+• Cloud sync across devices (Firebase)
+
+EXERCISE LIBRARY
+• 90+ exercises with instructions
+
+SUBSCRIPTION
+New users get a 7-day free trial with full access. After the trial, subscribe monthly or yearly to continue. Manage or cancel anytime in Google Play → Subscriptions.
+
+Privacy policy: https://estaciondemusculacion.com/privacy
+Terms: https://estaciondemusculacion.com/terms
+Support: cesar@estaciondemusculacion.com

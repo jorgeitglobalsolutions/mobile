@@ -1,0 +1,10 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Global exercise demo GIFs (uploaded via scripts/uploadExerciseGifs.mjs).
+    match /exercises/{exerciseId} {
+      allow read: if true;
+      allow write: if false;
+    }
+  }
+}

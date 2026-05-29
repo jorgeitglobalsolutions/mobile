@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import type { RoutinesScreenProps } from '../navigation/types';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList, RoutinesScreenProps } from '../navigation/types';
 import { colors, radius, spacing } from '../theme';
 import { useAuth } from '../context/AuthContext';
 import { deleteRoutine, getRoutine } from '../services/routinesRepo';
@@ -72,7 +73,8 @@ export default function RoutineDetailScreen({ navigation, route }: Props) {
       Alert.alert('Exercise', 'Details for this exercise are not available yet.');
       return;
     }
-    navigation.navigate('ExerciseDetail', { exerciseId: hit.id });
+    const root = navigation.getParent()?.getParent() as NativeStackNavigationProp<RootStackParamList> | undefined;
+    root?.navigate('ExerciseDetail', { exerciseId: hit.id });
   };
 
   return (

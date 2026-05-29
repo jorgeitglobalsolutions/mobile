@@ -45,3 +45,4 @@ Use this when moving from local/mock development to a store-ready build aligned 
 
 - Update `extra.legalTermsUrl`, `legalPrivacyUrl`, `supportEmail` in `app.json` to real URLs and contacts.  
 - Confirm account deletion and data handling meet store policies (see Profile / Settings flows).
+- **Google Play Console:** follow [play-store/README.md](../play-store/README.md) (app, subscriptions `em_fit_monthly` / `em_fit_yearly`, Data safety, listing assets).
