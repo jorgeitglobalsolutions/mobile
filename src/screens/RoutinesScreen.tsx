@@ -9,20 +9,23 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import type { RoutinesScreenProps } from '../navigation/types';
 import { colors, radius, spacing } from '../theme';
 import type { RoutineDoc } from '../types/domain';
 import { useAuth } from '../context/AuthContext';
 import { subscribePredefinedRoutines, subscribeRoutines } from '../services/routinesRepo';
+import { useLocale } from '../context/LocaleContext';
+import { getRoutineDisplayTitle, getMuscleDisplayName } from '../i18n/catalogDisplay';
 
 type Row = { id: string; data: RoutineDoc };
 
 type Props = RoutinesScreenProps<'RoutinesHome'>;
 
-function formatUpdated(t: { toDate?: () => Date } | undefined) {
+function formatUpdated(t: { toDate?: () => Date } | undefined, localeTag: string) {
   try {
     if (t && typeof (t as { toDate?: () => Date }).toDate === 'function') {
-      return (t as { toDate: () => Date }).toDate().toLocaleDateString();
+      return (t as { toDate: () => Date }).toDate().toLocaleDateString(localeTag);
     }
   } catch {
     // ignore
@@ -31,6 +34,8 @@ function formatUpdated(t: { toDate?: () => Date } | undefined) {
 }
 
 export default function RoutinesScreen({ navigation }: Props) {
+  const { t } = useTranslation();
+  const { localeTag, language } = useLocale();
   const { user } = useAuth();
   const [tab, setTab] = useState<'pre' | 'my'>('pre');
   const [myRows, setMyRows] = useState<Row[]>([]);
@@ -72,18 +77,20 @@ export default function RoutinesScreen({ navigation }: Props) {
           color={colors.primary}
         />
       </View>
-      <Text style={styles.emptyTitle}>{isMyTab ? 'No custom routines yet' : 'No predefined routines yet'}</Text>
+      <Text style={styles.emptyTitle}>
+        {isMyTab ? t('routines.emptyMyTitle') : t('routines.emptyPredefinedTitle')}
+      </Text>
       <Text style={styles.emptyDesc}>
-        {isMyTab
-          ? 'Create your first routine and start tracking workouts.'
-          : 'Try another filter or check Firestore seed/sync status.'}
+        {isMyTab ? t('routines.emptyMyDesc') : t('routines.emptyPredefinedDesc')}
       </Text>
       <TouchableOpacity
         style={styles.emptyBtn}
         activeOpacity={0.9}
         onPress={() => (isMyTab ? navigation.navigate('RoutineBuilder', {}) : undefined)}
       >
-        <Text style={styles.emptyBtnText}>{isMyTab ? 'Create routine' : 'Refresh'}</Text>
+        <Text style={styles.emptyBtnText}>
+          {isMyTab ? t('routines.createRoutine') : t('routines.refresh')}
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -91,7 +98,7 @@ export default function RoutinesScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.title}>Routines</Text>
+        <Text style={styles.title}>{t('routines.title')}</Text>
         {tab === 'my' ? (
           <TouchableOpacity
             activeOpacity={0.8}
@@ -106,11 +113,15 @@ export default function RoutinesScreen({ navigation }: Props) {
 
       <View style={styles.tabs}>
         <TouchableOpacity onPress={() => setTab('pre')} style={styles.tabBtn}>
-          <Text style={[styles.tabText, tab === 'pre' && styles.tabTextActive]}>Predefined</Text>
+          <Text style={[styles.tabText, tab === 'pre' && styles.tabTextActive]}>
+            {t('routines.tabPredefined')}
+          </Text>
           {tab === 'pre' ? <View style={styles.tabUnderline} /> : <View style={{ height: 2 }} />}
         </TouchableOpacity>
         <TouchableOpacity onPress={() => setTab('my')} style={styles.tabBtn}>
-          <Text style={[styles.tabText, tab === 'my' && styles.tabTextActive]}>My Routines</Text>
+          <Text style={[styles.tabText, tab === 'my' && styles.tabTextActive]}>
+            {t('routines.tabMy')}
+          </Text>
           {tab === 'my' ? <View style={styles.tabUnderline} /> : <View style={{ height: 2 }} />}
         </TouchableOpacity>
       </View>
@@ -132,10 +143,15 @@ export default function RoutinesScreen({ navigation }: Props) {
                 <Ionicons name="barbell-outline" size={28} color={colors.primary} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.preTitle}>{item.data.title}</Text>
-                <Text style={styles.preSub}>{item.data.muscles}</Text>
+                <Text style={styles.preTitle}>
+                  {getRoutineDisplayTitle(item.id, item.data.title, language)}
+                </Text>
+                <Text style={styles.preSub}>{getMuscleDisplayName(item.data.muscles, language)}</Text>
                 <Text style={styles.preMeta}>
-                  {item.data.exerciseCount} exercises • ~{item.data.minutes} min
+                  {t('routines.exerciseMeta', {
+                    count: item.data.exerciseCount,
+                    minutes: item.data.minutes,
+                  })}
                 </Text>
               </View>
               <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
@@ -161,9 +177,14 @@ export default function RoutinesScreen({ navigation }: Props) {
               <View style={{ flex: 1 }}>
                 <Text style={styles.preTitle}>{item.data.title}</Text>
                 <Text style={styles.preMeta}>
-                  {item.data.exerciseCount} exercises • ~{item.data.minutes} min
+                  {t('routines.exerciseMeta', {
+                    count: item.data.exerciseCount,
+                    minutes: item.data.minutes,
+                  })}
                 </Text>
-                <Text style={styles.updated}>Updated {formatUpdated(item.data.updatedAt)}</Text>
+                <Text style={styles.updated}>
+                  {t('routines.updated', { date: formatUpdated(item.data.updatedAt, localeTag) })}
+                </Text>
               </View>
               <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
             </TouchableOpacity>

@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   View,
   Text,
@@ -20,6 +21,7 @@ import { friendlySignUpError } from '../utils/authError';
 type Props = NativeStackScreenProps<RootStackParamList, 'SignUp'>;
 
 export default function SignUpScreen({ navigation, route }: Props) {
+  const { t } = useTranslation();
   const { signUp, firebaseConfigured } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -40,22 +42,22 @@ export default function SignUpScreen({ navigation, route }: Props) {
 
   const onSubmit = async () => {
     if (!firebaseConfigured) {
-      Alert.alert('Firebase', 'Add EXPO_PUBLIC_FIREBASE_* keys to your .env file.');
+      Alert.alert(t('signUp.alerts.firebaseTitle'), t('signUp.alerts.firebaseMessage'));
       return;
     }
     if (!email.trim()) {
-      Alert.alert('Create account', 'Please enter your email address.');
+      Alert.alert(t('signUp.alerts.createTitle'), t('signUp.alerts.emailRequired'));
       return;
     }
     if (password.length < 6) {
-      Alert.alert('Password', 'Use at least 6 characters.');
+      Alert.alert(t('signUp.alerts.passwordTitle'), t('signUp.alerts.passwordMin'));
       return;
     }
     setBusy(true);
     try {
       await signUp(email, password, profile);
     } catch (e: unknown) {
-      Alert.alert('Create account', friendlySignUpError(e));
+      Alert.alert(t('signUp.alerts.createTitle'), friendlySignUpError(e));
     } finally {
       setBusy(false);
     }
@@ -68,11 +70,9 @@ export default function SignUpScreen({ navigation, route }: Props) {
         style={{ flex: 1 }}
       >
         <View style={styles.inner}>
-          <Text style={styles.title}>Create account</Text>
+          <Text style={styles.title}>{t('signUp.title')}</Text>
           <Text style={styles.sub}>
-            {profile
-              ? 'Your profile from onboarding will be saved to your account.'
-              : 'Finish registration to start your free trial.'}
+            {profile ? t('signUp.subtitleWithProfile') : t('signUp.subtitleNoProfile')}
           </Text>
 
           {!profile ? (
@@ -81,30 +81,28 @@ export default function SignUpScreen({ navigation, route }: Props) {
               onPress={() => navigation.navigate('Onboarding')}
               activeOpacity={0.85}
             >
-              <Text style={styles.onboardingLinkText}>
-                Set weight, height & goal first (recommended)
-              </Text>
+              <Text style={styles.onboardingLinkText}>{t('signUp.onboardingLink')}</Text>
             </TouchableOpacity>
           ) : null}
 
-          <Text style={styles.label}>Email</Text>
+          <Text style={styles.label}>{t('signUp.email')}</Text>
           <TextInput
             style={styles.input}
             autoCapitalize="none"
             keyboardType="email-address"
             value={email}
             onChangeText={setEmail}
-            placeholder="you@example.com"
+            placeholder={t('signUp.emailPlaceholder')}
             placeholderTextColor={colors.textMuted}
           />
 
-          <Text style={styles.label}>Password</Text>
+          <Text style={styles.label}>{t('signUp.password')}</Text>
           <TextInput
             style={styles.input}
             secureTextEntry
             value={password}
             onChangeText={setPassword}
-            placeholder="At least 6 characters"
+            placeholder={t('signUp.passwordPlaceholder')}
             placeholderTextColor={colors.textMuted}
           />
 
@@ -114,12 +112,12 @@ export default function SignUpScreen({ navigation, route }: Props) {
             disabled={busy}
             activeOpacity={0.9}
           >
-            <Text style={styles.primaryText}>{busy ? 'Creating…' : 'Create account'}</Text>
+            <Text style={styles.primaryText}>{busy ? t('signUp.creating') : t('signUp.createAccount')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.linkRow} onPress={() => navigation.navigate('Login')}>
-            <Text style={styles.link}>Already have an account? </Text>
-            <Text style={styles.linkBold}>Sign in</Text>
+            <Text style={styles.link}>{t('signUp.alreadyHaveAccount')}</Text>
+            <Text style={styles.linkBold}>{t('signUp.signIn')}</Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>

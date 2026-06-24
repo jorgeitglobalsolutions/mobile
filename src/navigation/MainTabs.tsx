@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native';
@@ -9,6 +10,7 @@ import HistoryScreen from '../screens/HistoryScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import RoutinesStackNavigator from './RoutinesStackNavigator';
 import { useAuth } from '../context/AuthContext';
+import { LocaleAware } from '../context/LocaleContext';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
@@ -37,36 +39,41 @@ function SubscriptionPaywallEffect() {
 }
 
 function SubscriptionLockOverlay() {
+  const { t } = useTranslation();
   const navigation = useNavigation();
   const { accessLevel } = useAuth();
   if (accessLevel !== 'paywalled') return null;
 
   return (
     <View style={styles.lockOverlay}>
-      <Text style={styles.lockTitle}>Subscription Required</Text>
-      <Text style={styles.lockSub}>Your trial has ended. Subscribe to continue using EM Fit.</Text>
+      <Text style={styles.lockTitle}>{t('mainTabs.subscriptionRequired')}</Text>
+      <Text style={styles.lockSub}>{t('mainTabs.trialEnded')}</Text>
       <TouchableOpacity style={styles.lockCta} onPress={() => navigation.navigate('Paywall' as never)}>
-        <Text style={styles.lockCtaText}>Subscribe / Restore</Text>
+        <Text style={styles.lockCtaText}>{t('mainTabs.subscribeRestore')}</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
 export default function MainTabs() {
+  const { t } = useTranslation();
+
   return (
     <View style={styles.flex}>
       <SubscriptionPaywallEffect />
       <SubscriptionLockOverlay />
-      <Tab.Navigator
-        tabBar={(props) => <BottomTabBar {...props} />}
-        screenOptions={{ headerShown: false }}
-      >
-        <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: 'Home' }} />
-        <Tab.Screen name="Routines" component={RoutinesStackNavigator} options={{ tabBarLabel: 'Routines' }} />
-        <Tab.Screen name="AddPlaceholder" component={AddPlaceholder} options={{ tabBarLabel: '' }} />
-        <Tab.Screen name="History" component={HistoryScreen} options={{ tabBarLabel: 'History' }} />
-        <Tab.Screen name="Profile" component={ProfileScreen} options={{ tabBarLabel: 'Profile' }} />
-      </Tab.Navigator>
+      <LocaleAware>
+        <Tab.Navigator
+          tabBar={(props) => <BottomTabBar {...props} />}
+          screenOptions={{ headerShown: false }}
+        >
+          <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: t('tabs.home') }} />
+          <Tab.Screen name="Routines" component={RoutinesStackNavigator} options={{ tabBarLabel: t('tabs.routines') }} />
+          <Tab.Screen name="AddPlaceholder" component={AddPlaceholder} options={{ tabBarLabel: '' }} />
+          <Tab.Screen name="History" component={HistoryScreen} options={{ tabBarLabel: t('tabs.history') }} />
+          <Tab.Screen name="Profile" component={ProfileScreen} options={{ tabBarLabel: t('tabs.profile') }} />
+        </Tab.Navigator>
+      </LocaleAware>
     </View>
   );
 }

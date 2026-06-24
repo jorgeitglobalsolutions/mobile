@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { colors, radius, spacing } from '../../theme';
 import type { NutritionSnapshot } from '../../hooks/useTodayNutrition';
 
@@ -9,6 +10,7 @@ type Props = {
 
 /** Compact progress strip — visible on both Overview and Log tabs. */
 export default function NutritionTodayStrip({ snapshot }: Props) {
+  const { t } = useTranslation();
   const pct = Math.min(100, Math.round(snapshot.caloriesPct * 100));
   const over = snapshot.caloriesOver > 0;
 
@@ -16,14 +18,18 @@ export default function NutritionTodayStrip({ snapshot }: Props) {
     <View style={styles.wrap}>
       <View style={styles.row}>
         <View style={{ flex: 1 }}>
-          <Text style={styles.label}>Today</Text>
+          <Text style={styles.label}>{t('nutritionTodayStrip.today')}</Text>
           <Text style={styles.kcal}>
             {Math.round(snapshot.caloriesCur)}
-            <Text style={styles.kcalGoal}>{` / ${Math.round(snapshot.caloriesGoal)} kcal`}</Text>
+            <Text style={styles.kcalGoal}>
+              {t('nutritionTodayStrip.kcalGoal', { goal: Math.round(snapshot.caloriesGoal) })}
+            </Text>
           </Text>
         </View>
         <Text style={[styles.remain, over && styles.over]}>
-          {over ? `${snapshot.caloriesOver} over` : `${snapshot.caloriesRemaining} left`}
+          {over
+            ? t('nutritionTodayStrip.over', { amount: snapshot.caloriesOver })
+            : t('nutritionTodayStrip.left', { amount: snapshot.caloriesRemaining })}
         </Text>
       </View>
       <View style={styles.barBg}>
@@ -36,12 +42,27 @@ export default function NutritionTodayStrip({ snapshot }: Props) {
       </View>
       <View style={styles.footer}>
         <Text style={styles.meals}>
-          {snapshot.mealCount} meal{snapshot.mealCount === 1 ? '' : 's'} logged
+          {t('nutritionTodayStrip.mealsLogged', { count: snapshot.mealCount })}
         </Text>
         <View style={styles.macros}>
-          <MiniMacro label="P" value={snapshot.proteinCur} goal={snapshot.proteinGoal} color={colors.green} />
-          <MiniMacro label="C" value={snapshot.carbsCur} goal={snapshot.carbsGoal} color={colors.primary} />
-          <MiniMacro label="F" value={snapshot.fatCur} goal={snapshot.fatGoal} color={colors.yellow} />
+          <MiniMacro
+            label={t('common.macros.proteinShort')}
+            value={snapshot.proteinCur}
+            goal={snapshot.proteinGoal}
+            color={colors.green}
+          />
+          <MiniMacro
+            label={t('common.macros.carbsShort')}
+            value={snapshot.carbsCur}
+            goal={snapshot.carbsGoal}
+            color={colors.primary}
+          />
+          <MiniMacro
+            label={t('common.macros.fatShort')}
+            value={snapshot.fatCur}
+            goal={snapshot.fatGoal}
+            color={colors.yellow}
+          />
         </View>
       </View>
     </View>
@@ -59,13 +80,14 @@ function MiniMacro({
   goal: number;
   color: string;
 }) {
+  const { t } = useTranslation();
   const pct = goal > 0 ? Math.min(100, Math.round((value / goal) * 100)) : 0;
   return (
     <View style={styles.mini}>
       <Text style={[styles.miniLabel, { color }]}>{label}</Text>
       <Text style={styles.miniVal}>
         {Math.round(value)}
-        <Text style={styles.miniGoal}>{`/${Math.round(goal)}g`}</Text>
+        <Text style={styles.miniGoal}>{`/${Math.round(goal)}${t('common.units.g')}`}</Text>
       </Text>
       <View style={styles.miniBarBg}>
         <View style={[styles.miniBarFill, { width: `${pct}%`, backgroundColor: color }]} />

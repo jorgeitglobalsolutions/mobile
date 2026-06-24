@@ -26,12 +26,17 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.jorgeitglobalsolutionssorganization.emfitsystem"
+      "package": "com.jorgeitglobalsolutionssorganization.emfitsystem",
+      "permissions": [
+        "com.google.android.gms.permission.AD_ID"
+      ],
+      "versionCode": 10
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
+      "expo-localization",
       "expo-iap",
       [
         "expo-notifications",

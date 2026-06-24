@@ -11,6 +11,7 @@ import {
   Platform,
   Pressable,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { colors, radius, spacing } from '../../theme';
 
 export type PortionPreview = {
@@ -33,10 +34,6 @@ type Props = {
 
 const GRAM_PRESETS = [50, 100, 150, 200] as const;
 
-function formatMacros(p: number, c: number, f: number, kcal: number): string {
-  return `${Math.round(kcal)} kcal · ${Math.round(p)}P / ${Math.round(c)}C / ${Math.round(f)}F`;
-}
-
 export default function FoodPortionModal({
   visible,
   title,
@@ -47,6 +44,8 @@ export default function FoodPortionModal({
   onAdd,
   onClose,
 }: Props) {
+  const { t } = useTranslation();
+
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <Pressable style={styles.backdrop} onPress={onClose}>
@@ -56,7 +55,7 @@ export default function FoodPortionModal({
         >
           <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()}>
             <Text style={styles.title}>{title}</Text>
-            <Text style={styles.subtitle}>Amount (grams)</Text>
+            <Text style={styles.subtitle}>{t('foodPortionModal.amountGrams')}</Text>
 
             <View style={styles.gramsRow}>
               {GRAM_PRESETS.map((preset) => (
@@ -71,7 +70,8 @@ export default function FoodPortionModal({
                       grams === String(preset) && styles.gramPresetTextActive,
                     ]}
                   >
-                    {preset}g
+                    {preset}
+                    {t('common.units.g')}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -83,15 +83,20 @@ export default function FoodPortionModal({
                 keyboardType="decimal-pad"
                 value={grams}
                 onChangeText={onGramsChange}
-                placeholder="100"
+                placeholder={t('foodPortionModal.gramsPlaceholder')}
                 placeholderTextColor={colors.textMuted}
               />
-              <Text style={styles.gramsSuffix}>g</Text>
+              <Text style={styles.gramsSuffix}>{t('common.units.g')}</Text>
             </View>
 
             {preview ? (
               <Text style={styles.previewMacros}>
-                {formatMacros(preview.protein, preview.carbs, preview.fat, preview.calories)}
+                {t('foodPortionModal.macroPreview', {
+                  kcal: Math.round(preview.calories),
+                  protein: Math.round(preview.protein),
+                  carbs: Math.round(preview.carbs),
+                  fat: Math.round(preview.fat),
+                })}
               </Text>
             ) : null}
 
@@ -104,7 +109,7 @@ export default function FoodPortionModal({
               {saving ? (
                 <ActivityIndicator color={colors.white} />
               ) : (
-                <Text style={styles.primaryBtnText}>Add to today's meal</Text>
+                <Text style={styles.primaryBtnText}>{t('foodPortionModal.addToMeal')}</Text>
               )}
             </TouchableOpacity>
           </Pressable>

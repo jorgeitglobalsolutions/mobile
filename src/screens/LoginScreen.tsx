@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   View,
   Text,
@@ -19,6 +20,7 @@ import { friendlySignInError } from '../utils/authError';
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
 export default function LoginScreen({ navigation }: Props) {
+  const { t } = useTranslation();
   const { signIn, firebaseConfigured } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -26,22 +28,22 @@ export default function LoginScreen({ navigation }: Props) {
 
   const onSubmit = async () => {
     if (!firebaseConfigured) {
-      Alert.alert('Firebase', 'Add EXPO_PUBLIC_FIREBASE_* keys to your .env file.');
+      Alert.alert(t('login.alerts.firebaseTitle'), t('login.alerts.firebaseMessage'));
       return;
     }
     if (!email.trim()) {
-      Alert.alert('Sign in', 'Please enter your email address.');
+      Alert.alert(t('login.alerts.signInTitle'), t('login.alerts.emailRequired'));
       return;
     }
     if (!password) {
-      Alert.alert('Sign in', 'Please enter your password.');
+      Alert.alert(t('login.alerts.signInTitle'), t('login.alerts.passwordRequired'));
       return;
     }
     setBusy(true);
     try {
       await signIn(email, password);
     } catch (e: unknown) {
-      Alert.alert('Sign in', friendlySignInError(e));
+      Alert.alert(t('login.alerts.signInTitle'), friendlySignInError(e));
     } finally {
       setBusy(false);
     }
@@ -54,27 +56,27 @@ export default function LoginScreen({ navigation }: Props) {
         style={{ flex: 1 }}
       >
         <View style={styles.inner}>
-          <Text style={styles.title}>Welcome back</Text>
-          <Text style={styles.sub}>Sign in to continue your streak.</Text>
+          <Text style={styles.title}>{t('login.title')}</Text>
+          <Text style={styles.sub}>{t('login.subtitle')}</Text>
 
-          <Text style={styles.label}>Email</Text>
+          <Text style={styles.label}>{t('login.email')}</Text>
           <TextInput
             style={styles.input}
             autoCapitalize="none"
             keyboardType="email-address"
             value={email}
             onChangeText={setEmail}
-            placeholder="you@example.com"
+            placeholder={t('login.emailPlaceholder')}
             placeholderTextColor={colors.textMuted}
           />
 
-          <Text style={styles.label}>Password</Text>
+          <Text style={styles.label}>{t('login.password')}</Text>
           <TextInput
             style={styles.input}
             secureTextEntry
             value={password}
             onChangeText={setPassword}
-            placeholder="••••••••"
+            placeholder={t('login.passwordPlaceholder')}
             placeholderTextColor={colors.textMuted}
           />
 
@@ -84,7 +86,7 @@ export default function LoginScreen({ navigation }: Props) {
             disabled={busy}
             activeOpacity={0.9}
           >
-            <Text style={styles.primaryText}>{busy ? 'Signing in…' : 'Sign in'}</Text>
+            <Text style={styles.primaryText}>{busy ? t('login.signingIn') : t('login.signIn')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -92,12 +94,12 @@ export default function LoginScreen({ navigation }: Props) {
             onPress={() => navigation.navigate('Onboarding')}
             activeOpacity={0.85}
           >
-            <Text style={styles.onboardingLinkText}>New here? Set weight, height & goal first</Text>
+            <Text style={styles.onboardingLinkText}>{t('login.onboardingLink')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.linkRow} onPress={() => navigation.navigate('SignUp', {})}>
-            <Text style={styles.link}>{"No account? "}</Text>
-            <Text style={styles.linkBold}>Create one</Text>
+            <Text style={styles.link}>{t('login.noAccount')}</Text>
+            <Text style={styles.linkBold}>{t('login.createOne')}</Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>

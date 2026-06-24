@@ -1,18 +1,17 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import { colors, spacing } from '../theme';
 
 export default function MissingFirebaseScreen() {
+  const { t } = useTranslation();
+
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       <View style={styles.box}>
-        <Text style={styles.title}>Firebase configuration required</Text>
-        <Text style={styles.body}>
-          Create a Firebase project, enable Email/Password authentication and Cloud Firestore, then add
-          EXPO_PUBLIC_FIREBASE_* variables to a .env file in the mobile folder (see .env.example). Restart Expo
-          after saving.
-        </Text>
+        <Text style={styles.title}>{t('missingFirebase.title')}</Text>
+        <Text style={styles.body}>{t('missingFirebase.body')}</Text>
       </View>
     </SafeAreaView>
   );

@@ -17,11 +17,14 @@ export type SubscriptionFields = {
   lastSyncedAt: Timestamp | null;
 };
 
+export type AppLanguage = 'en' | 'es';
+
 export type UserSettings = {
   notificationsEnabled?: boolean;
   unitsMetric?: boolean;
   /** 0–23 UTC hour for scheduled push reminder; omit or null = server default (13). */
   reminderHourUtc?: number | null;
+  language?: AppLanguage;
 };
 
 export type UserDocument = {

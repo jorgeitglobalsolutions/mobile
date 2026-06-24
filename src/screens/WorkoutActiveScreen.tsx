@@ -12,7 +12,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import type { RoutinesScreenProps } from '../navigation/types';
+import { useFocusEffect } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList, RoutinesScreenProps } from '../navigation/types';
 import { colors, radius, spacing } from '../theme';
 import { useAuth } from '../context/AuthContext';
 import { getRoutine, routineToWorkoutBlocks, saveUserRoutine } from '../services/routinesRepo';
@@ -22,6 +25,10 @@ import { defaultHabitGoalsFromProfile, setWorkoutCompleted } from '../services/h
 import { localDateKey } from '../utils/dateKey';
 import type { LoggedExercise, RoutineDoc } from '../types/domain';
 import { friendlyAppError } from '../utils/appError';
+import { consumePickedExercises } from '../services/exercisePickerBridge';
+import { getCatalogExerciseByName } from '../data/exercisesCatalog';
+import { getExerciseDisplayName } from '../i18n/catalogDisplay';
+import { useLocale } from '../context/LocaleContext';
 
 type Props = RoutinesScreenProps<'WorkoutActive'>;
 
@@ -56,9 +63,22 @@ function ensureTrailingEmptyRow(rows: { weightKg: number; reps: number; done: bo
   return rows;
 }
 
+function exerciseHasLoggedSets(ex: LoggedExercise): boolean {
+  return ex.sets.some((s) => rowHasInput(s));
+}
+
+function isTrailingEmptyRow(ex: LoggedExercise, setIndex: number): boolean {
+  if (setIndex !== ex.sets.length - 1) return false;
+  const row = ex.sets[setIndex];
+  return !rowHasInput(row);
+}
+
 export default function WorkoutActiveScreen({ navigation, route }: Props) {
+  const { t } = useTranslation();
+  const { language } = useLocale();
   const { user, userDoc } = useAuth();
   const { routineId, title: initialTitle } = route.params;
+  const pickerSessionIdRef = useRef(`wa-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [seconds, setSeconds] = useState(0);
@@ -67,6 +87,16 @@ export default function WorkoutActiveScreen({ navigation, route }: Props) {
   const [routineTitle, setRoutineTitle] = useState(initialTitle);
   const startedAtRef = useRef<Date>(new Date());
   const [restRemaining, setRestRemaining] = useState<number | null>(null);
+  const allowExitRef = useRef(false);
+
+  const displayExerciseName = useCallback(
+    (name: string) => {
+      const catalog = getCatalogExerciseByName(name);
+      if (catalog) return getExerciseDisplayName(catalog.id, catalog.name, language);
+      return name;
+    },
+    [language],
+  );
 
   useEffect(() => {
     const id = setInterval(() => setSeconds((s) => s + 1), 1000);
@@ -92,25 +122,26 @@ export default function WorkoutActiveScreen({ navigation, route }: Props) {
         return;
       }
       try {
-        const routine = await getRoutine(user.uid, routineId);
+        const loadedRoutine = await getRoutine(user.uid, routineId);
         if (cancelled) return;
-        if (!routine) {
-          Alert.alert('Routine', 'Could not load this routine. Please go back and try again.');
+        if (!loadedRoutine) {
+          Alert.alert(t('workoutActive.alerts.routineTitle'), t('workoutActive.alerts.loadError'));
           navigation.goBack();
           return;
         }
-        setRoutine(routine);
-        setRoutineTitle(routine.title);
+        setRoutine(loadedRoutine);
+        setRoutineTitle(loadedRoutine.title);
         const draft = await getWorkoutDraft(user.uid);
         if (draft && draft.routineId === routineId && draft.exercises?.length) {
           startedAtRef.current = new Date(draft.startedAtMs);
           setExercises(draft.exercises);
+          const elapsed = Math.max(0, Math.floor((Date.now() - draft.startedAtMs) / 1000));
+          setSeconds(elapsed);
         } else {
           startedAtRef.current = new Date();
           setExercises(
-            routineToWorkoutBlocks(routine).map((ex) => ({
+            routineToWorkoutBlocks(loadedRoutine).map((ex) => ({
               ...ex,
-              // Start with one row; reveal the next row progressively as user logs sets.
               sets: ex.sets.slice(0, 1),
             })),
           );
@@ -122,11 +153,11 @@ export default function WorkoutActiveScreen({ navigation, route }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [user?.uid, routineId, navigation]);
+  }, [user?.uid, routineId, navigation, t]);
 
   useEffect(() => {
     if (!user?.uid || loading) return;
-    const t = setTimeout(() => {
+    const timer = setTimeout(() => {
       void saveWorkoutDraft(user.uid, {
         routineId,
         title: routineTitle,
@@ -134,8 +165,83 @@ export default function WorkoutActiveScreen({ navigation, route }: Props) {
         exercises,
       }).catch(() => {});
     }, 8000);
-    return () => clearTimeout(t);
+    return () => clearTimeout(timer);
   }, [user?.uid, loading, routineId, routineTitle, exercises]);
+
+  const addExerciseByName = useCallback((name: string) => {
+    const n = name.trim();
+    if (!n) return;
+    setExercises((prev) => [...prev, { name: n, sets: [{ weightKg: 0, reps: 0, done: false }] }]);
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      const picked = consumePickedExercises(pickerSessionIdRef.current);
+      if (!picked.length) return;
+      picked.forEach((n) => addExerciseByName(n));
+    }, [addExerciseByName]),
+  );
+
+  const openExercisePicker = () => {
+    const root = navigation.getParent()?.getParent() as NativeStackNavigationProp<RootStackParamList> | undefined;
+    root?.navigate('ExerciseLibrary', {
+      mode: 'pick',
+      returnRoutineId: routineId,
+      pickerSessionId: pickerSessionIdRef.current,
+    });
+  };
+
+  const removeExercise = (exIndex: number) => {
+    const ex = exercises[exIndex];
+    if (!ex) return;
+    const doRemove = () => setExercises((prev) => prev.filter((_, i) => i !== exIndex));
+    if (!exerciseHasLoggedSets(ex)) {
+      doRemove();
+      return;
+    }
+    Alert.alert(
+      t('workoutActive.removeExerciseTitle'),
+      t('workoutActive.removeExerciseMessage', { name: displayExerciseName(ex.name) }),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        { text: t('common.remove'), style: 'destructive', onPress: doRemove },
+      ],
+    );
+  };
+
+  const removeSet = (exIndex: number, setIndex: number) => {
+    const ex = exercises[exIndex];
+    if (!ex || isTrailingEmptyRow(ex, setIndex)) return;
+    const doRemove = () =>
+      setExercises((prev) =>
+        prev.map((item, ei) =>
+          ei !== exIndex
+            ? item
+            : {
+                ...item,
+                sets: ensureTrailingEmptyRow(item.sets.filter((_, si) => si !== setIndex)),
+              },
+        ),
+      );
+    if (!rowHasInput(ex.sets[setIndex])) {
+      doRemove();
+      return;
+    }
+    Alert.alert(t('workoutActive.removeSetTitle'), t('workoutActive.removeSetMessage'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('common.remove'), style: 'destructive', onPress: doRemove },
+    ]);
+  };
+
+  const addSet = (exIndex: number) => {
+    setExercises((prev) =>
+      prev.map((ex, ei) =>
+        ei !== exIndex
+          ? ex
+          : { ...ex, sets: ensureTrailingEmptyRow([...ex.sets, { weightKg: 0, reps: 0, done: false }]) },
+      ),
+    );
+  };
 
   const updateSet = useCallback(
     (exIndex: number, setIndex: number, patch: Partial<{ weightKg: number; reps: number; done: boolean }>) => {
@@ -161,7 +267,7 @@ export default function WorkoutActiveScreen({ navigation, route }: Props) {
   );
   const vol = useMemo(() => totalVolumeKg(exercises), [exercises]);
 
-  const onSave = async () => {
+  const onSave = useCallback(async () => {
     if (!user?.uid) return;
     setSaving(true);
     try {
@@ -191,30 +297,26 @@ export default function WorkoutActiveScreen({ navigation, route }: Props) {
         endedAt: ended,
         exercises: exercises.map((ex) => ({
           ...ex,
-          // Drop trailing placeholder rows so history only stores meaningful set data.
           sets: ex.sets.filter((s) => rowHasInput(s)),
         })),
       });
       const defs = defaultHabitGoalsFromProfile(userDoc?.profile ?? null);
       await setWorkoutCompleted(user.uid, localDateKey(), true, defs);
       await clearWorkoutDraft(user.uid);
+      allowExitRef.current = true;
       navigation.popToTop();
     } catch (e: unknown) {
-      Alert.alert('Workout', friendlyAppError(e, 'Could not save workout. Please try again.'));
+      Alert.alert(t('workoutActive.alerts.workoutTitle'), friendlyAppError(e, 'workoutActive.alerts.saveError'));
     } finally {
       setSaving(false);
     }
-  };
-
-  const onRestPress = () => {
-    setRestRemaining(90);
-  };
+  }, [user?.uid, routine, routineId, routineTitle, exercises, userDoc?.profile, navigation, t]);
 
   const onEndPress = () => {
-    Alert.alert('End workout', 'Save this session, discard it, or keep training.', [
-      { text: 'Keep training', style: 'cancel' },
+    Alert.alert(t('workoutActive.alerts.endTitle'), t('workoutActive.alerts.endMessage'), [
+      { text: t('common.keepTraining'), style: 'cancel' },
       {
-        text: 'Discard',
+        text: t('common.discard'),
         style: 'destructive',
         onPress: () => {
           void (async () => {
@@ -225,16 +327,60 @@ export default function WorkoutActiveScreen({ navigation, route }: Props) {
                 // ignore
               }
             }
+            allowExitRef.current = true;
             navigation.goBack();
           })();
         },
       },
       {
-        text: 'Save workout',
+        text: t('workoutActive.alerts.saveWorkout'),
         onPress: () => void onSave(),
       },
     ]);
   };
+
+  const onMenuPress = () => {
+    Alert.alert(t('workoutActive.menuTitle'), undefined, [
+      { text: t('workoutActive.addExercise'), onPress: openExercisePicker },
+      { text: t('workoutActive.alerts.endTitle'), onPress: onEndPress },
+      { text: t('common.cancel'), style: 'cancel' },
+    ]);
+  };
+
+  const confirmExit = useCallback(() => {
+    Alert.alert(t('workoutActive.alerts.endTitle'), t('workoutActive.alerts.endMessage'), [
+      { text: t('common.keepTraining'), style: 'cancel' },
+      {
+        text: t('common.discard'),
+        style: 'destructive',
+        onPress: () => {
+          void (async () => {
+            if (user?.uid) {
+              try {
+                await clearWorkoutDraft(user.uid);
+              } catch {
+                // ignore
+              }
+            }
+            allowExitRef.current = true;
+            navigation.goBack();
+          })();
+        },
+      },
+      { text: t('workoutActive.alerts.saveWorkout'), onPress: () => void onSave() },
+    ]);
+  }, [navigation, onSave, t, user?.uid]);
+
+  useEffect(() => {
+    const unsub = navigation.addListener('beforeRemove', (e) => {
+      if (allowExitRef.current) return;
+      e.preventDefault();
+      confirmExit();
+    });
+    return unsub;
+  }, [navigation, confirmExit]);
+
+  const onRestPress = () => setRestRemaining(90);
 
   if (loading) {
     return (
@@ -253,7 +399,7 @@ export default function WorkoutActiveScreen({ navigation, route }: Props) {
         <Text style={styles.topTitle} numberOfLines={1}>
           {routineTitle}
         </Text>
-        <TouchableOpacity hitSlop={12}>
+        <TouchableOpacity hitSlop={12} onPress={onMenuPress}>
           <Ionicons name="ellipsis-horizontal" size={22} color={colors.text} />
         </TouchableOpacity>
       </View>
@@ -262,18 +408,18 @@ export default function WorkoutActiveScreen({ navigation, route }: Props) {
         <View style={styles.timerRow}>
           <View>
             <Text style={styles.timer}>{formatElapsed(seconds)}</Text>
-            <Text style={styles.timerLabel}>WORKOUT TIME</Text>
+            <Text style={styles.timerLabel}>{t('workoutActive.workoutTime')}</Text>
           </View>
           <View style={styles.timerActions}>
-            <MiniBtn icon="time-outline" label="Rest" onPress={onRestPress} />
-            <MiniBtn icon="stop-outline" label="End" onPress={onEndPress} disabled={saving} />
+            <MiniBtn icon="time-outline" label={t('workoutActive.rest')} onPress={onRestPress} />
+            <MiniBtn icon="stop-outline" label={t('workoutActive.end')} onPress={onEndPress} disabled={saving} />
           </View>
         </View>
 
         <View style={styles.summaryBar}>
-          <SummaryItem icon="barbell-outline" text={`${exercises.length} Exercises`} />
-          <SummaryItem icon="layers-outline" text={`${totalSets} Sets`} />
-          <SummaryItem icon="trophy-outline" text={`${vol.toLocaleString()} kg vol.`} />
+          <SummaryItem icon="barbell-outline" text={t('workoutActive.exercisesSummary', { count: exercises.length })} />
+          <SummaryItem icon="layers-outline" text={t('workoutActive.setsSummary', { count: totalSets })} />
+          <SummaryItem icon="trophy-outline" text={t('workoutActive.volumeSummary', { volume: vol.toLocaleString() })} />
         </View>
 
         {exercises.map((block, bi) => (
@@ -282,13 +428,16 @@ export default function WorkoutActiveScreen({ navigation, route }: Props) {
               <View style={styles.exThumb}>
                 <Ionicons name="barbell" size={22} color={colors.primary} />
               </View>
-              <Text style={styles.exTitle}>{block.name}</Text>
+              <Text style={[styles.exTitle, { flex: 1 }]}>{displayExerciseName(block.name)}</Text>
+              <TouchableOpacity onPress={() => removeExercise(bi)} hitSlop={8} style={{ marginRight: 4 }}>
+                <Ionicons name="trash-outline" size={20} color={colors.textMuted} />
+              </TouchableOpacity>
             </View>
             <View style={styles.tableHead}>
-              <Text style={[styles.th, { width: 36 }]}>SET</Text>
-              <Text style={[styles.th, { flex: 1 }]}>WEIGHT (KG)</Text>
-              <Text style={[styles.th, { flex: 1 }]}>REPS</Text>
-              <Text style={{ width: 28 }} />
+              <Text style={[styles.th, { width: 36 }]}>{t('workoutActive.setHeader')}</Text>
+              <Text style={[styles.th, { flex: 1 }]}>{t('workoutActive.weightHeader')}</Text>
+              <Text style={[styles.th, { flex: 1 }]}>{t('workoutActive.repsHeader')}</Text>
+              <Text style={{ width: 56 }} />
             </View>
             {block.sets.map((row, idx) => (
               <View key={idx} style={styles.tableRow}>
@@ -297,43 +446,56 @@ export default function WorkoutActiveScreen({ navigation, route }: Props) {
                   style={[styles.inputCell, { flex: 1 }]}
                   keyboardType="decimal-pad"
                   value={row.weightKg ? String(row.weightKg) : ''}
-                  onChangeText={(t) =>
-                    updateSet(bi, idx, { weightKg: parseFloat(t) || 0, done: row.done })
+                  onChangeText={(text) =>
+                    updateSet(bi, idx, { weightKg: parseFloat(text) || 0, done: row.done })
                   }
                   editable={!row.done}
-                  placeholder="0"
+                  placeholder={t('workoutActive.weightPlaceholder')}
                 />
                 <TextInput
                   style={[styles.inputCell, { flex: 1 }]}
                   keyboardType="number-pad"
                   value={row.reps ? String(row.reps) : ''}
-                  onChangeText={(t) =>
-                    updateSet(bi, idx, { reps: parseInt(t, 10) || 0, done: row.done })
+                  onChangeText={(text) =>
+                    updateSet(bi, idx, { reps: parseInt(text, 10) || 0, done: row.done })
                   }
                   editable={!row.done}
-                  placeholder="0"
+                  placeholder={t('workoutActive.repsPlaceholder')}
                 />
-                <View style={{ width: 28, alignItems: 'flex-end' }}>
+                <View style={styles.rowActions}>
+                  {!isTrailingEmptyRow(block, idx) ? (
+                    <TouchableOpacity onPress={() => removeSet(bi, idx)} hitSlop={6}>
+                      <Ionicons name="trash-outline" size={18} color={colors.textMuted} />
+                    </TouchableOpacity>
+                  ) : (
+                    <View style={{ width: 18 }} />
+                  )}
                   {row.done ? (
                     <TouchableOpacity onPress={() => updateSet(bi, idx, { done: false })}>
                       <Ionicons name="checkmark-circle" size={22} color={colors.primary} />
                     </TouchableOpacity>
                   ) : (
-                    <TouchableOpacity
-                      hitSlop={8}
-                      onPress={() => updateSet(bi, idx, { done: true })}
-                    >
+                    <TouchableOpacity hitSlop={8} onPress={() => updateSet(bi, idx, { done: true })}>
                       <Ionicons name="ellipse-outline" size={22} color={colors.textMuted} />
                     </TouchableOpacity>
                   )}
                 </View>
               </View>
             ))}
+            <TouchableOpacity style={styles.addSetBtn} onPress={() => addSet(bi)} activeOpacity={0.85}>
+              <Ionicons name="add-circle-outline" size={18} color={colors.primary} />
+              <Text style={styles.addSetText}>{t('workoutActive.addSet')}</Text>
+            </TouchableOpacity>
           </View>
         ))}
 
+        <TouchableOpacity style={styles.addExerciseBtn} onPress={openExercisePicker} activeOpacity={0.9}>
+          <Ionicons name="add" size={22} color={colors.primary} />
+          <Text style={styles.addExerciseText}>{t('workoutActive.addExercise')}</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity style={styles.saveBtn} activeOpacity={0.9} onPress={onSave} disabled={saving}>
-          {saving ? <ActivityIndicator color={colors.white} /> : <Text style={styles.saveText}>Save Workout</Text>}
+          {saving ? <ActivityIndicator color={colors.white} /> : <Text style={styles.saveText}>{t('workoutActive.saveWorkout')}</Text>}
         </TouchableOpacity>
         <View style={{ height: 32 }} />
       </ScrollView>
@@ -341,13 +503,13 @@ export default function WorkoutActiveScreen({ navigation, route }: Props) {
       <Modal visible={restRemaining !== null && restRemaining > 0} transparent animationType="fade">
         <View style={styles.restOverlay}>
           <View style={styles.restCard}>
-            <Text style={styles.restTitle}>Rest</Text>
+            <Text style={styles.restTitle}>{t('workoutActive.restTitle')}</Text>
             <Text style={styles.restTimer}>
               {restRemaining !== null ? formatElapsed(restRemaining) : '00:00:00'}
             </Text>
-            <Text style={styles.restHint}>Catch your breath. Next set ready when you are.</Text>
+            <Text style={styles.restHint}>{t('workoutActive.restHint')}</Text>
             <TouchableOpacity style={styles.restSkip} onPress={() => setRestRemaining(null)} activeOpacity={0.9}>
-              <Text style={styles.restSkipText}>Skip</Text>
+              <Text style={styles.restSkipText}>{t('workoutActive.skip')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -473,6 +635,27 @@ const styles = StyleSheet.create({
     color: colors.text,
     backgroundColor: colors.bg,
   },
+  rowActions: { width: 56, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 6 },
+  addSetBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: spacing.sm,
+    paddingVertical: 6,
+  },
+  addSetText: { marginLeft: 6, fontSize: 14, fontWeight: '600', color: colors.primary },
+  addExerciseBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.white,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    borderStyle: 'dashed',
+    paddingVertical: 14,
+    marginBottom: spacing.md,
+  },
+  addExerciseText: { marginLeft: 6, fontSize: 16, fontWeight: '700', color: colors.primary },
   saveBtn: {
     backgroundColor: colors.primary,
     borderRadius: radius.lg,

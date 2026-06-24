@@ -1,3 +1,5 @@
+import i18n from '../i18n';
+
 function firebaseCode(err: unknown): string {
   if (!err || typeof err !== 'object') return '';
   const code = (err as { code?: unknown }).code;
@@ -8,41 +10,40 @@ function errMessage(err: unknown): string {
   return err instanceof Error ? err.message : String(err ?? '');
 }
 
-export function friendlyAppError(err: unknown, fallback: string): string {
+export function friendlyAppError(err: unknown, fallbackKey: string): string {
   const code = firebaseCode(err);
   if (code === 'auth/requires-recent-login') {
-    return 'For security, please sign in again and retry.';
+    return i18n.t('errors.appError.requiresRecentLogin');
   }
   if (code === 'permission-denied' || code === 'auth/permission-denied') {
-    return 'You do not have permission to do this action.';
+    return i18n.t('errors.appError.permissionDenied');
   }
   if (code === 'unavailable' || code === 'deadline-exceeded') {
-    return 'Service is temporarily unavailable. Please try again in a moment.';
+    return i18n.t('errors.appError.unavailable');
   }
   if (code === 'auth/network-request-failed') {
-    return 'Network error. Please check your internet connection and try again.';
+    return i18n.t('errors.appError.networkError');
   }
   const raw = errMessage(err).toLowerCase();
   if (raw.includes('network') || raw.includes('internet')) {
-    return 'Network error. Please check your internet connection and try again.';
+    return i18n.t('errors.appError.networkError');
   }
-  return fallback;
+  return i18n.t(fallbackKey);
 }
 
 export function friendlyPurchaseError(err: unknown): string {
   const raw = errMessage(err).toLowerCase();
   if (raw.includes('expo go')) {
-    return 'Purchases require a development or store build. Expo Go does not support in-app purchases.';
+    return i18n.t('errors.appError.purchaseExpoGo');
   }
   if (raw.includes('timed out')) {
-    return 'Purchase timed out. Please try again.';
+    return i18n.t('errors.appError.purchaseTimeout');
   }
   if (raw.includes('cancel')) {
-    return 'Purchase was cancelled.';
+    return i18n.t('errors.appError.purchaseCancelled');
   }
   if (raw.includes('sku') || raw.includes('product')) {
-    return 'Subscription product is not configured correctly yet. Please contact support.';
+    return i18n.t('errors.appError.purchaseSku');
   }
-  return friendlyAppError(err, 'We could not complete your subscription. Please try again.');
+  return friendlyAppError(err, 'errors.appError.purchaseGeneric');
 }
-

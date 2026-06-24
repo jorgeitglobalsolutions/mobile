@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { colors, radius, spacing } from '../../theme';
 import type { NutritionTarget } from '../../services/nutritionTargets';
 import type { UserProfile } from '../../types/firestoreUser';
@@ -10,36 +11,38 @@ type Props = {
   targets: NutritionTarget;
 };
 
-function goalMeta(goal: UserProfile['goal'] | undefined) {
-  if (goal === 'lose') {
-    return {
-      title: 'Lose fat',
-      icon: 'flame-outline' as const,
-      detail: 'Moderate calorie deficit (~500 kcal below estimated maintenance).',
-    };
-  }
-  if (goal === 'build') {
-    return {
-      title: 'Build muscle',
-      icon: 'barbell-outline' as const,
-      detail: 'Calorie surplus (~300 kcal) with higher protein for recovery.',
-    };
-  }
-  return {
-    title: 'Maintain',
-    icon: 'analytics-outline' as const,
-    detail: 'Targets match estimated maintenance for steady progress.',
-  };
-}
-
 export default function NutritionGoalVisualization({ profile, targets }: Props) {
-  const meta = goalMeta(profile?.goal);
-  const weight = profile?.weightKg ? `${Math.round(profile.weightKg)} kg` : '—';
-  const height = profile?.heightCm ? `${Math.round(profile.heightCm)} cm` : '—';
+  const { t } = useTranslation();
+  const goal = profile?.goal;
+  const meta =
+    goal === 'lose'
+      ? {
+          title: t('nutritionGoalVisualization.loseFatTitle'),
+          icon: 'flame-outline' as const,
+          detail: t('nutritionGoalVisualization.loseFatDetail'),
+        }
+      : goal === 'build'
+        ? {
+            title: t('nutritionGoalVisualization.buildMuscleTitle'),
+            icon: 'barbell-outline' as const,
+            detail: t('nutritionGoalVisualization.buildMuscleDetail'),
+          }
+        : {
+            title: t('nutritionGoalVisualization.maintainTitle'),
+            icon: 'analytics-outline' as const,
+            detail: t('nutritionGoalVisualization.maintainDetail'),
+          };
+
+  const weight = profile?.weightKg
+    ? `${Math.round(profile.weightKg)} ${t('common.units.kg')}`
+    : '—';
+  const height = profile?.heightCm
+    ? `${Math.round(profile.heightCm)} ${t('common.units.cm')}`
+    : '—';
 
   return (
     <View style={styles.wrap}>
-      <Text style={styles.sectionTitle}>Daily goals</Text>
+      <Text style={styles.sectionTitle}>{t('nutritionGoalVisualization.dailyGoals')}</Text>
       <View style={styles.banner}>
         <View style={styles.bannerIcon}>
           <Ionicons name={meta.icon} size={22} color={colors.paywallPurple} />
@@ -48,16 +51,40 @@ export default function NutritionGoalVisualization({ profile, targets }: Props) 
           <Text style={styles.bannerTitle}>{meta.title}</Text>
           <Text style={styles.bannerSub}>{meta.detail}</Text>
           <Text style={styles.bannerMeta}>
-            Based on {weight} · {height} · estimated activity
+            {t('nutritionGoalVisualization.basedOn', { weight, height })}
           </Text>
         </View>
       </View>
 
       <View style={styles.grid}>
-        <GoalTile icon="flame" label="Calories" value={`${targets.caloriesKcal}`} unit="kcal" accent={colors.orange} />
-        <GoalTile icon="nutrition" label="Protein" value={`${targets.proteinG}`} unit="g" accent={colors.green} />
-        <GoalTile icon="leaf" label="Carbs" value={`${targets.carbsG}`} unit="g" accent={colors.primary} />
-        <GoalTile icon="water" label="Fat" value={`${targets.fatG}`} unit="g" accent={colors.yellow} />
+        <GoalTile
+          icon="flame"
+          label={t('common.macros.calories')}
+          value={`${targets.caloriesKcal}`}
+          unit={t('common.units.kcal')}
+          accent={colors.orange}
+        />
+        <GoalTile
+          icon="nutrition"
+          label={t('common.macros.protein')}
+          value={`${targets.proteinG}`}
+          unit={t('common.units.g')}
+          accent={colors.green}
+        />
+        <GoalTile
+          icon="leaf"
+          label={t('common.macros.carbs')}
+          value={`${targets.carbsG}`}
+          unit={t('common.units.g')}
+          accent={colors.primary}
+        />
+        <GoalTile
+          icon="water"
+          label={t('common.macros.fat')}
+          value={`${targets.fatG}`}
+          unit={t('common.units.g')}
+          accent={colors.yellow}
+        />
       </View>
     </View>
   );

@@ -1,5 +1,7 @@
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
+import type { NavigationContainerRefWithCurrent } from '@react-navigation/native';
+import type { RootStackParamList } from '../navigation/types';
 import { updatePushToken } from './userDocument';
 
 Notifications.setNotificationHandler({
@@ -34,4 +36,14 @@ export async function registerForPushNotificationsAsync(uid: string | undefined)
   } catch {
     return null;
   }
+}
+
+export function setupNotificationResponseHandler(
+  navigationRef: NavigationContainerRefWithCurrent<RootStackParamList>,
+): () => void {
+  const sub = Notifications.addNotificationResponseReceivedListener(() => {
+    if (!navigationRef.isReady()) return;
+    navigationRef.navigate('Main', { screen: 'Home' });
+  });
+  return () => sub.remove();
 }

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Pressable, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import {
   HEIGHT_MAX_CM,
   HEIGHT_MIN_CM,
@@ -43,6 +44,7 @@ export default function BodyMetricsFields({
   scrollable = true,
   contentContainerStyle,
 }: BodyMetricsFieldsProps) {
+  const { t } = useTranslation();
   const [weightText, setWeightText] = useState(() => formatWeightForDisplay(weightKg));
   const [heightText, setHeightText] = useState(() => String(Math.round(heightCm)));
   const [weightFocused, setWeightFocused] = useState(false);
@@ -76,7 +78,7 @@ export default function BodyMetricsFields({
 
   const inner = (
     <>
-      <SectionHeader icon="scale-outline" label={"What's your weight?"} unit="kg" />
+      <SectionHeader icon="scale-outline" label={t('bodyMetricsFields.weightQuestion')} unit={t('common.units.kg')} />
       <RulerValue
         value={formatWeightForDisplay(weightKg)}
         onMinus={() =>
@@ -88,7 +90,7 @@ export default function BodyMetricsFields({
       />
       {allowDirectEntry ? (
         <View style={styles.directRow}>
-          <Text style={styles.directLabel}>Value (kg)</Text>
+          <Text style={styles.directLabel}>{t('bodyMetricsFields.valueKg')}</Text>
           <TextInput
             style={styles.directInput}
             value={weightText}
@@ -106,7 +108,7 @@ export default function BodyMetricsFields({
               setWeightText(formatWeightForDisplay(c));
             }}
             keyboardType="decimal-pad"
-            placeholder={`${WEIGHT_MIN_KG}–${WEIGHT_MAX_KG}`}
+            placeholder={t('bodyMetricsFields.weightRange', { min: WEIGHT_MIN_KG, max: WEIGHT_MAX_KG })}
             placeholderTextColor={colors.textMuted}
           />
         </View>
@@ -119,7 +121,7 @@ export default function BodyMetricsFields({
 
       <View style={{ height: spacing.xl }} />
 
-      <SectionHeader icon="resize-outline" label={"What's your height?"} unit="cm" />
+      <SectionHeader icon="resize-outline" label={t('bodyMetricsFields.heightQuestion')} unit={t('common.units.cm')} />
       <RulerValue
         value={String(heightCm)}
         onMinus={() =>
@@ -131,7 +133,7 @@ export default function BodyMetricsFields({
       />
       {allowDirectEntry ? (
         <View style={styles.directRow}>
-          <Text style={styles.directLabel}>Value (cm)</Text>
+          <Text style={styles.directLabel}>{t('bodyMetricsFields.valueCm')}</Text>
           <TextInput
             style={styles.directInput}
             value={heightText}
@@ -149,7 +151,7 @@ export default function BodyMetricsFields({
               setHeightText(String(c));
             }}
             keyboardType="number-pad"
-            placeholder={`${HEIGHT_MIN_CM}–${HEIGHT_MAX_CM}`}
+            placeholder={t('bodyMetricsFields.heightRange', { min: HEIGHT_MIN_CM, max: HEIGHT_MAX_CM })}
             placeholderTextColor={colors.textMuted}
           />
         </View>
@@ -166,23 +168,23 @@ export default function BodyMetricsFields({
         <View style={styles.iconBox}>
           <Ionicons name="locate-outline" size={18} color={colors.primary} />
         </View>
-        <Text style={styles.sectionLabel}>{"What's your goal?"}</Text>
+        <Text style={styles.sectionLabel}>{t('bodyMetricsFields.goalQuestion')}</Text>
       </View>
       <View style={styles.goalRow}>
         <GoalCard
-          label="Lose Fat"
+          label={t('common.goals.loseFat')}
           icon="flame-outline"
           selected={goal === 'lose'}
           onPress={() => onChangeGoal('lose')}
         />
         <GoalCard
-          label="Build Muscle"
+          label={t('common.goals.buildMuscle')}
           icon="barbell-outline"
           selected={goal === 'build'}
           onPress={() => onChangeGoal('build')}
         />
         <GoalCard
-          label="Maintain"
+          label={t('common.goals.maintain')}
           icon="analytics-outline"
           selected={goal === 'maintain'}
           onPress={() => onChangeGoal('maintain')}

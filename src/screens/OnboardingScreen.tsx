@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTranslation } from 'react-i18next';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { ONBOARDING_WIZARD_KEY } from '../constants/storageKeys';
@@ -18,6 +19,7 @@ import {
 type Props = NativeStackScreenProps<RootStackParamList, 'Onboarding'>;
 
 export default function OnboardingScreen({ navigation }: Props) {
+  const { t } = useTranslation();
   const [weight, setWeight] = useState(70);
   const [height, setHeight] = useState(175);
   const [goal, setGoal] = useState<'lose' | 'build' | 'maintain'>('build');
@@ -35,14 +37,14 @@ export default function OnboardingScreen({ navigation }: Props) {
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.progressRow}>
-          <Text style={styles.stepText}>Step 1 of 1</Text>
+          <Text style={styles.stepText}>{t('onboarding.step')}</Text>
           <View style={styles.progressTrack}>
             <View style={[styles.progressFill, { width: '100%' }]} />
           </View>
         </View>
 
-        <Text style={styles.title}>{"Let's get to know you"}</Text>
-        <Text style={styles.subtitle}>This helps us personalize your experience.</Text>
+        <Text style={styles.title}>{t('onboarding.title')}</Text>
+        <Text style={styles.subtitle}>{t('onboarding.subtitle')}</Text>
 
         <BodyMetricsFields
           weightKg={weight}
@@ -57,9 +59,9 @@ export default function OnboardingScreen({ navigation }: Props) {
 
       <View style={styles.footer}>
         <TouchableOpacity style={styles.continueBtn} onPress={onContinue} activeOpacity={0.9}>
-          <Text style={styles.continueText}>Continue</Text>
+          <Text style={styles.continueText}>{t('onboarding.continue')}</Text>
         </TouchableOpacity>
-        <Text style={styles.hint}>You can change this anytime in Settings → Body metrics.</Text>
+        <Text style={styles.hint}>{t('onboarding.hint')}</Text>
       </View>
     </SafeAreaView>
   );

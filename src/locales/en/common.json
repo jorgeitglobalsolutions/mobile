@@ -1,0 +1,601 @@
+{
+  "common": {
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "remove": "Remove",
+    "save": "Save",
+    "close": "Close",
+    "keepTraining": "Keep training",
+    "discard": "Discard",
+    "unlockOnDevice": "Unlock on device",
+    "meal": "Meal",
+    "today": "Today",
+    "completed": "Completed",
+    "pending": "Pending",
+    "subscriptionLabel": "Subscription: {{status}}",
+    "subscriptionStatus": {
+      "unknown": "unknown",
+      "syncing": "syncing",
+      "dev_override": "dev_override",
+      "active": "active",
+      "trial": "trial",
+      "expired": "expired"
+    },
+    "units": {
+      "kg": "kg",
+      "g": "g",
+      "ml": "ml",
+      "kcal": "kcal",
+      "flOz": "fl oz",
+      "lb": "lb",
+      "cups": "cups",
+      "cm": "cm",
+      "oz": "oz",
+      "min": "min",
+      "minutes": "Minutes"
+    },
+    "macros": {
+      "protein": "Protein",
+      "carbs": "Carbs",
+      "fat": "Fat",
+      "calories": "Calories",
+      "water": "Water",
+      "proteinShort": "P",
+      "carbsShort": "C",
+      "fatShort": "F"
+    },
+    "mood": {
+      "tapToSet": "Tap to set",
+      "great": "Great",
+      "good": "Good",
+      "low": "Low",
+      "tired": "Tired",
+      "stressed": "Stressed"
+    },
+    "goals": {
+      "loseFat": "Lose Fat",
+      "buildMuscle": "Build Muscle",
+      "maintain": "Maintain"
+    }
+  },
+  "tabs": {
+    "home": "Home",
+    "routines": "Routines",
+    "history": "History",
+    "profile": "Profile"
+  },
+  "mainTabs": {
+    "subscriptionRequired": "Subscription Required",
+    "trialEnded": "Your trial has ended. Subscribe to continue using EM Fit.",
+    "subscribeRestore": "Subscribe / Restore"
+  },
+  "home": {
+    "greeting": "Good morning, {{name}}! 👋",
+    "subGreeting": "Let's keep the streak going.",
+    "streakToday": "today",
+    "todaysStatus": "Today's Status",
+    "completedMeta": "{{completed}} / 4 Completed",
+    "workout": "Workout",
+    "mood": "Mood",
+    "quickActions": "Quick Actions",
+    "logWorkout": "Log Workout",
+    "nutrition": "Nutrition",
+    "addWaterMetric": "+250 ml",
+    "addWaterImperial": "+8 fl oz",
+    "dailyProgress": "Daily Progress",
+    "waterCups": "{{current}} / {{goal}} cups",
+    "bannerTitle": "Great job staying consistent!",
+    "bannerSub": "See your workouts and weekly stats in History.",
+    "accessibilityOpenHistory": "Open history and stats",
+    "alerts": {
+      "updateTitle": "Update",
+      "updateMessage": "Could not update this item. Please try again."
+    }
+  },
+  "history": {
+    "title": "History",
+    "tabWorkouts": "Workouts",
+    "tabStats": "Stats",
+    "tabProgress": "Progress",
+    "weekOf": "Week of {{date}}",
+    "selectedDay": "Selected day",
+    "workoutCount": "{{count}} workout(s)",
+    "noWorkoutsDay": "No workouts logged for this day.",
+    "completedAt": "Completed {{time}}",
+    "exercisesMin": "{{count}} exercises • {{minutes}} min",
+    "duration": "Duration",
+    "volume": "Volume",
+    "sets": "Sets",
+    "bestSet": "Best set",
+    "otherDays": "Other days",
+    "noOtherSessions": "No other sessions loaded.",
+    "logWorkoutsStats": "Log workouts to see stats here.",
+    "allSessions": "All sessions (last {{count}} loaded)",
+    "volumeKg": "Volume (kg)",
+    "volumeLb": "Volume (lb)",
+    "setsLogged": "Sets logged",
+    "thisCalendarWeek": "This calendar week",
+    "activeMinutes": "Active minutes",
+    "volumeByDay": "Volume by day (week shown above)",
+    "progressHint": "Totals are based on completed sets in each saved workout.",
+    "accessibilityJumpToday": "Jump to today",
+    "accessibilityPrevWeek": "Previous week",
+    "accessibilityNextWeek": "Next week",
+    "accessibilityDayHasWorkout": "{{weekday}} {{day}}, has workout"
+  },
+  "profile": {
+    "title": "Profile",
+    "defaultName": "Athlete",
+    "bodyMetrics": "Body metrics",
+    "bodyWeight": "Body weight",
+    "settings": "Settings",
+    "manageSubscription": "Manage subscription",
+    "privacyData": "Privacy & data",
+    "deleteAccount": "Delete account",
+    "signingOut": "Signing out…",
+    "signOut": "Sign out",
+    "goPremium": "Go Premium",
+    "premiumSub": "7-day free trial, then $9.99/mo",
+    "alerts": {
+      "deleteTitle": "Delete account",
+      "deleteMessage": "This permanently deletes your account, workouts, nutrition logs, and other saved data. This cannot be undone.",
+      "deleteError": "Could not delete account right now.",
+      "signOutTitle": "Sign out",
+      "signOutError": "Could not sign out. Please try again."
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "sectionProfile": "Profile",
+    "bodyMetricsNav": "Body metrics (weight, height, goal)",
+    "bodyMetricsHint": "Used for protein/water targets and personalization.",
+    "sectionNotifications": "Notifications",
+    "pushReminders": "Push reminders",
+    "pushHint": "Uses Expo push token + Firebase; reminders are sent when your device token is stored.",
+    "defaultReminderHour": "Default reminder hour (13 UTC)",
+    "hourUtc": "Hour (UTC)",
+    "reminderHint": "Server sends at most one nudge per day in your chosen UTC hour (default 13:00 UTC).",
+    "sectionUnits": "Units",
+    "useMetric": "Use metric (kg, ml)",
+    "sectionLanguage": "Language",
+    "languageEnglish": "English",
+    "languageSpanish": "Español",
+    "languageHint": "More languages can be added later; strings are structured for i18n.",
+    "alerts": {
+      "title": "Settings",
+      "saveError": "Could not save your settings. Please try again."
+    }
+  },
+  "login": {
+    "title": "Welcome back",
+    "subtitle": "Sign in to continue your streak.",
+    "email": "Email",
+    "password": "Password",
+    "emailPlaceholder": "you@example.com",
+    "passwordPlaceholder": "••••••••",
+    "signingIn": "Signing in…",
+    "signIn": "Sign in",
+    "onboardingLink": "New here? Set weight, height & goal first",
+    "noAccount": "No account? ",
+    "createOne": "Create one",
+    "alerts": {
+      "firebaseTitle": "Firebase",
+      "firebaseMessage": "Add EXPO_PUBLIC_FIREBASE_* keys to your .env file.",
+      "signInTitle": "Sign in",
+      "emailRequired": "Please enter your email address.",
+      "passwordRequired": "Please enter your password."
+    }
+  },
+  "signUp": {
+    "title": "Create account",
+    "subtitleWithProfile": "Your profile from onboarding will be saved to your account.",
+    "subtitleNoProfile": "Finish registration to start your free trial.",
+    "onboardingLink": "Set weight, height & goal first (recommended)",
+    "email": "Email",
+    "password": "Password",
+    "emailPlaceholder": "you@example.com",
+    "passwordPlaceholder": "At least 6 characters",
+    "creating": "Creating…",
+    "createAccount": "Create account",
+    "alreadyHaveAccount": "Already have an account? ",
+    "signIn": "Sign in",
+    "alerts": {
+      "firebaseTitle": "Firebase",
+      "firebaseMessage": "Add EXPO_PUBLIC_FIREBASE_* keys to your .env file.",
+      "createTitle": "Create account",
+      "emailRequired": "Please enter your email address.",
+      "passwordTitle": "Password",
+      "passwordMin": "Use at least 6 characters."
+    }
+  },
+  "onboarding": {
+    "step": "Step 1 of 1",
+    "title": "Let's get to know you",
+    "subtitle": "This helps us personalize your experience.",
+    "continue": "Continue",
+    "hint": "You can change this anytime in Settings → Body metrics."
+  },
+  "paywall": {
+    "headline": "Unlock Your Best Self",
+    "subtitle": "Get unlimited access to everything you need to build healthy habits and see results.",
+    "trialTitle": "{{days}}-Day Free Trial",
+    "trialSub": "Then {{monthly}}/mo or {{yearly}}/yr. Cancel anytime in {{store}}.",
+    "expoBanner": "You are in Expo Go. Real App Store purchases need a development or store build. Use the button below to unlock for testing.",
+    "features": {
+      "workoutsTitle": "Unlimited Workouts & Routines",
+      "workoutsDesc": "Create custom routines and track without limits.",
+      "progressTitle": "Advanced Progress Tracking",
+      "progressDesc": "Detailed stats, charts, and performance insights.",
+      "libraryTitle": "Exercise Library",
+      "libraryDesc": "Access 90+ exercises with demo animations and instructions.",
+      "cloudTitle": "Cloud Sync & Backup",
+      "cloudDesc": "Your data is always safe and accessible."
+    },
+    "mostPopular": "MOST POPULAR",
+    "monthly": "Monthly",
+    "monthlyPrice": "{{price}} / month",
+    "yearly": "Yearly",
+    "yearlyPrice": "{{price}} / year",
+    "save33": "Save 33%",
+    "processing": "Processing…",
+    "unlockTesting": "Unlock for testing",
+    "startTrial": "Start {{days}}-Day Free Trial",
+    "disclosure": "Free for {{days}} days, then {{price}}. Subscription auto-renews until canceled in {{store}}.",
+    "paymentNote": "Payment charged to your {{store}} account after the trial.",
+    "manageSubscription": "Manage subscription (App Store / Play)",
+    "restorePurchase": "Restore purchase",
+    "qaFirebase": "QA unlock via Firebase (backend)",
+    "qaDevice": "Unlock on this device only (no store)",
+    "trustSecure": "Secure Checkout",
+    "trustCancel": "Cancel in {{store}}",
+    "trustData": "Your data is protected",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "storeAppStore": "App Store",
+    "storeGooglePlay": "Google Play",
+    "alerts": {
+      "linkTitle": "Link",
+      "linkErrorLater": "Could not open this link. Please try again later.",
+      "linkErrorNow": "Could not open this link right now.",
+      "sessionTitle": "Session expired",
+      "sessionMessage": "Please sign in again to continue.",
+      "subscriptionTitle": "Subscription",
+      "subscriptionUnlockError": "Could not unlock subscription.",
+      "devUnlockTitle": "Dev unlock",
+      "devUnlockMessage": "Premium access is enabled on this device for development. Sign out clears this override. Firestore subscription is unchanged.",
+      "qaUnlockTitle": "QA unlock",
+      "qaUnlockFallback": "You can still unlock on this device for UI testing.",
+      "qaUnlockError": "Could not unlock subscription for QA.",
+      "restoreTitle": "Restore",
+      "restoreDemo": "Demo mode: subscription unlocked locally.",
+      "restoreSuccess": "Purchases restored. Your subscription status will update shortly."
+    }
+  },
+  "missingFirebase": {
+    "title": "Firebase configuration required",
+    "body": "Create a Firebase project, enable Email/Password authentication and Cloud Firestore, then add EXPO_PUBLIC_FIREBASE_* variables to a .env file in the mobile folder (see .env.example). Restart Expo after saving."
+  },
+  "bodyMetrics": {
+    "title": "Body metrics",
+    "subtitle": "Set your weight, height, and goal anytime. Habit targets use these values.",
+    "save": "Save",
+    "alerts": {
+      "title": "Body metrics",
+      "signInRequired": "You must be signed in.",
+      "saveError": "Could not save your body metrics. Please try again."
+    }
+  },
+  "weightTracking": {
+    "signInHint": "Sign in to track weight.",
+    "title": "Body weight",
+    "logWeight": "Log weight",
+    "weightPlaceholder": "Weight",
+    "notePlaceholder": "Optional note",
+    "saveEntry": "Save entry",
+    "formHint": "Uses your device time. Profile weight updates to match your latest log.",
+    "history": "History",
+    "emptyHistory": "No entries yet — add your current weight above.",
+    "alerts": {
+      "title": "Weight",
+      "invalidWeight": "Enter a valid weight in kg.",
+      "saveError": "Could not save weight. Please try again.",
+      "removeTitle": "Remove entry",
+      "removeMessage": "Delete this weight log?",
+      "deleteError": "Could not delete entry."
+    }
+  },
+  "nutrition": {
+    "signInHint": "Sign in to track nutrition.",
+    "title": "Nutrition"
+  },
+  "exerciseLibrary": {
+    "titleBrowse": "Exercise Library",
+    "titlePick": "Pick exercise",
+    "pickHintNone": "Tap exercises to add them, then tap X to return.",
+    "pickHintSome": "{{count}} exercise selected. Tap X to return.",
+    "pickHintSome_plural": "{{count}} exercises selected. Tap X to return.",
+    "searchPlaceholder": "Search exercises...",
+    "selected": "Selected",
+    "empty": "No exercises match your filters.",
+    "muscleCategories": {
+      "all": "All",
+      "back": "Back",
+      "biceps": "Biceps",
+      "chest": "Chest",
+      "core": "Core",
+      "legs": "Legs",
+      "shoulders": "Shoulders",
+      "triceps": "Triceps"
+    }
+  },
+  "exerciseDetail": {
+    "title": "Exercise",
+    "notFound": "Exercise not found.",
+    "howTo": "How to do it"
+  },
+  "routines": {
+    "title": "Routines",
+    "tabPredefined": "Predefined",
+    "tabMy": "My Routines",
+    "emptyPredefinedTitle": "No predefined routines yet",
+    "emptyPredefinedDesc": "Try another filter or check Firestore seed/sync status.",
+    "emptyMyTitle": "No custom routines yet",
+    "emptyMyDesc": "Create your first routine and start tracking workouts.",
+    "createRoutine": "Create routine",
+    "refresh": "Refresh",
+    "exerciseMeta": "{{count}} exercises • ~{{minutes}} min",
+    "updated": "Updated {{date}}"
+  },
+  "routineBuilder": {
+    "editTitle": "Edit routine",
+    "newTitle": "New routine",
+    "saving": "…",
+    "titleLabel": "Title",
+    "titlePlaceholder": "Upper strength",
+    "musclesLabel": "Target muscles",
+    "musclesPlaceholder": "Chest, shoulders…",
+    "addExercise": "Add exercise",
+    "pickFromLibrary": "Pick from library",
+    "exercisePlaceholder": "Exercise name",
+    "sets": "Sets",
+    "repMin": "Rep min",
+    "repMax": "Rep max",
+    "addToRoutine": "Add to routine",
+    "routineExercises": "Routine exercises ({{count}})",
+    "exerciseSetsReps": "{{sets}} sets • {{min}}-{{max}} reps",
+    "alerts": {
+      "exerciseTitle": "Exercise",
+      "exerciseNameRequired": "Please enter an exercise name.",
+      "routineTitle": "Routine",
+      "titleRequired": "Please enter a routine title.",
+      "exerciseRequired": "Please add at least one exercise.",
+      "saveTitle": "Save routine",
+      "saveError": "Could not save routine. Please try again."
+    }
+  },
+  "routineDetail": {
+    "title": "Routine",
+    "notFound": "Routine not found.",
+    "defaultDescription": "Focus on {{muscles}} with compound movements and isolation work.",
+    "minutes": "~{{minutes}} min",
+    "exerciseCount": "{{count}} exercises",
+    "startWorkout": "Start Workout",
+    "exercisesHeader": "Exercises",
+    "setsReps": "{{sets}} sets • {{min}}-{{max}} reps",
+    "editRoutine": "Edit Routine",
+    "deleteRoutine": "Delete routine",
+    "alerts": {
+      "exerciseTitle": "Exercise",
+      "exerciseUnavailable": "Details for this exercise are not available yet.",
+      "deleteTitle": "Delete routine",
+      "deleteMessage": "This cannot be undone."
+    }
+  },
+  "workoutActive": {
+    "workoutTime": "WORKOUT TIME",
+    "rest": "Rest",
+    "end": "End",
+    "exercisesSummary": "{{count}} Exercises",
+    "setsSummary": "{{count}} Sets",
+    "volumeSummary": "{{volume}} kg vol.",
+    "setHeader": "SET",
+    "weightHeader": "WEIGHT (KG)",
+    "repsHeader": "REPS",
+    "weightPlaceholder": "0",
+    "repsPlaceholder": "0",
+    "saveWorkout": "Save Workout",
+    "restTitle": "Rest",
+    "restHint": "Catch your breath. Next set ready when you are.",
+    "skip": "Skip",
+    "addExercise": "Add exercise",
+    "addSet": "Add set",
+    "removeExercise": "Remove exercise",
+    "removeSet": "Remove set",
+    "menuTitle": "Workout options",
+    "removeExerciseTitle": "Remove exercise",
+    "removeExerciseMessage": "Remove {{name}} from this workout?",
+    "removeSetTitle": "Remove set",
+    "removeSetMessage": "Remove this set from the workout?",
+    "alerts": {
+      "routineTitle": "Routine",
+      "loadError": "Could not load this routine. Please go back and try again.",
+      "workoutTitle": "Workout",
+      "saveError": "Could not save workout. Please try again.",
+      "endTitle": "End workout",
+      "endMessage": "Save this session, discard it, or keep training.",
+      "saveWorkout": "Save workout"
+    }
+  },
+  "workoutSessionDetail": {
+    "title": "Workout",
+    "notFound": "Workout not found.",
+    "duration": "Duration",
+    "volume": "Volume",
+    "sets": "Sets",
+    "bestSet": "Best set",
+    "durationValue": "{{minutes}} min",
+    "volumeValue": "{{volume}} kg",
+    "bestSetValue": "{{volume}} kg×reps",
+    "setLabel": "Set {{number}}",
+    "setValue": "{{weight}} kg × {{reps}} reps",
+    "incomplete": " (incomplete)"
+  },
+  "bodyMetricsFields": {
+    "weightQuestion": "What's your weight?",
+    "heightQuestion": "What's your height?",
+    "goalQuestion": "What's your goal?",
+    "valueKg": "Value (kg)",
+    "valueCm": "Value (cm)",
+    "weightRange": "{{min}}–{{max}}",
+    "heightRange": "{{min}}–{{max}}"
+  },
+  "weightProgressChart": {
+    "title": "Progress",
+    "empty": "Log at least one weight to see your trend.",
+    "weightSingle": "{{weight}} kg",
+    "weightRange": "{{min}}–{{max}} kg"
+  },
+  "nutritionTabBar": {
+    "overview": "Overview",
+    "overviewSub": "Goals & progress",
+    "logFood": "Log food",
+    "logFoodSub": "Track intake"
+  },
+  "nutritionTodayStrip": {
+    "today": "Today",
+    "kcalGoal": " / {{goal}} kcal",
+    "over": "{{amount}} over",
+    "left": "{{amount}} left",
+    "mealsLogged": "{{count}} meal logged",
+    "mealsLogged_plural": "{{count}} meals logged"
+  },
+  "nutritionOverviewPanel": {
+    "macroBalance": "Macro balance",
+    "ofGoal": "of {{goal}}g",
+    "searchOrLog": "Search food or log a meal",
+    "adjustMetrics": "Adjust body metrics to recalculate targets"
+  },
+  "nutritionLogPanel": {
+    "hint": "Search the food database or use quick add. Totals update instantly on Overview.",
+    "searchDatabase": "Search food database",
+    "quickAdd": "Quick add",
+    "quickAmount": "+{{grams}}g",
+    "manualMacros": "Manual macros (advanced)",
+    "mealNamePlaceholder": "Meal name (optional)",
+    "kcalPreview": "≈ {{kcal}} kcal",
+    "logMeal": "Log meal",
+    "todaysMeals": "Today's meals",
+    "emptyMeals": "No meals yet — search a food or use quick add.",
+    "defaultMealName": "Meal",
+    "mealMeta": "{{grams}}g · {{kcal}} kcal • {{protein}}P / {{carbs}}C / {{fat}}F",
+    "alerts": {
+      "nutritionTitle": "Nutrition",
+      "nutritionError": "Could not update nutrition. Please try again.",
+      "mealTitle": "Meal",
+      "macroRequired": "Add at least one macro value (protein, carbs, or fat).",
+      "logError": "Could not log meal. Please try again.",
+      "removeTitle": "Remove meal",
+      "removeMessage": "Delete {{name}} from today?",
+      "removeMessageDefault": "Delete this meal from today?",
+      "removeError": "Could not remove meal."
+    }
+  },
+  "nutritionGoalVisualization": {
+    "dailyGoals": "Daily goals",
+    "loseFatTitle": "Lose fat",
+    "loseFatDetail": "Moderate calorie deficit (~500 kcal below estimated maintenance).",
+    "buildMuscleTitle": "Build muscle",
+    "buildMuscleDetail": "Calorie surplus (~300 kcal) with higher protein for recovery.",
+    "maintainTitle": "Maintain",
+    "maintainDetail": "Targets match estimated maintenance for steady progress.",
+    "basedOn": "Based on {{weight}} · {{height}} · estimated activity"
+  },
+  "macroProgressTracking": {
+    "title": "Macro progress",
+    "goalsMet": "{{completed}} / {{total}} goals met",
+    "goalReached": "Goal reached",
+    "percentOfTarget": "{{percent}}% of daily target"
+  },
+  "foodSearchModal": {
+    "title": "Food database",
+    "subtitle": "Search foods or create a custom entry. Values are per 100g.",
+    "accessibilityClose": "Close"
+  },
+  "foodPortionModal": {
+    "amountGrams": "Amount (grams)",
+    "gramsPlaceholder": "100",
+    "macroPreview": "{{kcal}} kcal · {{protein}}P / {{carbs}}C / {{fat}}F",
+    "addToMeal": "Add to today's meal"
+  },
+  "foodDatabasePanel": {
+    "hint": "Search the food database or create custom foods. Values are per 100g.",
+    "modeSearch": "Search",
+    "modeCustom": "Create custom",
+    "searchPlaceholder": "Search food (chicken, rice, egg...)",
+    "yourSavedFoods": "Your saved foods",
+    "customTag": "Custom",
+    "per100g": "{{macros}} / 100g",
+    "empty": "No results. Try another term or category.",
+    "moreHintRefine": "Refine your search to narrow results.",
+    "moreHintShowing": "Showing 40 of {{total}} — refine your search.",
+    "customFood": "Custom food",
+    "customHint": "Macros per 100g. Saved to your history for reuse.",
+    "foodNamePlaceholder": "Food name",
+    "caloriesOptional": "Calories (optional)",
+    "portionToLog": "Portion to log today",
+    "saveToHistory": "Save to my history",
+    "saveAndLog": "Save and log meal",
+    "categories": {
+      "all": "All",
+      "protein": "Protein",
+      "carbs": "Carbs",
+      "fats": "Fats",
+      "fruit": "Fruit",
+      "vegetables": "Vegetables",
+      "supplements": "Supplements"
+    },
+    "alerts": {
+      "portionTitle": "Portion",
+      "selectFood": "Select a food and enter the amount in grams.",
+      "invalidGrams": "Enter a valid amount in grams.",
+      "mealError": "Could not log meal.",
+      "foodTitle": "Food",
+      "nameRequired": "Enter a food name.",
+      "macroRequired": "Add at least one macro or calories.",
+      "saveError": "Could not save food."
+    }
+  },
+  "dailyNutritionSummary": {
+    "eyebrow": "DAILY NUTRITION SUMMARY",
+    "todayFallback": "Today",
+    "kcalGoal": " / {{goal}} kcal",
+    "overTarget": "{{amount}} kcal over your daily target",
+    "remaining": "{{amount}} kcal remaining",
+    "ofGoal": "of goal",
+    "meals": "Meals"
+  },
+  "errors": {
+    "appError": {
+      "requiresRecentLogin": "For security, please sign in again and retry.",
+      "permissionDenied": "You do not have permission to do this action.",
+      "unavailable": "Service is temporarily unavailable. Please try again in a moment.",
+      "networkError": "Network error. Please check your internet connection and try again.",
+      "purchaseExpoGo": "Purchases require a development or store build. Expo Go does not support in-app purchases.",
+      "purchaseTimeout": "Purchase timed out. Please try again.",
+      "purchaseCancelled": "Purchase was cancelled.",
+      "purchaseSku": "Subscription product is not configured correctly yet. Please contact support.",
+      "purchaseGeneric": "We could not complete your subscription. Please try again."
+    },
+    "authError": {
+      "signInInvalidEmail": "Please enter a valid email address.",
+      "signInMissingPassword": "Please enter your password.",
+      "signInWrongCredentials": "Incorrect email or password. Please try again.",
+      "signInTooManyRequests": "Too many attempts. Please wait a few minutes and try again.",
+      "signInGeneric": "Could not sign in right now. Please try again.",
+      "signUpInvalidEmail": "Please enter a valid email address.",
+      "signUpEmailInUse": "This email is already registered. Please sign in instead.",
+      "signUpWeakPassword": "Password is too weak. Use at least 6 characters.",
+      "signUpGeneric": "Could not create account right now. Please try again."
+    }
+  }
+}

@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { EXERCISES_CATALOG, MUSCLE_CATEGORIES } from '../data/exercisesCatalog';
@@ -17,10 +18,14 @@ import type { CatalogExercise } from '../types/exercise';
 import { colors, radius, spacing } from '../theme';
 import { queuePickedExercise } from '../services/exercisePickerBridge';
 import ExerciseGifThumb from '../components/ExerciseGifThumb';
+import { useLocale } from '../context/LocaleContext';
+import { getExerciseDisplayName, getMuscleDisplayName } from '../i18n/catalogDisplay';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ExerciseLibrary'>;
 
 export default function ExerciseLibraryScreen({ navigation, route }: Props) {
+  const { t } = useTranslation();
+  const { language } = useLocale();
   const mode = route.params?.mode ?? 'browse';
   const pickerSessionId = route.params?.pickerSessionId ?? '';
   const [q, setQ] = useState('');
@@ -55,14 +60,14 @@ export default function ExerciseLibraryScreen({ navigation, route }: Props) {
       <TouchableOpacity style={styles.row} activeOpacity={0.85} onPress={() => onSelectExercise(item)}>
         <ExerciseGifThumb exerciseId={item.id} size={48} style={{ marginRight: spacing.md }} />
         <View style={{ flex: 1 }}>
-          <Text style={styles.name}>{item.name}</Text>
-          <Text style={styles.muscle}>{item.muscle}</Text>
+          <Text style={styles.name}>{getExerciseDisplayName(item.id, item.name, language)}</Text>
+          <Text style={styles.muscle}>{getMuscleDisplayName(item.muscle, language)}</Text>
         </View>
         {mode === 'pick' ? (
           selectedIds.includes(item.id) ? (
             <View style={styles.selectedPill}>
               <Ionicons name="checkmark" size={14} color={colors.white} />
-              <Text style={styles.selectedPillText}>Selected</Text>
+              <Text style={styles.selectedPillText}>{t('exerciseLibrary.selected')}</Text>
             </View>
           ) : (
             <Ionicons name="add-circle-outline" size={22} color={colors.textMuted} />
@@ -72,13 +77,15 @@ export default function ExerciseLibraryScreen({ navigation, route }: Props) {
         )}
       </TouchableOpacity>
     ),
-    [mode, onSelectExercise, selectedIds],
+    [language, mode, onSelectExercise, selectedIds, t],
   );
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.title}>{mode === 'pick' ? 'Pick exercise' : 'Exercise Library'}</Text>
+        <Text style={styles.title}>
+          {mode === 'pick' ? t('exerciseLibrary.titlePick') : t('exerciseLibrary.titleBrowse')}
+        </Text>
         <TouchableOpacity style={styles.searchIconBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="close" size={24} color={colors.text} />
         </TouchableOpacity>
@@ -87,15 +94,15 @@ export default function ExerciseLibraryScreen({ navigation, route }: Props) {
       {mode === 'pick' ? (
         <Text style={styles.pickHint}>
           {addedCount > 0
-            ? `${addedCount} exercise${addedCount === 1 ? '' : 's'} selected. Tap X to return.`
-            : 'Tap exercises to add them, then tap X to return.'}
+            ? t('exerciseLibrary.pickHintSome', { count: addedCount })
+            : t('exerciseLibrary.pickHintNone')}
         </Text>
       ) : null}
 
       <View style={styles.searchWrap}>
         <Ionicons name="search" size={18} color={colors.textMuted} style={{ marginRight: 8 }} />
         <TextInput
-          placeholder="Search exercises..."
+          placeholder={t('exerciseLibrary.searchPlaceholder')}
           placeholderTextColor={colors.textMuted}
           style={styles.input}
           value={q}
@@ -115,7 +122,9 @@ export default function ExerciseLibraryScreen({ navigation, route }: Props) {
             onPress={() => setCat(c)}
             style={[styles.chip, cat === c && styles.chipActive]}
           >
-            <Text style={[styles.chipText, cat === c && styles.chipTextActive]}>{c}</Text>
+            <Text style={[styles.chipText, cat === c && styles.chipTextActive]}>
+              {getMuscleDisplayName(c, language)}
+            </Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -130,7 +139,7 @@ export default function ExerciseLibraryScreen({ navigation, route }: Props) {
         contentContainerStyle={{ padding: spacing.xl, paddingBottom: 40, flexGrow: 1 }}
         ItemSeparatorComponent={() => <View style={{ height: spacing.sm }} />}
         renderItem={renderItem}
-        ListEmptyComponent={<Text style={styles.empty}>No exercises match your filters.</Text>}
+        ListEmptyComponent={<Text style={styles.empty}>{t('exerciseLibrary.empty')}</Text>}
       />
     </SafeAreaView>
   );

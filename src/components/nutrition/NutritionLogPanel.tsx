@@ -9,7 +9,9 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { colors, radius, spacing } from '../../theme';
+import { useLocale } from '../../context/LocaleContext';
 import {
   incrementCalories,
   incrementCarbs,
@@ -23,6 +25,7 @@ import type { HabitDayDoc, MealEntry } from '../../types/domain';
 import type { HabitDefaults } from '../../services/habitsRepo';
 import { localDateKey } from '../../utils/dateKey';
 import { friendlyAppError } from '../../utils/appError';
+
 type MacroId = 'protein' | 'carbs' | 'fat';
 
 const MACRO_QUICK_GRAMS = 10;
@@ -34,15 +37,30 @@ type Props = {
   onOpenFoodSearch: () => void;
 };
 
-function formatTime(ms: number): string {
+function formatTime(ms: number, localeTag: string): string {
   try {
-    return new Date(ms).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    return new Date(ms).toLocaleTimeString(localeTag, { hour: 'numeric', minute: '2-digit' });
   } catch {
     return '';
   }
 }
 
+function formatMealMeta(m: MealEntry, t: (key: string, opts?: Record<string, unknown>) => string): string {
+  const params = {
+    kcal: Math.round(m.caloriesKcal),
+    protein: Math.round(m.proteinG),
+    carbs: Math.round(m.carbsG),
+    fat: Math.round(m.fatG),
+  };
+  if (m.grams) {
+    return t('nutritionLogPanel.mealMeta', { grams: m.grams, ...params });
+  }
+  return `${params.kcal} ${t('common.units.kcal')} • ${params.protein}${t('common.macros.proteinShort')} / ${params.carbs}${t('common.macros.carbsShort')} / ${params.fat}${t('common.macros.fatShort')}`;
+}
+
 export default function NutritionLogPanel({ uid, defaults, habitDay, onOpenFoodSearch }: Props) {
+  const { t } = useTranslation();
+  const { localeTag } = useLocale();
   const [busy, setBusy] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showManual, setShowManual] = useState(false);
@@ -68,7 +86,10 @@ export default function NutritionLogPanel({ uid, defaults, habitDay, onOpenFoodS
     try {
       await fn();
     } catch (e: unknown) {
-      Alert.alert('Nutrition', friendlyAppError(e, 'Could not update nutrition. Please try again.'));
+      Alert.alert(
+        t('nutritionLogPanel.alerts.nutritionTitle'),
+        friendlyAppError(e, 'nutritionLogPanel.alerts.nutritionError'),
+      );
     } finally {
       setBusy(false);
     }
@@ -93,7 +114,10 @@ export default function NutritionLogPanel({ uid, defaults, habitDay, onOpenFoodS
     const fat = parseInt(mealFat, 10);
     const all = [protein, carbs, fat];
     if (!all.some((n) => Number.isFinite(n) && n > 0)) {
-      Alert.alert('Meal', 'Add at least one macro value (protein, carbs, or fat).');
+      Alert.alert(
+        t('nutritionLogPanel.alerts.mealTitle'),
+        t('nutritionLogPanel.alerts.macroRequired'),
+      );
       return;
     }
     setSaving(true);
@@ -114,65 +138,75 @@ export default function NutritionLogPanel({ uid, defaults, habitDay, onOpenFoodS
       setMealCarbs('');
       setMealFat('');
     } catch (e: unknown) {
-      Alert.alert('Meal', friendlyAppError(e, 'Could not log meal. Please try again.'));
+      Alert.alert(
+        t('nutritionLogPanel.alerts.mealTitle'),
+        friendlyAppError(e, 'nutritionLogPanel.alerts.logError'),
+      );
     } finally {
       setSaving(false);
     }
   };
 
   const onRemoveMeal = (entry: MealEntry) => {
-    Alert.alert('Remove meal', `Delete ${entry.name || 'this meal'} from today?`, [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Remove',
-        style: 'destructive',
-        onPress: () => {
-          void (async () => {
-            try {
-              await removeMeal(uid, localDateKey(), entry.id, defaults);
-            } catch (e: unknown) {
-              Alert.alert('Meal', friendlyAppError(e, 'Could not remove meal.'));
-            }
-          })();
+    Alert.alert(
+      t('nutritionLogPanel.alerts.removeTitle'),
+      entry.name
+        ? t('nutritionLogPanel.alerts.removeMessage', { name: entry.name })
+        : t('nutritionLogPanel.alerts.removeMessageDefault'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('common.remove'),
+          style: 'destructive',
+          onPress: () => {
+            void (async () => {
+              try {
+                await removeMeal(uid, localDateKey(), entry.id, defaults);
+              } catch (e: unknown) {
+                Alert.alert(
+                  t('nutritionLogPanel.alerts.mealTitle'),
+                  friendlyAppError(e, 'nutritionLogPanel.alerts.removeError'),
+                );
+              }
+            })();
+          },
         },
-      },
-    ]);
+      ],
+    );
   };
 
   return (
     <View>
-      <Text style={styles.hint}>
-        Search the food database or use quick add. Totals update instantly on Overview.
-      </Text>
+      <Text style={styles.hint}>{t('nutritionLogPanel.hint')}</Text>
 
       <TouchableOpacity style={styles.foodSearchBtn} activeOpacity={0.9} onPress={onOpenFoodSearch}>
         <Ionicons name="search" size={20} color={colors.primary} />
-        <Text style={styles.foodSearchBtnText}>Search food database</Text>
+        <Text style={styles.foodSearchBtnText}>{t('nutritionLogPanel.searchDatabase')}</Text>
         <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
       </TouchableOpacity>
 
-      <Text style={[styles.sectionTitle, { marginTop: spacing.lg }]}>Quick add</Text>
+      <Text style={[styles.sectionTitle, { marginTop: spacing.lg }]}>{t('nutritionLogPanel.quickAdd')}</Text>
       <View style={styles.quickGrid}>
         <QuickPill
           icon="nutrition"
-          amount={`+${MACRO_QUICK_GRAMS}g`}
-          macro="Protein"
+          amount={t('nutritionLogPanel.quickAmount', { grams: MACRO_QUICK_GRAMS })}
+          macro={t('common.macros.protein')}
           color={colors.green}
           disabled={busy}
           onPress={() => void onQuickMacro('protein')}
         />
         <QuickPill
           icon="leaf"
-          amount={`+${MACRO_QUICK_GRAMS}g`}
-          macro="Carbs"
+          amount={t('nutritionLogPanel.quickAmount', { grams: MACRO_QUICK_GRAMS })}
+          macro={t('common.macros.carbs')}
           color={colors.primary}
           disabled={busy}
           onPress={() => void onQuickMacro('carbs')}
         />
         <QuickPill
           icon="water"
-          amount={`+${MACRO_QUICK_GRAMS}g`}
-          macro="Fat"
+          amount={t('nutritionLogPanel.quickAmount', { grams: MACRO_QUICK_GRAMS })}
+          macro={t('common.macros.fat')}
           color={colors.yellow}
           disabled={busy}
           onPress={() => void onQuickMacro('fat')}
@@ -180,7 +214,7 @@ export default function NutritionLogPanel({ uid, defaults, habitDay, onOpenFoodS
         <QuickPill
           icon="flame"
           amount="+100"
-          macro="kcal"
+          macro={t('common.units.kcal')}
           color={colors.orange}
           disabled={busy}
           onPress={() => void onQuickKcal(100)}
@@ -192,24 +226,44 @@ export default function NutritionLogPanel({ uid, defaults, habitDay, onOpenFoodS
         onPress={() => setShowManual((v) => !v)}
         activeOpacity={0.85}
       >
-        <Text style={styles.sectionTitle}>Manual macros (advanced)</Text>
+        <Text style={styles.sectionTitle}>{t('nutritionLogPanel.manualMacros')}</Text>
         <Ionicons name={showManual ? 'chevron-up' : 'chevron-down'} size={20} color={colors.textMuted} />
       </TouchableOpacity>
       {showManual ? (
         <View style={styles.formCard}>
           <TextInput
             style={styles.nameInput}
-            placeholder="Meal name (optional)"
+            placeholder={t('nutritionLogPanel.mealNamePlaceholder')}
             placeholderTextColor={colors.textMuted}
             value={mealName}
             onChangeText={setMealName}
           />
           <View style={styles.macroInputsRow}>
-            <MacroInput label="Protein" suffix="g" value={mealProtein} onChange={setMealProtein} color={colors.green} />
-            <MacroInput label="Carbs" suffix="g" value={mealCarbs} onChange={setMealCarbs} color={colors.primary} />
-            <MacroInput label="Fat" suffix="g" value={mealFat} onChange={setMealFat} color={colors.yellow} />
+            <MacroInput
+              label={t('common.macros.protein')}
+              suffix={t('common.units.g')}
+              value={mealProtein}
+              onChange={setMealProtein}
+              color={colors.green}
+            />
+            <MacroInput
+              label={t('common.macros.carbs')}
+              suffix={t('common.units.g')}
+              value={mealCarbs}
+              onChange={setMealCarbs}
+              color={colors.primary}
+            />
+            <MacroInput
+              label={t('common.macros.fat')}
+              suffix={t('common.units.g')}
+              value={mealFat}
+              onChange={setMealFat}
+              color={colors.yellow}
+            />
           </View>
-          <Text style={styles.kcalPreview}>≈ {previewKcal} kcal</Text>
+          <Text style={styles.kcalPreview}>
+            {t('nutritionLogPanel.kcalPreview', { kcal: previewKcal })}
+          </Text>
           <TouchableOpacity
             style={[styles.primaryBtn, saving && { opacity: 0.7 }]}
             activeOpacity={0.9}
@@ -219,28 +273,24 @@ export default function NutritionLogPanel({ uid, defaults, habitDay, onOpenFoodS
             {saving ? (
               <ActivityIndicator color={colors.white} />
             ) : (
-              <Text style={styles.primaryBtnText}>Log meal</Text>
+              <Text style={styles.primaryBtnText}>{t('nutritionLogPanel.logMeal')}</Text>
             )}
           </TouchableOpacity>
         </View>
       ) : null}
 
-      <Text style={[styles.sectionTitle, { marginTop: spacing.lg }]}>Today's meals</Text>
+      <Text style={[styles.sectionTitle, { marginTop: spacing.lg }]}>{t('nutritionLogPanel.todaysMeals')}</Text>
       {meals.length === 0 ? (
-        <Text style={styles.empty}>No meals yet — search a food or use quick add.</Text>
+        <Text style={styles.empty}>{t('nutritionLogPanel.emptyMeals')}</Text>
       ) : (
         meals.map((m, idx) => (
           <View key={m.id}>
             {idx > 0 ? <View style={{ height: spacing.sm }} /> : null}
             <View style={styles.mealCard}>
               <View style={{ flex: 1 }}>
-                <Text style={styles.mealTitle}>{m.name || 'Meal'}</Text>
-                <Text style={styles.mealMeta}>
-                  {m.grams ? `${m.grams}g · ` : ''}
-                  {Math.round(m.caloriesKcal)} kcal • {Math.round(m.proteinG)}P / {Math.round(m.carbsG)}C /{' '}
-                  {Math.round(m.fatG)}F
-                </Text>
-                <Text style={styles.mealTime}>{formatTime(m.loggedAtMs)}</Text>
+                <Text style={styles.mealTitle}>{m.name || t('nutritionLogPanel.defaultMealName')}</Text>
+                <Text style={styles.mealMeta}>{formatMealMeta(m, t)}</Text>
+                <Text style={styles.mealTime}>{formatTime(m.loggedAtMs, localeTag)}</Text>
               </View>
               <TouchableOpacity onPress={() => onRemoveMeal(m)} hitSlop={10}>
                 <Ionicons name="trash-outline" size={22} color={colors.textMuted} />

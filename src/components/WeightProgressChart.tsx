@@ -1,6 +1,8 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, useWindowDimensions } from 'react-native';
 import Svg, { Circle, Line, Polyline } from 'react-native-svg';
+import { useTranslation } from 'react-i18next';
+import { useLocale } from '../context/LocaleContext';
 import { colors, radius, spacing } from '../theme';
 
 export type ChartPoint = { atMs: number; weightKg: number };
@@ -9,9 +11,9 @@ type Props = {
   entries: ChartPoint[];
 };
 
-function shortDate(ms: number): string {
+function shortDate(ms: number, localeTag: string): string {
   try {
-    return new Date(ms).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    return new Date(ms).toLocaleDateString(localeTag, { month: 'short', day: 'numeric' });
   } catch {
     return '';
   }
@@ -23,6 +25,8 @@ const PAD_T = 8;
 const PAD_B = 8;
 
 export default function WeightProgressChart({ entries }: Props) {
+  const { t } = useTranslation();
+  const { localeTag } = useLocale();
   const { width: winW } = useWindowDimensions();
   const chartW = Math.max(280, winW - spacing.xl * 2);
   const chartH = 188;
@@ -73,8 +77,8 @@ export default function WeightProgressChart({ entries }: Props) {
   if (!entries.length || !layout) {
     return (
       <View style={[styles.card, { width: chartW }]}>
-        <Text style={styles.title}>Progress</Text>
-        <Text style={styles.empty}>Log at least one weight to see your trend.</Text>
+        <Text style={styles.title}>{t('weightProgressChart.title')}</Text>
+        <Text style={styles.empty}>{t('weightProgressChart.empty')}</Text>
       </View>
     );
   }
@@ -84,7 +88,7 @@ export default function WeightProgressChart({ entries }: Props) {
 
   return (
     <View style={[styles.card, { width: chartW }]}>
-      <Text style={styles.title}>Progress</Text>
+      <Text style={styles.title}>{t('weightProgressChart.title')}</Text>
       <View style={{ alignItems: 'center' }}>
         <Svg width={chartW} height={chartH}>
           {layout.gridY.map((y, idx) => (
@@ -115,11 +119,16 @@ export default function WeightProgressChart({ entries }: Props) {
         </Svg>
       </View>
       <View style={styles.axisRow}>
-        <Text style={styles.axisDate}>{shortDate(layout.startMs)}</Text>
+        <Text style={styles.axisDate}>{shortDate(layout.startMs, localeTag)}</Text>
         <Text style={styles.axisHint}>
-          {single ? `${firstPt!.weightKg.toFixed(1)} kg` : `${layout.minW.toFixed(1)}–${layout.maxW.toFixed(1)} kg`}
+          {single
+            ? t('weightProgressChart.weightSingle', { weight: firstPt!.weightKg.toFixed(1) })
+            : t('weightProgressChart.weightRange', {
+                min: layout.minW.toFixed(1),
+                max: layout.maxW.toFixed(1),
+              })}
         </Text>
-        <Text style={styles.axisDate}>{single ? '' : shortDate(layout.endMs)}</Text>
+        <Text style={styles.axisDate}>{single ? '' : shortDate(layout.endMs, localeTag)}</Text>
       </View>
     </View>
   );

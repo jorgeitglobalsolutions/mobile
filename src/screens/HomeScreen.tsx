@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -19,18 +20,6 @@ import { colors, radius, spacing } from '../theme';
 import { friendlyAppError } from '../utils/appError';
 
 const MOODS: MoodValue[] = ['great', 'good', 'low', 'tired', 'stressed'];
-
-function moodLabel(m: MoodValue | null | undefined): string {
-  if (!m) return 'Tap to set';
-  const map: Record<MoodValue, string> = {
-    great: 'Great',
-    good: 'Good',
-    low: 'Low',
-    tired: 'Tired',
-    stressed: 'Stressed',
-  };
-  return map[m];
-}
 
 function nextMood(cur: MoodValue | null | undefined): MoodValue {
   if (!cur) return 'great';
@@ -68,16 +57,22 @@ function moodValueColor(m: MoodValue | null | undefined): string {
 }
 
 export default function HomeScreen() {
+  const { t } = useTranslation();
   const navigation = useNavigation<BottomTabNavigationProp<MainTabParamList>>();
   const rootNavigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { user, userDoc } = useAuth();
+
+  const moodLabel = (m: MoodValue | null | undefined): string => {
+    if (!m) return t('common.mood.tapToSet');
+    return t(`common.mood.${m}`);
+  };
   const [habitDay, setHabitDay] = useState<HabitDayDoc | null>(null);
   const [busy, setBusy] = useState(false);
 
   const first =
     user?.displayName ||
     (user?.email && user.email.includes('@') ? user.email.split('@')[0] : null) ||
-    'Alex';
+    t('profile.defaultName');
 
   const habitDefaults = useMemo(
     () => defaultHabitGoalsFromProfile(userDoc?.profile ?? null),
@@ -127,15 +122,18 @@ export default function HomeScreen() {
   const waterPct = waterGoalMl > 0 ? Math.min(1, waterCur / waterGoalMl) : 0;
 
   const proteinDisplay = metric
-    ? `${Math.round(proteinCur)} / ${Math.round(proteinGoal)} g`
-    : `${(proteinCur * 0.035274).toFixed(1)} / ${(proteinGoal * 0.035274).toFixed(1)} oz`;
+    ? `${Math.round(proteinCur)} / ${Math.round(proteinGoal)} ${t('common.units.g')}`
+    : `${(proteinCur * 0.035274).toFixed(1)} / ${(proteinGoal * 0.035274).toFixed(1)} ${t('common.units.oz')}`;
 
   const waterDisplay = metric
-    ? `${Math.round(waterCur)} / ${Math.round(waterGoalMl)} ml`
-    : `${(waterCur * 0.033814).toFixed(1)} / ${(waterGoalMl * 0.033814).toFixed(1)} fl oz`;
+    ? `${Math.round(waterCur)} / ${Math.round(waterGoalMl)} ${t('common.units.ml')}`
+    : `${(waterCur * 0.033814).toFixed(1)} / ${(waterGoalMl * 0.033814).toFixed(1)} ${t('common.units.flOz')}`;
 
   const waterCupsGoal = Math.max(1, Math.round(waterGoalMl / 250));
-  const waterCupsLabel = `${Math.floor(waterCur / 250)} / ${waterCupsGoal} cups`;
+  const waterCupsLabel = t('home.waterCups', {
+    current: Math.floor(waterCur / 250),
+    goal: waterCupsGoal,
+  });
 
   const onQuick = async (fn: () => Promise<void>) => {
     if (!user?.uid) return;
@@ -143,7 +141,7 @@ export default function HomeScreen() {
     try {
       await fn();
     } catch (e: unknown) {
-      Alert.alert('Update', friendlyAppError(e, 'Could not update this item. Please try again.'));
+      Alert.alert(t('home.alerts.updateTitle'), friendlyAppError(e, 'home.alerts.updateMessage'));
     } finally {
       setBusy(false);
     }
@@ -154,22 +152,20 @@ export default function HomeScreen() {
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.headerRow}>
           <View style={{ flex: 1 }}>
-            <Text style={styles.greeting}>{`Good morning, ${first}! 👋`}</Text>
-            <Text style={styles.subGreeting}>{"Let's keep the streak going."}</Text>
+            <Text style={styles.greeting}>{t('home.greeting', { name: first })}</Text>
+            <Text style={styles.subGreeting}>{t('home.subGreeting')}</Text>
           </View>
           <View style={styles.streakBox}>
             <Ionicons name="calendar-outline" size={22} color={colors.primary} />
             <Text style={styles.streakNum}>{localDateKey().slice(5)}</Text>
-            <Text style={styles.streakLabel}>today</Text>
+            <Text style={styles.streakLabel}>{t('home.streakToday')}</Text>
           </View>
         </View>
 
         <View style={styles.card}>
           <View style={styles.cardHeader}>
-            <Text style={styles.cardTitle}>{"Today's Status"}</Text>
-            <Text style={styles.cardMeta}>
-              {completedCount} / 4 Completed
-            </Text>
+            <Text style={styles.cardTitle}>{t('home.todaysStatus')}</Text>
+            <Text style={styles.cardMeta}>{t('home.completedMeta', { completed: completedCount })}</Text>
           </View>
           <View style={styles.statusBarBg}>
             <View style={[styles.statusBarFill, { width: `${Math.min(100, (completedCount / 4) * 100)}%` }]} />
@@ -178,15 +174,15 @@ export default function HomeScreen() {
             <StatusTile
               icon="barbell"
               iconColor={colors.primary}
-              label="Workout"
-              value={workoutDone ? 'Completed' : 'Pending'}
+              label={t('home.workout')}
+              value={workoutDone ? t('common.completed') : t('common.pending')}
               valueColor={workoutDone ? colors.primary : colors.textSecondary}
               done={workoutDone}
             />
             <StatusTile
               icon="nutrition"
               iconColor={colors.green}
-              label="Protein"
+              label={t('common.macros.protein')}
               value={proteinDisplay}
               valueColor={proteinDone ? colors.green : colors.textSecondary}
               done={proteinDone}
@@ -194,15 +190,15 @@ export default function HomeScreen() {
             <StatusTile
               icon="water"
               iconColor={colors.primary}
-              label="Water"
-              value={metric ? `${Math.round(waterCur)} ml` : waterCupsLabel}
+              label={t('common.macros.water')}
+              value={metric ? `${Math.round(waterCur)} ${t('common.units.ml')}` : waterCupsLabel}
               valueColor={waterDone ? colors.primary : colors.textSecondary}
               done={waterDone}
             />
             <StatusTile
               icon={moodIcon(habitDay?.mood)}
               iconColor={moodIconColor(habitDay?.mood)}
-              label="Mood"
+              label={t('home.mood')}
               value={moodLabel(habitDay?.mood)}
               valueColor={moodValueColor(habitDay?.mood)}
               done={moodDone}
@@ -216,25 +212,25 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        <Text style={styles.sectionTitle}>Quick Actions</Text>
+        <Text style={styles.sectionTitle}>{t('home.quickActions')}</Text>
         <View style={styles.quickRow}>
           <QuickAction
             icon="barbell"
-            label="Log Workout"
+            label={t('home.logWorkout')}
             color={colors.primary}
             disabled={busy}
             onPress={() => navigation.navigate('Routines')}
           />
           <QuickAction
             icon="flame"
-            label="Nutrition"
+            label={t('nutrition.title')}
             color={colors.orange}
             disabled={busy}
             onPress={() => rootNavigation.navigate('Nutrition')}
           />
           <QuickAction
             icon="water"
-            label={metric ? '+250 ml' : '+8 fl oz'}
+            label={metric ? t('home.addWaterMetric') : t('home.addWaterImperial')}
             color={colors.primary}
             disabled={busy || !user?.uid}
             onPress={() =>
@@ -254,19 +250,19 @@ export default function HomeScreen() {
           >
             <ProgressRow
               icon="flame"
-              label="Calories"
-              value={`${Math.round(caloriesCur)} / ${Math.round(caloriesGoal)} kcal`}
+              label={t('common.macros.calories')}
+              value={`${Math.round(caloriesCur)} / ${Math.round(caloriesGoal)} ${t('common.units.kcal')}`}
               pct={caloriesPct}
             />
           </TouchableOpacity>
           <View style={{ height: spacing.lg }} />
-          <ProgressRow icon="nutrition" label="Protein" value={proteinDisplay} pct={proteinPct} />
+          <ProgressRow icon="nutrition" label={t('common.macros.protein')} value={proteinDisplay} pct={proteinPct} />
           <View style={{ height: spacing.lg }} />
           <TouchableOpacity activeOpacity={0.85} onPress={() => rootNavigation.navigate('Nutrition')}>
             <ProgressRow
               icon="leaf"
-              label="Carbs"
-              value={`${Math.round(carbsCur)} / ${Math.round(carbsGoal)} g`}
+              label={t('common.macros.carbs')}
+              value={`${Math.round(carbsCur)} / ${Math.round(carbsGoal)} ${t('common.units.g')}`}
               pct={carbsPct}
             />
           </TouchableOpacity>
@@ -274,13 +270,13 @@ export default function HomeScreen() {
           <TouchableOpacity activeOpacity={0.85} onPress={() => rootNavigation.navigate('Nutrition')}>
             <ProgressRow
               icon="water"
-              label="Fat"
-              value={`${Math.round(fatCur)} / ${Math.round(fatGoal)} g`}
+              label={t('common.macros.fat')}
+              value={`${Math.round(fatCur)} / ${Math.round(fatGoal)} ${t('common.units.g')}`}
               pct={fatPct}
             />
           </TouchableOpacity>
           <View style={{ height: spacing.lg }} />
-          <ProgressRow icon="water" label="Water" value={waterDisplay} pct={waterPct} />
+          <ProgressRow icon="water" label={t('common.macros.water')} value={waterDisplay} pct={waterPct} />
         </View>
 
         {busy ? (
@@ -294,14 +290,14 @@ export default function HomeScreen() {
           activeOpacity={0.9}
           onPress={() => navigation.navigate('History')}
           accessibilityRole="button"
-          accessibilityLabel="Open history and stats"
+          accessibilityLabel={t('home.accessibilityOpenHistory')}
         >
           <View style={styles.bannerIcon}>
             <Ionicons name="trophy" size={22} color={colors.primary} />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={styles.bannerTitle}>Great job staying consistent!</Text>
-            <Text style={styles.bannerSub}>See your workouts and weekly stats in History.</Text>
+            <Text style={styles.bannerTitle}>{t('home.bannerTitle')}</Text>
+            <Text style={styles.bannerSub}>{t('home.bannerSub')}</Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
         </TouchableOpacity>

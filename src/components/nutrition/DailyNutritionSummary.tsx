@@ -1,7 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { colors, radius, spacing } from '../../theme';
+import { useLocale } from '../../context/LocaleContext';
 import type { NutritionSnapshot } from '../../hooks/useTodayNutrition';
 import MacroRing from '../MacroRing';
 
@@ -10,6 +12,8 @@ type Props = {
 };
 
 export default function DailyNutritionSummary({ snapshot }: Props) {
+  const { t } = useTranslation();
+  const { localeTag } = useLocale();
   const {
     caloriesCur,
     caloriesGoal,
@@ -26,16 +30,18 @@ export default function DailyNutritionSummary({ snapshot }: Props) {
     <View style={styles.card}>
       <View style={styles.topRow}>
         <View style={{ flex: 1 }}>
-          <Text style={styles.eyebrow}>DAILY NUTRITION SUMMARY</Text>
-          <Text style={styles.date}>{formatTodayLabel(snapshot.dateKey)}</Text>
+          <Text style={styles.eyebrow}>{t('dailyNutritionSummary.eyebrow')}</Text>
+          <Text style={styles.date}>{formatTodayLabel(snapshot.dateKey, localeTag, t)}</Text>
           <Text style={styles.headline}>
             {Math.round(caloriesCur)}
-            <Text style={styles.goalText}>{` / ${Math.round(caloriesGoal)} kcal`}</Text>
+            <Text style={styles.goalText}>
+              {t('dailyNutritionSummary.kcalGoal', { goal: Math.round(caloriesGoal) })}
+            </Text>
           </Text>
           <Text style={[styles.sub, caloriesOver > 0 && { color: colors.orange }]}>
             {caloriesOver > 0
-              ? `${caloriesOver} kcal over your daily target`
-              : `${caloriesRemaining} kcal remaining`}
+              ? t('dailyNutritionSummary.overTarget', { amount: caloriesOver })
+              : t('dailyNutritionSummary.remaining', { amount: caloriesRemaining })}
           </Text>
         </View>
         <MacroRing
@@ -45,27 +51,51 @@ export default function DailyNutritionSummary({ snapshot }: Props) {
           goal={caloriesGoal}
           color={caloriesOver > 0 ? colors.orange : colors.primary}
           centerText={`${Math.round(caloriesPct * 100)}%`}
-          centerSub="of goal"
+          centerSub={t('dailyNutritionSummary.ofGoal')}
         />
       </View>
 
       <View style={styles.statsRow}>
-        <StatChip icon="nutrition" label="Protein" value={`${Math.round(proteinCur)}g`} color={colors.green} />
-        <StatChip icon="leaf" label="Carbs" value={`${Math.round(carbsCur)}g`} color={colors.primary} />
-        <StatChip icon="water" label="Fat" value={`${Math.round(fatCur)}g`} color={colors.yellow} />
-        <StatChip icon="restaurant" label="Meals" value={String(mealCount)} color={colors.textSecondary} />
+        <StatChip
+          icon="nutrition"
+          label={t('common.macros.protein')}
+          value={`${Math.round(proteinCur)}${t('common.units.g')}`}
+          color={colors.green}
+        />
+        <StatChip
+          icon="leaf"
+          label={t('common.macros.carbs')}
+          value={`${Math.round(carbsCur)}${t('common.units.g')}`}
+          color={colors.primary}
+        />
+        <StatChip
+          icon="water"
+          label={t('common.macros.fat')}
+          value={`${Math.round(fatCur)}${t('common.units.g')}`}
+          color={colors.yellow}
+        />
+        <StatChip
+          icon="restaurant"
+          label={t('dailyNutritionSummary.meals')}
+          value={String(mealCount)}
+          color={colors.textSecondary}
+        />
       </View>
     </View>
   );
 }
 
-function formatTodayLabel(dateKey: string): string {
+function formatTodayLabel(
+  dateKey: string,
+  localeTag: string,
+  t: (key: string) => string,
+): string {
   try {
     const [y, m, d] = dateKey.split('-').map(Number);
     const dt = new Date(y, (m ?? 1) - 1, d ?? 1);
-    return dt.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
+    return dt.toLocaleDateString(localeTag, { weekday: 'long', month: 'short', day: 'numeric' });
   } catch {
-    return 'Today';
+    return t('dailyNutritionSummary.todayFallback');
   }
 }
 

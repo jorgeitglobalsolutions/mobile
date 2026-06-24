@@ -13,10 +13,12 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { colors, radius, spacing } from '../theme';
 import { useAuth } from '../context/AuthContext';
+import { useLocale } from '../context/LocaleContext';
 import {
   subscribeWeightEntries,
   addWeightEntry,
@@ -31,10 +33,10 @@ import { friendlyAppError } from '../utils/appError';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'WeightTracking'>;
 
-function formatLoggedAt(row: WeightEntryRow): string {
+function formatLoggedAt(row: WeightEntryRow, localeTag: string): string {
   try {
     const d = row.data.loggedAt.toDate();
-    return d.toLocaleString(undefined, {
+    return d.toLocaleString(localeTag, {
       month: 'short',
       day: 'numeric',
       hour: 'numeric',
@@ -46,6 +48,8 @@ function formatLoggedAt(row: WeightEntryRow): string {
 }
 
 export default function WeightTrackingScreen({ navigation }: Props) {
+  const { t } = useTranslation();
+  const { localeTag } = useLocale();
   const { user, userDoc } = useAuth();
   const [rows, setRows] = useState<WeightEntryRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -80,7 +84,7 @@ export default function WeightTrackingScreen({ navigation }: Props) {
     if (!user?.uid) return;
     const parsed = parseFloat(weightText.replace(',', '.'));
     if (!Number.isFinite(parsed)) {
-      Alert.alert('Weight', 'Enter a valid weight in kg.');
+      Alert.alert(t('weightTracking.alerts.title'), t('weightTracking.alerts.invalidWeight'));
       return;
     }
     const kg = clamp(parsed, WEIGHT_MIN_KG, WEIGHT_MAX_KG);
@@ -99,7 +103,7 @@ export default function WeightTrackingScreen({ navigation }: Props) {
       setWeightText('');
       setNote('');
     } catch (e: unknown) {
-      Alert.alert('Weight', friendlyAppError(e, 'Could not save weight. Please try again.'));
+      Alert.alert(t('weightTracking.alerts.title'), friendlyAppError(e, 'weightTracking.alerts.saveError'));
     } finally {
       setSaving(false);
     }
@@ -107,17 +111,17 @@ export default function WeightTrackingScreen({ navigation }: Props) {
 
   const onDelete = (row: WeightEntryRow) => {
     if (!user?.uid) return;
-    Alert.alert('Remove entry', 'Delete this weight log?', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('weightTracking.alerts.removeTitle'), t('weightTracking.alerts.removeMessage'), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Delete',
+        text: t('common.delete'),
         style: 'destructive',
         onPress: () => {
           void (async () => {
             try {
               await deleteWeightEntry(user.uid!, row.id);
             } catch (e: unknown) {
-              Alert.alert('Weight', friendlyAppError(e, 'Could not delete entry.'));
+              Alert.alert(t('weightTracking.alerts.title'), friendlyAppError(e, 'weightTracking.alerts.deleteError'));
             }
           })();
         },
@@ -128,7 +132,7 @@ export default function WeightTrackingScreen({ navigation }: Props) {
   if (!user?.uid) {
     return (
       <SafeAreaView style={[styles.safe, styles.center]} edges={['top']}>
-        <Text style={styles.hint}>Sign in to track weight.</Text>
+        <Text style={styles.hint}>{t('weightTracking.signInHint')}</Text>
       </SafeAreaView>
     );
   }
@@ -144,7 +148,7 @@ export default function WeightTrackingScreen({ navigation }: Props) {
           <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={12}>
             <Ionicons name="chevron-back" size={26} color={colors.text} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Body weight</Text>
+          <Text style={styles.headerTitle}>{t('weightTracking.title')}</Text>
           <View style={{ width: 26 }} />
         </View>
 
@@ -161,21 +165,21 @@ export default function WeightTrackingScreen({ navigation }: Props) {
             <WeightProgressChart entries={chartPoints} />
 
             <View style={styles.formCard}>
-              <Text style={styles.sectionLabel}>Log weight</Text>
+              <Text style={styles.sectionLabel}>{t('weightTracking.logWeight')}</Text>
               <View style={styles.inputRow}>
                 <TextInput
                   style={styles.weightInput}
                   keyboardType="decimal-pad"
-                  placeholder="Weight"
+                  placeholder={t('weightTracking.weightPlaceholder')}
                   placeholderTextColor={colors.textMuted}
                   value={weightText}
                   onChangeText={setWeightText}
                 />
-                <Text style={styles.unit}>kg</Text>
+                <Text style={styles.unit}>{t('common.units.kg')}</Text>
               </View>
               <TextInput
                 style={styles.noteInput}
-                placeholder="Optional note"
+                placeholder={t('weightTracking.notePlaceholder')}
                 placeholderTextColor={colors.textMuted}
                 value={note}
                 onChangeText={setNote}
@@ -189,25 +193,25 @@ export default function WeightTrackingScreen({ navigation }: Props) {
                 {saving ? (
                   <ActivityIndicator color={colors.white} />
                 ) : (
-                  <Text style={styles.primaryBtnText}>Save entry</Text>
+                  <Text style={styles.primaryBtnText}>{t('weightTracking.saveEntry')}</Text>
                 )}
               </TouchableOpacity>
-              <Text style={styles.formHint}>
-                Uses your device time. Profile weight updates to match your latest log.
-              </Text>
+              <Text style={styles.formHint}>{t('weightTracking.formHint')}</Text>
             </View>
 
-            <Text style={styles.historyTitle}>History</Text>
+            <Text style={styles.historyTitle}>{t('weightTracking.history')}</Text>
             {rows.length === 0 ? (
-              <Text style={styles.emptyHist}>No entries yet — add your current weight above.</Text>
+              <Text style={styles.emptyHist}>{t('weightTracking.emptyHistory')}</Text>
             ) : (
               rows.map((item, idx) => (
                 <View key={item.id}>
                   {idx > 0 ? <View style={{ height: spacing.sm }} /> : null}
                   <View style={styles.historyRow}>
                     <View style={{ flex: 1 }}>
-                      <Text style={styles.historyKg}>{item.data.weightKg.toFixed(1)} kg</Text>
-                      <Text style={styles.historyDate}>{formatLoggedAt(item)}</Text>
+                      <Text style={styles.historyKg}>
+                        {item.data.weightKg.toFixed(1)} {t('common.units.kg')}
+                      </Text>
+                      <Text style={styles.historyDate}>{formatLoggedAt(item, localeTag)}</Text>
                       {item.data.note ? <Text style={styles.historyNote}>{item.data.note}</Text> : null}
                     </View>
                     <TouchableOpacity hitSlop={10} onPress={() => onDelete(item)}>

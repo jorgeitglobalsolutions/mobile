@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import type { UserProfile } from '../types/firestoreUser';
@@ -21,6 +22,7 @@ import {
 type Props = NativeStackScreenProps<RootStackParamList, 'BodyMetrics'>;
 
 export default function BodyMetricsScreen({ navigation, route }: Props) {
+  const { t } = useTranslation();
   const { user, userDoc } = useAuth();
   const required = Boolean(route.params?.required);
   const p = userDoc?.profile;
@@ -43,7 +45,7 @@ export default function BodyMetricsScreen({ navigation, route }: Props) {
 
   const onSave = async () => {
     if (!user?.uid) {
-      Alert.alert('Body metrics', 'You must be signed in.');
+      Alert.alert(t('bodyMetrics.alerts.title'), t('bodyMetrics.alerts.signInRequired'));
       return;
     }
     setSaving(true);
@@ -60,7 +62,7 @@ export default function BodyMetricsScreen({ navigation, route }: Props) {
         navigation.goBack();
       }
     } catch (e: unknown) {
-      Alert.alert('Body metrics', friendlyAppError(e, 'Could not save your body metrics. Please try again.'));
+      Alert.alert(t('bodyMetrics.alerts.title'), friendlyAppError(e, 'bodyMetrics.alerts.saveError'));
     } finally {
       setSaving(false);
     }
@@ -76,7 +78,7 @@ export default function BodyMetricsScreen({ navigation, route }: Props) {
         ) : (
           <View style={{ width: 26 }} />
         )}
-        <Text style={styles.topTitle}>Body metrics</Text>
+        <Text style={styles.topTitle}>{t('bodyMetrics.title')}</Text>
         <View style={{ width: 26 }} />
       </View>
 
@@ -85,9 +87,7 @@ export default function BodyMetricsScreen({ navigation, route }: Props) {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.subtitle}>
-          Set your weight, height, and goal anytime. Habit targets use these values.
-        </Text>
+        <Text style={styles.subtitle}>{t('bodyMetrics.subtitle')}</Text>
         <BodyMetricsFields
           weightKg={weightKg}
           heightCm={heightCm}
@@ -110,7 +110,7 @@ export default function BodyMetricsScreen({ navigation, route }: Props) {
           {saving ? (
             <ActivityIndicator color={colors.white} />
           ) : (
-            <Text style={styles.saveText}>Save</Text>
+            <Text style={styles.saveText}>{t('bodyMetrics.save')}</Text>
           )}
         </TouchableOpacity>
       </View>

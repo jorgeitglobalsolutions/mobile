@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { colors, spacing } from '../theme';
@@ -23,6 +24,7 @@ import FoodSearchModal from '../components/nutrition/FoodSearchModal';
 type Props = NativeStackScreenProps<RootStackParamList, 'Nutrition'>;
 
 export default function NutritionScreen({ navigation, route }: Props) {
+  const { t } = useTranslation();
   const { user, userDoc } = useAuth();
   const { habitDay, defaults, targets, snapshot } = useTodayNutrition(user?.uid, userDoc?.profile ?? null);
   const initialTab: NutritionTab = route.params?.tab === 'log' ? 'log' : 'overview';
@@ -40,7 +42,7 @@ export default function NutritionScreen({ navigation, route }: Props) {
   if (!user?.uid) {
     return (
       <SafeAreaView style={[styles.safe, styles.center]} edges={['top']}>
-        <Text style={styles.hint}>Sign in to track nutrition.</Text>
+        <Text style={styles.hint}>{t('nutrition.signInHint')}</Text>
       </SafeAreaView>
     );
   }
@@ -56,7 +58,7 @@ export default function NutritionScreen({ navigation, route }: Props) {
           <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={12}>
             <Ionicons name="chevron-back" size={26} color={colors.text} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Nutrition</Text>
+          <Text style={styles.headerTitle}>{t('nutrition.title')}</Text>
           <TouchableOpacity onPress={() => navigation.navigate('BodyMetrics')} hitSlop={12}>
             <Ionicons name="body-outline" size={24} color={colors.primary} />
           </TouchableOpacity>

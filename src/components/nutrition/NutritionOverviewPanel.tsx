@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { colors, radius, spacing } from '../../theme';
 import type { NutritionSnapshot } from '../../hooks/useTodayNutrition';
 import type { NutritionTarget } from '../../services/nutritionTargets';
@@ -24,10 +25,12 @@ export default function NutritionOverviewPanel({
   onLogFood,
   onEditMetrics,
 }: Props) {
+  const { t } = useTranslation();
+
   return (
     <View>
       <View style={styles.ringsCard}>
-        <Text style={styles.sectionTitle}>Macro balance</Text>
+        <Text style={styles.sectionTitle}>{t('nutritionOverviewPanel.macroBalance')}</Text>
         <View style={styles.ringsRow}>
           <RingCol snapshot={snapshot} macro="protein" color={colors.green} />
           <RingCol snapshot={snapshot} macro="carbs" color={colors.primary} />
@@ -41,12 +44,12 @@ export default function NutritionOverviewPanel({
 
       <TouchableOpacity style={styles.logCta} activeOpacity={0.9} onPress={onLogFood}>
         <Ionicons name="add-circle" size={22} color={colors.white} />
-        <Text style={styles.logCtaText}>Search food or log a meal</Text>
+        <Text style={styles.logCtaText}>{t('nutritionOverviewPanel.searchOrLog')}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.linkRow} activeOpacity={0.85} onPress={onEditMetrics}>
         <Ionicons name="body-outline" size={18} color={colors.primary} />
-        <Text style={styles.linkText}>Adjust body metrics to recalculate targets</Text>
+        <Text style={styles.linkText}>{t('nutritionOverviewPanel.adjustMetrics')}</Text>
         <Ionicons name="chevron-forward" size={18} color={colors.textMuted} style={{ marginLeft: 'auto' }} />
       </TouchableOpacity>
     </View>
@@ -62,10 +65,23 @@ function RingCol({
   macro: 'protein' | 'carbs' | 'fat';
   color: string;
 }) {
+  const { t } = useTranslation();
   const map = {
-    protein: { cur: snapshot.proteinCur, goal: snapshot.proteinGoal, label: 'Protein' },
-    carbs: { cur: snapshot.carbsCur, goal: snapshot.carbsGoal, label: 'Carbs' },
-    fat: { cur: snapshot.fatCur, goal: snapshot.fatGoal, label: 'Fat' },
+    protein: {
+      cur: snapshot.proteinCur,
+      goal: snapshot.proteinGoal,
+      label: t('common.macros.protein'),
+    },
+    carbs: {
+      cur: snapshot.carbsCur,
+      goal: snapshot.carbsGoal,
+      label: t('common.macros.carbs'),
+    },
+    fat: {
+      cur: snapshot.fatCur,
+      goal: snapshot.fatGoal,
+      label: t('common.macros.fat'),
+    },
   } as const;
   const m = map[macro];
   return (
@@ -76,8 +92,8 @@ function RingCol({
         value={m.cur}
         goal={m.goal}
         color={color}
-        centerText={`${Math.round(m.cur)}g`}
-        centerSub={`of ${Math.round(m.goal)}g`}
+        centerText={`${Math.round(m.cur)}${t('common.units.g')}`}
+        centerSub={t('nutritionOverviewPanel.ofGoal', { goal: Math.round(m.goal) })}
       />
       <Text style={styles.ringLabel}>{m.label}</Text>
     </View>

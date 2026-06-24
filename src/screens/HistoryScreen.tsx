@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   View,
   Text,
@@ -15,6 +16,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { colors, radius, spacing } from '../theme';
 import { useAuth } from '../context/AuthContext';
+import { useLocale } from '../context/LocaleContext';
 import { listRecentWorkouts } from '../services/workoutsRepo';
 import type { WorkoutDoc } from '../types/domain';
 
@@ -45,12 +47,14 @@ function dayKey(d: Date) {
   return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
 }
 
-function formatVol(kg: number, metric: boolean) {
-  if (!metric) return `${Math.round(kg * 2.20462)} lb`;
-  return `${Math.round(kg)} kg`;
+function formatVol(kg: number, metric: boolean, unitKg: string, unitLb: string) {
+  if (!metric) return `${Math.round(kg * 2.20462)} ${unitLb}`;
+  return `${Math.round(kg)} ${unitKg}`;
 }
 
 export default function HistoryScreen() {
+  const { t } = useTranslation();
+  const { localeTag } = useLocale();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { user, userDoc } = useAuth();
   const [tab, setTab] = useState<'workouts' | 'stats' | 'progress'>('workouts');
@@ -146,13 +150,13 @@ export default function HistoryScreen() {
         .filter((w) => sameDay(w.data.endedAt.toDate(), d))
         .reduce((acc, w) => acc + (w.data.totalVolumeKg ?? 0), 0);
       days.push({
-        label: d.toLocaleDateString(undefined, { weekday: 'short' }),
+        label: d.toLocaleDateString(localeTag, { weekday: 'short' }),
         vol,
       });
     }
     const maxVol = Math.max(1, ...days.map((x) => x.vol));
     return { days, maxVol };
-  }, [items, weekAnchor]);
+  }, [items, weekAnchor, localeTag]);
 
   const goWeek = (deltaDays: number) => {
     const n = new Date(weekAnchor);
@@ -172,7 +176,22 @@ export default function HistoryScreen() {
 
   const primary = (w: WorkoutDoc) => {
     const mins = Math.max(1, Math.round(w.durationSeconds / 60));
-    return `${w.exercises.length} exercises • ${mins} min`;
+    return t('history.exercisesMin', { count: w.exercises.length, minutes: mins });
+  };
+
+  const unitKg = t('common.units.kg');
+  const unitLb = t('common.units.lb');
+  const formatVolume = (kg: number) => formatVol(kg, metric, unitKg, unitLb);
+
+  const weekOfDate = startOfWeek(weekAnchor).toLocaleDateString(localeTag, {
+    month: 'short',
+    day: 'numeric',
+  });
+
+  const tabLabels: Record<'workouts' | 'stats' | 'progress', string> = {
+    workouts: t('history.tabWorkouts'),
+    stats: t('history.tabStats'),
+    progress: t('history.tabProgress'),
   };
 
   return (
@@ -185,31 +204,31 @@ export default function HistoryScreen() {
         }
       >
         <View style={styles.header}>
-          <Text style={styles.title}>History</Text>
-          <TouchableOpacity style={styles.iconBtn} onPress={goToday} accessibilityLabel="Jump to today">
+          <Text style={styles.title}>{t('history.title')}</Text>
+          <TouchableOpacity style={styles.iconBtn} onPress={goToday} accessibilityLabel={t('history.accessibilityJumpToday')}>
             <Ionicons name="today-outline" size={22} color={colors.text} />
           </TouchableOpacity>
         </View>
 
         <View style={styles.tabs}>
-          {(['workouts', 'stats', 'progress'] as const).map((t) => (
-            <TouchableOpacity key={t} style={styles.tabItem} onPress={() => setTab(t)}>
-              <Text style={[styles.tabText, tab === t && styles.tabTextActive]}>
-                {t === 'workouts' ? 'Workouts' : t === 'stats' ? 'Stats' : 'Progress'}
+          {(['workouts', 'stats', 'progress'] as const).map((tabKey) => (
+            <TouchableOpacity key={tabKey} style={styles.tabItem} onPress={() => setTab(tabKey)}>
+              <Text style={[styles.tabText, tab === tabKey && styles.tabTextActive]}>
+                {tabLabels[tabKey]}
               </Text>
-              {tab === t ? <View style={styles.tabLine} /> : <View style={{ height: 2 }} />}
+              {tab === tabKey ? <View style={styles.tabLine} /> : <View style={{ height: 2 }} />}
             </TouchableOpacity>
           ))}
         </View>
 
         <View style={styles.weekNav}>
-          <TouchableOpacity style={styles.weekNavBtn} onPress={() => goWeek(-7)} accessibilityLabel="Previous week">
+          <TouchableOpacity style={styles.weekNavBtn} onPress={() => goWeek(-7)} accessibilityLabel={t('history.accessibilityPrevWeek')}>
             <Ionicons name="chevron-back" size={22} color={colors.primary} />
           </TouchableOpacity>
           <Text style={styles.weekNavLabel} numberOfLines={1}>
-            Week of {startOfWeek(weekAnchor).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+            {t('history.weekOf', { date: weekOfDate })}
           </Text>
-          <TouchableOpacity style={styles.weekNavBtn} onPress={() => goWeek(7)} accessibilityLabel="Next week">
+          <TouchableOpacity style={styles.weekNavBtn} onPress={() => goWeek(7)} accessibilityLabel={t('history.accessibilityNextWeek')}>
             <Ionicons name="chevron-forward" size={22} color={colors.primary} />
           </TouchableOpacity>
         </View>
@@ -217,15 +236,18 @@ export default function HistoryScreen() {
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.calRow}>
           {weekDays.map((d) => {
             const on = sameDay(d, selected);
-            const label = d.toLocaleDateString(undefined, { weekday: 'short' });
+            const label = d.toLocaleDateString(localeTag, { weekday: 'short' });
             const num = d.getDate();
             const hasWorkout = workoutDayKeys.has(dayKey(d));
+            const a11yLabel = hasWorkout
+              ? t('history.accessibilityDayHasWorkout', { weekday: label, day: num })
+              : `${label} ${num}`;
             return (
               <TouchableOpacity
                 key={d.toISOString()}
                 onPress={() => setSelected(d)}
                 style={[styles.calCell, on && styles.calCellOn]}
-                accessibilityLabel={`${label} ${num}${hasWorkout ? ', has workout' : ''}`}
+                accessibilityLabel={a11yLabel}
               >
                 <Text style={[styles.calD, on && styles.calDOn]}>{label}</Text>
                 <Text style={[styles.calN, on && styles.calNOn]}>{num}</Text>
@@ -243,12 +265,12 @@ export default function HistoryScreen() {
           ) : (
             <>
               <View style={styles.sectionHead}>
-                <Text style={styles.sectionTitle}>Selected day</Text>
-                <Text style={styles.sectionMeta}>{selectedWorkouts.length} workout(s)</Text>
+                <Text style={styles.sectionTitle}>{t('history.selectedDay')}</Text>
+                <Text style={styles.sectionMeta}>{t('history.workoutCount', { count: selectedWorkouts.length })}</Text>
               </View>
 
               {selectedWorkouts.length === 0 ? (
-                <Text style={styles.empty}>No workouts logged for this day.</Text>
+                <Text style={styles.empty}>{t('history.noWorkoutsDay')}</Text>
               ) : (
                 selectedWorkouts.map((w) => (
                   <TouchableOpacity
@@ -265,7 +287,12 @@ export default function HistoryScreen() {
                         <Text style={styles.cardTitle}>{w.data.title}</Text>
                         <Text style={styles.cardSub}>{primary(w.data)}</Text>
                         <Text style={styles.cardTime}>
-                          Completed {w.data.endedAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          {t('history.completedAt', {
+                            time: w.data.endedAt.toDate().toLocaleTimeString(localeTag, {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            }),
+                          })}
                         </Text>
                       </View>
                       <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
@@ -275,14 +302,14 @@ export default function HistoryScreen() {
                       <Stat
                         icon="time-outline"
                         value={`${Math.floor(w.data.durationSeconds / 60)}:${String(w.data.durationSeconds % 60).padStart(2, '0')}`}
-                        label="Duration"
+                        label={t('history.duration')}
                       />
-                      <Stat icon="scale-outline" value={formatVol(w.data.totalVolumeKg, metric)} label="Volume" />
-                      <Stat icon="trophy-outline" value={String(w.data.totalSets)} label="Sets" />
+                      <Stat icon="scale-outline" value={formatVolume(w.data.totalVolumeKg)} label={t('history.volume')} />
+                      <Stat icon="trophy-outline" value={String(w.data.totalSets)} label={t('history.sets')} />
                       <Stat
                         icon="ribbon-outline"
-                        value={formatVol(w.data.bestSetVolumeKg, metric)}
-                        label="Best set"
+                        value={formatVolume(w.data.bestSetVolumeKg)}
+                        label={t('history.bestSet')}
                       />
                     </View>
                   </TouchableOpacity>
@@ -290,11 +317,11 @@ export default function HistoryScreen() {
               )}
 
               <Text style={[styles.sectionTitle, { marginHorizontal: spacing.xl, marginTop: spacing.lg }]}>
-                Other days
+                {t('history.otherDays')}
               </Text>
               <View style={{ paddingHorizontal: spacing.xl, paddingTop: spacing.md }}>
                 {otherWorkouts.length === 0 ? (
-                  <Text style={styles.empty}>No other sessions loaded.</Text>
+                  <Text style={styles.empty}>{t('history.noOtherSessions')}</Text>
                 ) : (
                   otherWorkouts.slice(0, 20).map((w) => (
                     <TouchableOpacity
@@ -309,7 +336,7 @@ export default function HistoryScreen() {
                       <View style={{ flex: 1 }}>
                         <Text style={styles.pastTitle}>{w.data.title}</Text>
                         <Text style={styles.pastSub}>{primary(w.data)}</Text>
-                        <Text style={styles.pastWhen}>{w.data.endedAt.toDate().toLocaleString()}</Text>
+                        <Text style={styles.pastWhen}>{w.data.endedAt.toDate().toLocaleString(localeTag)}</Text>
                       </View>
                       <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
                     </TouchableOpacity>
@@ -325,43 +352,43 @@ export default function HistoryScreen() {
             {loading ? (
               <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 24 }} />
             ) : items.length === 0 ? (
-              <Text style={styles.empty}>Log workouts to see stats here.</Text>
+              <Text style={styles.empty}>{t('history.logWorkoutsStats')}</Text>
             ) : (
               <>
-                <Text style={styles.statsHead}>All sessions (last {items.length} loaded)</Text>
+                <Text style={styles.statsHead}>{t('history.allSessions', { count: items.length })}</Text>
                 <View style={styles.statGrid}>
                   <View style={styles.statBox}>
                     <Text style={styles.statBoxVal}>{statsSummary.sessions}</Text>
-                    <Text style={styles.statBoxLbl}>Workouts</Text>
+                    <Text style={styles.statBoxLbl}>{t('history.tabWorkouts')}</Text>
                   </View>
                   <View style={styles.statBox}>
                     <Text style={styles.statBoxVal}>
-                      {metric ? statsSummary.volumeKg.toLocaleString() : Math.round(statsSummary.volumeKg * 2.20462).toLocaleString()}
+                      {metric ? statsSummary.volumeKg.toLocaleString(localeTag) : Math.round(statsSummary.volumeKg * 2.20462).toLocaleString(localeTag)}
                     </Text>
-                    <Text style={styles.statBoxLbl}>{metric ? 'Volume (kg)' : 'Volume (lb)'}</Text>
+                    <Text style={styles.statBoxLbl}>{metric ? t('history.volumeKg') : t('history.volumeLb')}</Text>
                   </View>
                   <View style={styles.statBox}>
                     <Text style={styles.statBoxVal}>{statsSummary.minutes}</Text>
-                    <Text style={styles.statBoxLbl}>Minutes</Text>
+                    <Text style={styles.statBoxLbl}>{t('common.units.minutes')}</Text>
                   </View>
                   <View style={styles.statBox}>
                     <Text style={styles.statBoxVal}>{statsSummary.sets}</Text>
-                    <Text style={styles.statBoxLbl}>Sets logged</Text>
+                    <Text style={styles.statBoxLbl}>{t('history.setsLogged')}</Text>
                   </View>
                 </View>
 
-                <Text style={[styles.statsHead, { marginTop: spacing.lg }]}>This calendar week</Text>
+                <Text style={[styles.statsHead, { marginTop: spacing.lg }]}>{t('history.thisCalendarWeek')}</Text>
                 <View style={styles.weekSummaryCard}>
                   <View style={styles.weekSummaryRow}>
-                    <Text style={styles.weekSummaryLbl}>Workouts</Text>
+                    <Text style={styles.weekSummaryLbl}>{t('history.tabWorkouts')}</Text>
                     <Text style={styles.weekSummaryVal}>{weekStats.sessions}</Text>
                   </View>
                   <View style={styles.weekSummaryRow}>
-                    <Text style={styles.weekSummaryLbl}>Volume</Text>
-                    <Text style={styles.weekSummaryVal}>{formatVol(weekStats.volumeKg, metric)}</Text>
+                    <Text style={styles.weekSummaryLbl}>{t('history.volume')}</Text>
+                    <Text style={styles.weekSummaryVal}>{formatVolume(weekStats.volumeKg)}</Text>
                   </View>
                   <View style={[styles.weekSummaryRow, { borderBottomWidth: 0 }]}>
-                    <Text style={styles.weekSummaryLbl}>Active minutes</Text>
+                    <Text style={styles.weekSummaryLbl}>{t('history.activeMinutes')}</Text>
                     <Text style={styles.weekSummaryVal}>{weekStats.minutes}</Text>
                   </View>
                 </View>
@@ -376,7 +403,7 @@ export default function HistoryScreen() {
               <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 24 }} />
             ) : (
               <>
-                <Text style={styles.statsHead}>Volume by day (week shown above)</Text>
+                <Text style={styles.statsHead}>{t('history.volumeByDay')}</Text>
                 <View style={styles.barChart}>
                   {weeklyBars.days.map((d, i) => (
                     <View key={`${d.label}-${i}`} style={styles.barCol}>
@@ -391,11 +418,11 @@ export default function HistoryScreen() {
                         />
                       </View>
                       <Text style={styles.barLbl}>{d.label}</Text>
-                      <Text style={styles.barVol}>{d.vol > 0 ? formatVol(d.vol, metric) : '—'}</Text>
+                      <Text style={styles.barVol}>{d.vol > 0 ? formatVolume(d.vol) : '—'}</Text>
                     </View>
                   ))}
                 </View>
-                <Text style={styles.progressHint}>Totals are based on completed sets in each saved workout.</Text>
+                <Text style={styles.progressHint}>{t('history.progressHint')}</Text>
               </>
             )}
           </View>

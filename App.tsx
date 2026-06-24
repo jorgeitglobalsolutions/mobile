@@ -6,6 +6,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { RootStackParamList } from './src/navigation/types';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
+import { LocaleProvider } from './src/context/LocaleContext';
 import { isMockDataMode } from './src/config/mockMode';
 import { getFirebasePublicConfig, isFirebaseConfigured } from './src/config/firebaseConfig';
 import OnboardingScreen from './src/screens/OnboardingScreen';
@@ -24,10 +25,13 @@ import NutritionDashboardScreen from './src/screens/NutritionDashboardScreen';
 import MissingFirebaseScreen from './src/screens/MissingFirebaseScreen';
 import { ONBOARDING_WIZARD_KEY } from './src/constants/storageKeys';
 import { colors } from './src/theme';
+import { setupNotificationResponseHandler } from './src/services/notifications';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const navigationRef = createNavigationContainerRef<RootStackParamList>();
+
+export { navigationRef };
 
 function AppNavigation() {
   const { firebaseReady, firebaseConfigured, user, userDoc, userDocHydrated, accessLevel } = useAuth();
@@ -66,6 +70,10 @@ function AppNavigation() {
       routes: [{ name: 'BodyMetrics', params: { required: true } }],
     });
   }, [navReady, firebaseReady, wizardDone, user?.uid, userDocHydrated, userDoc]);
+
+  useEffect(() => {
+    return setupNotificationResponseHandler(navigationRef);
+  }, []);
 
   if (!firebaseReady || wizardDone === null) {
     return (
@@ -142,9 +150,11 @@ function AppNavigation() {
 export default function App() {
   return (
     <AuthProvider>
-      <SafeAreaProvider>
-        <AppNavigation />
-      </SafeAreaProvider>
+      <LocaleProvider>
+        <SafeAreaProvider>
+          <AppNavigation />
+        </SafeAreaProvider>
+      </LocaleProvider>
     </AuthProvider>
   );
 }

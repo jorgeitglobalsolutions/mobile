@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { colors, radius, spacing } from '../../theme';
 
 export type NutritionTab = 'overview' | 'log';
@@ -10,17 +11,19 @@ type Props = {
 };
 
 export default function NutritionTabBar({ active, onChange }: Props) {
+  const { t } = useTranslation();
+
   return (
     <View style={styles.wrap}>
       <TabButton
-        label="Overview"
-        sub="Goals & progress"
+        label={t('nutritionTabBar.overview')}
+        sub={t('nutritionTabBar.overviewSub')}
         active={active === 'overview'}
         onPress={() => onChange('overview')}
       />
       <TabButton
-        label="Log food"
-        sub="Track intake"
+        label={t('nutritionTabBar.logFood')}
+        sub={t('nutritionTabBar.logFoodSub')}
         active={active === 'log'}
         onPress={() => onChange('log')}
       />

@@ -2,25 +2,36 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { useAuth } from '../context/AuthContext';
 import { getWorkout } from '../services/workoutsRepo';
 import type { WorkoutDoc } from '../types/domain';
 import { colors, radius, spacing } from '../theme';
+import { getCatalogExerciseByName } from '../data/exercisesCatalog';
+import { useLocale } from '../context/LocaleContext';
+import { getExerciseDisplayName } from '../i18n/catalogDisplay';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'WorkoutSessionDetail'>;
 
-function fmtDate(ts: { toDate: () => Date }) {
+function fmtDate(ts: { toDate: () => Date }, localeTag: string) {
   const d = ts.toDate();
-  return d.toLocaleString();
+  return d.toLocaleString(localeTag);
 }
 
 export default function WorkoutSessionDetailScreen({ navigation, route }: Props) {
+  const { t } = useTranslation();
+  const { language, localeTag } = useLocale();
   const { user } = useAuth();
   const { workoutId } = route.params;
   const [doc, setDoc] = useState<WorkoutDoc | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const exerciseLabel = (name: string) => {
+    const hit = getCatalogExerciseByName(name);
+    return hit ? getExerciseDisplayName(hit.id, hit.name, language) : name;
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -55,10 +66,10 @@ export default function WorkoutSessionDetailScreen({ navigation, route }: Props)
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Ionicons name="chevron-back" size={26} color={colors.text} />
           </TouchableOpacity>
-          <Text style={styles.topTitle}>Workout</Text>
+          <Text style={styles.topTitle}>{t('workoutSessionDetail.title')}</Text>
           <View style={{ width: 26 }} />
         </View>
-        <Text style={styles.miss}>Workout not found.</Text>
+        <Text style={styles.miss}>{t('workoutSessionDetail.notFound')}</Text>
       </SafeAreaView>
     );
   }
@@ -76,22 +87,36 @@ export default function WorkoutSessionDetailScreen({ navigation, route }: Props)
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll}>
-        <Text style={styles.meta}>{fmtDate(doc.endedAt)}</Text>
+        <Text style={styles.meta}>{fmtDate(doc.endedAt, localeTag)}</Text>
         <View style={styles.statsRow}>
-          <Stat label="Duration" value={`${Math.floor(doc.durationSeconds / 60)} min`} />
-          <Stat label="Volume" value={`${doc.totalVolumeKg.toLocaleString()} kg`} />
-          <Stat label="Sets" value={String(doc.totalSets)} />
-          <Stat label="Best set" value={`${doc.bestSetVolumeKg} kg×reps`} />
+          <Stat
+            label={t('workoutSessionDetail.duration')}
+            value={t('workoutSessionDetail.durationValue', {
+              minutes: Math.floor(doc.durationSeconds / 60),
+            })}
+          />
+          <Stat
+            label={t('workoutSessionDetail.volume')}
+            value={t('workoutSessionDetail.volumeValue', {
+              volume: doc.totalVolumeKg.toLocaleString(),
+            })}
+          />
+          <Stat label={t('workoutSessionDetail.sets')} value={String(doc.totalSets)} />
+          <Stat
+            label={t('workoutSessionDetail.bestSet')}
+            value={t('workoutSessionDetail.bestSetValue', { volume: doc.bestSetVolumeKg })}
+          />
         </View>
 
         {doc.exercises.map((ex, i) => (
           <View key={`${ex.name}-${i}`} style={styles.card}>
-            <Text style={styles.exTitle}>{ex.name}</Text>
+            <Text style={styles.exTitle}>{exerciseLabel(ex.name)}</Text>
             {ex.sets.map((s, j) => (
               <View key={j} style={styles.setRow}>
-                <Text style={styles.setIdx}>Set {j + 1}</Text>
+                <Text style={styles.setIdx}>{t('workoutSessionDetail.setLabel', { number: j + 1 })}</Text>
                 <Text style={styles.setVal}>
-                  {s.weightKg} kg × {s.reps} reps{s.done ? '' : ' (incomplete)'}
+                  {t('workoutSessionDetail.setValue', { weight: s.weightKg, reps: s.reps })}
+                  {!s.done ? t('workoutSessionDetail.incomplete') : ''}
                 </Text>
               </View>
             ))}

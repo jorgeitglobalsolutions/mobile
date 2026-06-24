@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Linking, BackHandler, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { useAuth } from '../context/AuthContext';
@@ -18,30 +19,8 @@ const TRIAL_DAYS = 7;
 const PRICE_MONTHLY = '$9.99';
 const PRICE_YEARLY = '$79.99';
 
-const FEATURES = [
-  {
-    icon: 'infinite-outline' as const,
-    title: 'Unlimited Workouts & Routines',
-    desc: 'Create custom routines and track without limits.',
-  },
-  {
-    icon: 'bar-chart-outline' as const,
-    title: 'Advanced Progress Tracking',
-    desc: 'Detailed stats, charts, and performance insights.',
-  },
-  {
-    icon: 'book-outline' as const,
-    title: 'Exercise Library',
-    desc: 'Access 90+ exercises with demo animations and instructions.',
-  },
-  {
-    icon: 'cloud-upload-outline' as const,
-    title: 'Cloud Sync & Backup',
-    desc: 'Your data is always safe and accessible.',
-  },
-];
-
 export default function PaywallScreen({ navigation }: Props) {
+  const { t } = useTranslation();
   const { user, useMockData, accessLevel, grantDevAccessLocally } = useAuth();
   const [plan, setPlan] = useState<'month' | 'year'>('month');
   const [busy, setBusy] = useState(false);
@@ -49,22 +28,51 @@ export default function PaywallScreen({ navigation }: Props) {
   const expoGo = isExpoGo();
   const nativeIap = canUseNativeInAppPurchases();
   const showDevUnlock = __DEV__ && !useMockData;
-  const storeName = Platform.OS === 'ios' ? 'App Store' : 'Google Play';
-  const selectedPrice = plan === 'month' ? `${PRICE_MONTHLY}/month` : `${PRICE_YEARLY}/year`;
+  const storeName = Platform.OS === 'ios' ? t('paywall.storeAppStore') : t('paywall.storeGooglePlay');
+  const selectedPrice =
+    plan === 'month'
+      ? t('paywall.monthlyPrice', { price: PRICE_MONTHLY })
+      : t('paywall.yearlyPrice', { price: PRICE_YEARLY });
+
+  const features = useMemo(
+    () => [
+      {
+        icon: 'infinite-outline' as const,
+        title: t('paywall.features.workoutsTitle'),
+        desc: t('paywall.features.workoutsDesc'),
+      },
+      {
+        icon: 'bar-chart-outline' as const,
+        title: t('paywall.features.progressTitle'),
+        desc: t('paywall.features.progressDesc'),
+      },
+      {
+        icon: 'book-outline' as const,
+        title: t('paywall.features.libraryTitle'),
+        desc: t('paywall.features.libraryDesc'),
+      },
+      {
+        icon: 'cloud-upload-outline' as const,
+        title: t('paywall.features.cloudTitle'),
+        desc: t('paywall.features.cloudDesc'),
+      },
+    ],
+    [t],
+  );
 
   const openUrl = async (url: string) => {
     try {
       const ok = await Linking.canOpenURL(url);
       if (ok) await Linking.openURL(url);
-      else Alert.alert('Link', 'Could not open this link. Please try again later.');
+      else Alert.alert(t('paywall.alerts.linkTitle'), t('paywall.alerts.linkErrorLater'));
     } catch {
-      Alert.alert('Link', 'Could not open this link right now.');
+      Alert.alert(t('paywall.alerts.linkTitle'), t('paywall.alerts.linkErrorNow'));
     }
   };
 
   const onSubscribe = async () => {
     if (!user?.uid) {
-      Alert.alert('Session expired', 'Please sign in again to continue.');
+      Alert.alert(t('paywall.alerts.sessionTitle'), t('paywall.alerts.sessionMessage'));
       return;
     }
     if (useMockData) {
@@ -73,7 +81,7 @@ export default function PaywallScreen({ navigation }: Props) {
         await callGrantDevSubscription(user.uid);
         navigation.goBack();
       } catch (e: unknown) {
-        Alert.alert('Subscription', friendlyAppError(e, 'Could not unlock subscription.'));
+        Alert.alert(t('paywall.alerts.subscriptionTitle'), friendlyAppError(e, 'paywall.alerts.subscriptionUnlockError'));
       } finally {
         setBusy(false);
       }
@@ -88,7 +96,7 @@ export default function PaywallScreen({ navigation }: Props) {
       await purchaseEmFitSubscription(plan);
       navigation.goBack();
     } catch (e: unknown) {
-      Alert.alert('Subscription', friendlyPurchaseError(e));
+      Alert.alert(t('paywall.alerts.subscriptionTitle'), friendlyPurchaseError(e));
     } finally {
       setBusy(false);
     }
@@ -98,10 +106,7 @@ export default function PaywallScreen({ navigation }: Props) {
     setBusy(true);
     try {
       await grantDevAccessLocally();
-      Alert.alert(
-        'Dev unlock',
-        'Premium access is enabled on this device for development. Sign out clears this override. Firestore subscription is unchanged.',
-      );
+      Alert.alert(t('paywall.alerts.devUnlockTitle'), t('paywall.alerts.devUnlockMessage'));
       navigation.goBack();
     } finally {
       setBusy(false);
@@ -110,7 +115,7 @@ export default function PaywallScreen({ navigation }: Props) {
 
   const onQaGrantSubscription = async () => {
     if (!user?.uid) {
-      Alert.alert('Session expired', 'Please sign in again to continue.');
+      Alert.alert(t('paywall.alerts.sessionTitle'), t('paywall.alerts.sessionMessage'));
       return;
     }
     setBusy(true);
@@ -118,14 +123,14 @@ export default function PaywallScreen({ navigation }: Props) {
       await callGrantDevSubscription(user.uid);
       navigation.goBack();
     } catch (e: unknown) {
-      const msg = friendlyAppError(e, 'Could not unlock subscription for QA.');
+      const msg = friendlyAppError(e, 'paywall.alerts.qaUnlockError');
       if (showDevUnlock) {
-        Alert.alert('QA unlock', `${msg}\n\nYou can still unlock on this device for UI testing.`, [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Unlock on device', onPress: () => void onLocalDevUnlock() },
+        Alert.alert(t('paywall.alerts.qaUnlockTitle'), `${msg}\n\n${t('paywall.alerts.qaUnlockFallback')}`, [
+          { text: t('common.cancel'), style: 'cancel' },
+          { text: t('common.unlockOnDevice'), onPress: () => void onLocalDevUnlock() },
         ]);
       } else {
-        Alert.alert('QA unlock', msg);
+        Alert.alert(t('paywall.alerts.qaUnlockTitle'), msg);
       }
     } finally {
       setBusy(false);
@@ -134,22 +139,22 @@ export default function PaywallScreen({ navigation }: Props) {
 
   const onRestore = async () => {
     if (!user?.uid) {
-      Alert.alert('Session expired', 'Please sign in again to continue.');
+      Alert.alert(t('paywall.alerts.sessionTitle'), t('paywall.alerts.sessionMessage'));
       return;
     }
     setBusy(true);
     try {
       if (useMockData) {
         await callGrantDevSubscription(user.uid);
-        Alert.alert('Restore', 'Demo mode: subscription unlocked locally.');
+        Alert.alert(t('paywall.alerts.restoreTitle'), t('paywall.alerts.restoreDemo'));
         navigation.goBack();
         return;
       }
       await restoreSubscriptionsAndVerify();
-      Alert.alert('Restore', 'Purchases restored. Your subscription status will update shortly.');
+      Alert.alert(t('paywall.alerts.restoreTitle'), t('paywall.alerts.restoreSuccess'));
       navigation.goBack();
     } catch (e: unknown) {
-      Alert.alert('Restore', friendlyPurchaseError(e));
+      Alert.alert(t('paywall.alerts.restoreTitle'), friendlyPurchaseError(e));
     } finally {
       setBusy(false);
     }
@@ -175,17 +180,15 @@ export default function PaywallScreen({ navigation }: Props) {
         <View style={styles.crownWrap}>
           <Ionicons name="ribbon" size={48} color={colors.paywallPurple} />
         </View>
-        <Text style={styles.headline}>Unlock Your Best Self</Text>
-        <Text style={styles.sub}>
-          Get unlimited access to everything you need to build healthy habits and see results.
-        </Text>
+        <Text style={styles.headline}>{t('paywall.headline')}</Text>
+        <Text style={styles.sub}>{t('paywall.subtitle')}</Text>
 
         <View style={styles.trialBox}>
           <Ionicons name="gift-outline" size={22} color={colors.paywallPurple} style={{ marginRight: 10 }} />
           <View style={{ flex: 1 }}>
-            <Text style={styles.trialTitle}>{TRIAL_DAYS}-Day Free Trial</Text>
+            <Text style={styles.trialTitle}>{t('paywall.trialTitle', { days: TRIAL_DAYS })}</Text>
             <Text style={styles.trialSub}>
-              Then {PRICE_MONTHLY}/mo or {PRICE_YEARLY}/yr. Cancel anytime in {storeName}.
+              {t('paywall.trialSub', { monthly: PRICE_MONTHLY, yearly: PRICE_YEARLY, store: storeName })}
             </Text>
           </View>
         </View>
@@ -193,14 +196,11 @@ export default function PaywallScreen({ navigation }: Props) {
         {expoGo && showDevUnlock ? (
           <View style={styles.expoBanner}>
             <Ionicons name="information-circle-outline" size={20} color={colors.paywallPurple} />
-            <Text style={styles.expoBannerText}>
-              You are in Expo Go. Real App Store purchases need a development or store build. Use the button below to
-              unlock for testing.
-            </Text>
+            <Text style={styles.expoBannerText}>{t('paywall.expoBanner')}</Text>
           </View>
         ) : null}
 
-        {FEATURES.map((f) => (
+        {features.map((f) => (
           <View key={f.title} style={styles.featureRow}>
             <View style={styles.featureIcon}>
               <Ionicons name={f.icon} size={20} color={colors.paywallPurple} />
@@ -218,7 +218,7 @@ export default function PaywallScreen({ navigation }: Props) {
           activeOpacity={0.9}
         >
           <View style={styles.popular}>
-            <Text style={styles.popularText}>MOST POPULAR</Text>
+            <Text style={styles.popularText}>{t('paywall.mostPopular')}</Text>
           </View>
           <View style={styles.planRow}>
             <Ionicons
@@ -227,8 +227,8 @@ export default function PaywallScreen({ navigation }: Props) {
               color={plan === 'month' ? colors.paywallPurple : colors.textMuted}
             />
             <View style={{ marginLeft: spacing.md, flex: 1 }}>
-              <Text style={styles.planTitle}>Monthly</Text>
-              <Text style={styles.planPrice}>{PRICE_MONTHLY} / month</Text>
+              <Text style={styles.planTitle}>{t('paywall.monthly')}</Text>
+              <Text style={styles.planPrice}>{t('paywall.monthlyPrice', { price: PRICE_MONTHLY })}</Text>
             </View>
           </View>
         </TouchableOpacity>
@@ -245,9 +245,9 @@ export default function PaywallScreen({ navigation }: Props) {
               color={plan === 'year' ? colors.paywallPurple : colors.textMuted}
             />
             <View style={{ marginLeft: spacing.md, flex: 1 }}>
-              <Text style={styles.planTitle}>Yearly</Text>
-              <Text style={styles.planPrice}>{PRICE_YEARLY} / year</Text>
-              <Text style={styles.save}>Save 33%</Text>
+              <Text style={styles.planTitle}>{t('paywall.yearly')}</Text>
+              <Text style={styles.planPrice}>{t('paywall.yearlyPrice', { price: PRICE_YEARLY })}</Text>
+              <Text style={styles.save}>{t('paywall.save33')}</Text>
             </View>
           </View>
         </TouchableOpacity>
@@ -260,29 +260,29 @@ export default function PaywallScreen({ navigation }: Props) {
         >
           <Text style={styles.ctaText}>
             {busy
-              ? 'Processing…'
+              ? t('paywall.processing')
               : expoGo && showDevUnlock
-                ? 'Unlock for testing'
-                : `Start ${TRIAL_DAYS}-Day Free Trial`}
+                ? t('paywall.unlockTesting')
+                : t('paywall.startTrial', { days: TRIAL_DAYS })}
           </Text>
         </TouchableOpacity>
         {expoGo && showDevUnlock ? null : (
           <Text style={styles.disclosureText}>
-            Free for {TRIAL_DAYS} days, then {selectedPrice}. Subscription auto-renews until canceled in {storeName}.
+            {t('paywall.disclosure', { days: TRIAL_DAYS, price: selectedPrice, store: storeName })}
           </Text>
         )}
         <View style={styles.lockRow}>
           <Ionicons name="lock-closed-outline" size={14} color={colors.textMuted} style={{ marginRight: 6 }} />
-          <Text style={styles.lockText}>Payment charged to your {storeName} account after the trial.</Text>
+          <Text style={styles.lockText}>{t('paywall.paymentNote', { store: storeName })}</Text>
         </View>
 
         <TouchableOpacity style={styles.secondaryBtn} onPress={() => void openUrl(subscriptionManageUrl())}>
-          <Text style={styles.secondaryBtnText}>Manage subscription (App Store / Play)</Text>
+          <Text style={styles.secondaryBtnText}>{t('paywall.manageSubscription')}</Text>
         </TouchableOpacity>
 
         {nativeIap ? (
           <TouchableOpacity style={styles.secondaryBtn} onPress={() => void onRestore()} disabled={busy}>
-            <Text style={styles.secondaryBtnText}>Restore purchase</Text>
+            <Text style={styles.secondaryBtnText}>{t('paywall.restorePurchase')}</Text>
           </TouchableOpacity>
         ) : null}
 
@@ -293,31 +293,31 @@ export default function PaywallScreen({ navigation }: Props) {
               onPress={() => void onQaGrantSubscription()}
               disabled={busy}
             >
-              <Text style={styles.secondaryBtnText}>QA unlock via Firebase (backend)</Text>
+              <Text style={styles.secondaryBtnText}>{t('paywall.qaFirebase')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.secondaryBtn}
               onPress={() => void onLocalDevUnlock()}
               disabled={busy}
             >
-              <Text style={[styles.secondaryBtnText, styles.qaHint]}>Unlock on this device only (no store)</Text>
+              <Text style={[styles.secondaryBtnText, styles.qaHint]}>{t('paywall.qaDevice')}</Text>
             </TouchableOpacity>
           </>
         ) : null}
 
         <View style={styles.trustRow}>
-          <Trust icon="shield-checkmark-outline" label="Secure Checkout" />
-          <Trust icon="refresh-outline" label={`Cancel in ${storeName}`} />
-          <Trust icon="shield-outline" label="Your data is protected" />
+          <Trust icon="shield-checkmark-outline" label={t('paywall.trustSecure')} />
+          <Trust icon="refresh-outline" label={t('paywall.trustCancel', { store: storeName })} />
+          <Trust icon="shield-outline" label={t('paywall.trustData')} />
         </View>
 
         <View style={styles.links}>
           <TouchableOpacity onPress={() => void openUrl(legal.termsUrl)}>
-            <Text style={styles.link}>Terms of Service</Text>
+            <Text style={styles.link}>{t('paywall.terms')}</Text>
           </TouchableOpacity>
           <Text style={styles.dot}> · </Text>
           <TouchableOpacity onPress={() => void openUrl(legal.privacyUrl)}>
-            <Text style={styles.link}>Privacy Policy</Text>
+            <Text style={styles.link}>{t('paywall.privacy')}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

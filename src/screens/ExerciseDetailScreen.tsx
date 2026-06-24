@@ -2,16 +2,21 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import { getCatalogExercise } from '../data/exercisesCatalog';
 import ExerciseGifImage from '../components/ExerciseGifImage';
 import { getExerciseGifUrl } from '../data/exerciseGifUrls';
 import { colors, radius, spacing } from '../theme';
+import { useLocale } from '../context/LocaleContext';
+import { getExerciseDisplayName, getMuscleDisplayName } from '../i18n/catalogDisplay';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ExerciseDetail'>;
 
 export default function ExerciseDetailScreen({ navigation, route }: Props) {
+  const { t } = useTranslation();
+  const { language } = useLocale();
   const ex = getCatalogExercise(route.params.exerciseId);
 
   if (!ex) {
@@ -21,13 +26,15 @@ export default function ExerciseDetailScreen({ navigation, route }: Props) {
           <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={12}>
             <Ionicons name="chevron-back" size={26} color={colors.text} />
           </TouchableOpacity>
-          <Text style={styles.title}>Exercise</Text>
+          <Text style={styles.title}>{t('exerciseDetail.title')}</Text>
           <View style={{ width: 26 }} />
         </View>
-        <Text style={styles.miss}>Exercise not found.</Text>
+        <Text style={styles.miss}>{t('exerciseDetail.notFound')}</Text>
       </SafeAreaView>
     );
   }
+
+  const displayName = getExerciseDisplayName(ex.id, ex.name, language);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
@@ -36,7 +43,7 @@ export default function ExerciseDetailScreen({ navigation, route }: Props) {
           <Ionicons name="chevron-back" size={26} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.title} numberOfLines={1}>
-          {ex.name}
+          {displayName}
         </Text>
         <View style={{ width: 26 }} />
       </View>
@@ -55,10 +62,10 @@ export default function ExerciseDetailScreen({ navigation, route }: Props) {
         ) : null}
         <View style={styles.pillRow}>
           <View style={styles.pill}>
-            <Text style={styles.pillText}>{ex.muscle}</Text>
+            <Text style={styles.pillText}>{getMuscleDisplayName(ex.muscle, language)}</Text>
           </View>
         </View>
-        <Text style={styles.section}>How to do it</Text>
+        <Text style={styles.section}>{t('exerciseDetail.howTo')}</Text>
         <Text style={styles.body}>{ex.instructions}</Text>
       </ScrollView>
     </SafeAreaView>

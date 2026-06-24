@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { colors, spacing } from '../../theme';
 import type { HabitDefaults } from '../../services/habitsRepo';
 import FoodDatabasePanel from './FoodDatabasePanel';
@@ -22,6 +23,8 @@ type Props = {
 };
 
 export default function FoodSearchModal({ visible, uid, defaults, onClose }: Props) {
+  const { t } = useTranslation();
+
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
       <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
@@ -31,12 +34,17 @@ export default function FoodSearchModal({ visible, uid, defaults, onClose }: Pro
           keyboardVerticalOffset={Platform.OS === 'ios' ? 4 : 0}
         >
           <View style={styles.header}>
-            <Text style={styles.title}>Food database</Text>
-            <TouchableOpacity style={styles.closeBtn} onPress={onClose} hitSlop={12} accessibilityLabel="Close">
+            <Text style={styles.title}>{t('foodSearchModal.title')}</Text>
+            <TouchableOpacity
+              style={styles.closeBtn}
+              onPress={onClose}
+              hitSlop={12}
+              accessibilityLabel={t('foodSearchModal.accessibilityClose')}
+            >
               <Ionicons name="close" size={24} color={colors.text} />
             </TouchableOpacity>
           </View>
-          <Text style={styles.subtitle}>Search foods or create a custom entry. Values are per 100g.</Text>
+          <Text style={styles.subtitle}>{t('foodSearchModal.subtitle')}</Text>
           <FoodDatabasePanel uid={uid} defaults={defaults} variant="modal" onClose={onClose} />
         </KeyboardAvoidingView>
       </SafeAreaView>

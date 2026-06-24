@@ -1,0 +1,54 @@
+{
+  "seed_push_chest": {
+    "title": "Empuje – Enfoque pecho",
+    "description": "Presses pesados y aperturas para desarrollar el pecho."
+  },
+  "seed_push_chest_alt": {
+    "title": "Empuje – Pecho y peso corporal",
+    "description": "Variaciones de pecho con máquinas y peso corporal para volumen y control."
+  },
+  "seed_push_shoulders": {
+    "title": "Empuje – Hombros",
+    "description": "Presses por encima de la cabeza y aislamiento de deltoides para hombros fuertes y equilibrados."
+  },
+  "seed_push_triceps": {
+    "title": "Empuje – Tríceps",
+    "description": "Sesión dedicada de tríceps: extensiones, pushdowns y fondos."
+  },
+  "seed_pull_lat": {
+    "title": "Tirón – Enfoque dorsales",
+    "description": "Jalones verticales para amplitud de espalda y desarrollo de la parte superior."
+  },
+  "seed_pull_rows": {
+    "title": "Tirón – Remos",
+    "description": "Remos horizontales para grosor de espalda y fuerza de la zona media."
+  },
+  "seed_pull_back_arms": {
+    "title": "Tirón – Espalda y bíceps",
+    "description": "Remos en polea, zona lumbar y un bloque final de bíceps."
+  },
+  "seed_legs_quad": {
+    "title": "Piernas – Cuádriceps y sentadillas",
+    "description": "Patrones de sentadilla, prensa y accesorios enfocados en cuádriceps."
+  },
+  "seed_legs_posterior": {
+    "title": "Piernas – Bisagra e isquios",
+    "description": "Peso muerto, bisagras de cadera y aislamiento de isquiotibiales."
+  },
+  "seed_legs_glutes": {
+    "title": "Piernas – Glúteos y accesorios",
+    "description": "Aislamiento de glúteos, trabajo de cadera y accesorios unilaterales."
+  },
+  "seed_core": {
+    "title": "Core y abdominales",
+    "description": "Crunches, elevaciones y trabajo de estabilidad para un core fuerte."
+  },
+  "seed_full_a": {
+    "title": "Cuerpo completo A",
+    "description": "Sesión equilibrada de cuerpo completo: sentadilla, empuje, tirón y bisagra."
+  },
+  "seed_full_b": {
+    "title": "Cuerpo completo B",
+    "description": "Segundo día de cuerpo completo con ángulos y patrones distintos."
+  }
+}

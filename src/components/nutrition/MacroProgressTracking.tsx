@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { colors, radius, spacing } from '../../theme';
 import type { NutritionSnapshot } from '../../hooks/useTodayNutrition';
 
@@ -20,57 +21,62 @@ type Props = {
 };
 
 export default function MacroProgressTracking({ snapshot }: Props) {
-  const rows: MacroRow[] = [
-    {
-      id: 'cal',
-      label: 'Calories',
-      icon: 'flame',
-      color: snapshot.caloriesOver > 0 ? colors.orange : colors.primary,
-      cur: snapshot.caloriesCur,
-      goal: snapshot.caloriesGoal,
-      unit: 'kcal',
-      pct: snapshot.caloriesPct,
-    },
-    {
-      id: 'p',
-      label: 'Protein',
-      icon: 'nutrition',
-      color: colors.green,
-      cur: snapshot.proteinCur,
-      goal: snapshot.proteinGoal,
-      unit: 'g',
-      pct: snapshot.proteinPct,
-    },
-    {
-      id: 'c',
-      label: 'Carbs',
-      icon: 'leaf',
-      color: colors.primary,
-      cur: snapshot.carbsCur,
-      goal: snapshot.carbsGoal,
-      unit: 'g',
-      pct: snapshot.carbsPct,
-    },
-    {
-      id: 'f',
-      label: 'Fat',
-      icon: 'water',
-      color: colors.yellow,
-      cur: snapshot.fatCur,
-      goal: snapshot.fatGoal,
-      unit: 'g',
-      pct: snapshot.fatPct,
-    },
-  ];
+  const { t } = useTranslation();
+
+  const rows: MacroRow[] = useMemo(
+    () => [
+      {
+        id: 'cal',
+        label: t('common.macros.calories'),
+        icon: 'flame',
+        color: snapshot.caloriesOver > 0 ? colors.orange : colors.primary,
+        cur: snapshot.caloriesCur,
+        goal: snapshot.caloriesGoal,
+        unit: t('common.units.kcal'),
+        pct: snapshot.caloriesPct,
+      },
+      {
+        id: 'p',
+        label: t('common.macros.protein'),
+        icon: 'nutrition',
+        color: colors.green,
+        cur: snapshot.proteinCur,
+        goal: snapshot.proteinGoal,
+        unit: t('common.units.g'),
+        pct: snapshot.proteinPct,
+      },
+      {
+        id: 'c',
+        label: t('common.macros.carbs'),
+        icon: 'leaf',
+        color: colors.primary,
+        cur: snapshot.carbsCur,
+        goal: snapshot.carbsGoal,
+        unit: t('common.units.g'),
+        pct: snapshot.carbsPct,
+      },
+      {
+        id: 'f',
+        label: t('common.macros.fat'),
+        icon: 'water',
+        color: colors.yellow,
+        cur: snapshot.fatCur,
+        goal: snapshot.fatGoal,
+        unit: t('common.units.g'),
+        pct: snapshot.fatPct,
+      },
+    ],
+    [snapshot, t],
+  );
 
   const completed = rows.filter((r) => r.pct >= 1).length;
 
   return (
     <View style={styles.card}>
       <View style={styles.head}>
-        <Text style={styles.title}>Macro progress</Text>
+        <Text style={styles.title}>{t('macroProgressTracking.title')}</Text>
         <Text style={styles.meta}>
-          {completed} / {rows.length} goals met
+          {t('macroProgressTracking.goalsMet', { completed, total: rows.length })}
         </Text>
       </View>
       {rows.map((row, idx) => (
@@ -83,6 +89,7 @@ export default function MacroProgressTracking({ snapshot }: Props) {
 }
 
 function MacroProgressRow({ row }: { row: MacroRow }) {
+  const { t } = useTranslation();
   const done = row.pct >= 1;
   return (
     <View>
@@ -108,7 +115,9 @@ function MacroProgressRow({ row }: { row: MacroRow }) {
         />
       </View>
       <Text style={[styles.pctText, done && { color: row.color }]}>
-        {done ? 'Goal reached' : `${Math.round(row.pct * 100)}% of daily target`}
+        {done
+          ? t('macroProgressTracking.goalReached')
+          : t('macroProgressTracking.percentOfTarget', { percent: Math.round(row.pct * 100) })}
       </Text>
     </View>
   );

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,8 +8,16 @@ import { colors, radius, spacing } from '../theme';
 import { useAuth } from '../context/AuthContext';
 
 export default function BottomTabBar({ state, navigation }: BottomTabBarProps) {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { accessLevel } = useAuth();
+
+  const tabLabels: Record<string, string> = {
+    Home: t('tabs.home'),
+    Routines: t('tabs.routines'),
+    History: t('tabs.history'),
+    Profile: t('tabs.profile'),
+  };
 
   return (
     <View style={[styles.wrap, { paddingBottom: Math.max(insets.bottom, 8) }]}>
@@ -55,16 +64,7 @@ export default function BottomTabBar({ state, navigation }: BottomTabBarProps) {
           if (route.name === 'History') iconName = isFocused ? 'stats-chart' : 'stats-chart-outline';
           if (route.name === 'Profile') iconName = isFocused ? 'person' : 'person-outline';
 
-          const displayLabel =
-            route.name === 'Home'
-              ? 'Home'
-              : route.name === 'Routines'
-                ? 'Routines'
-                : route.name === 'History'
-                  ? 'History'
-                    : route.name === 'Profile'
-                    ? 'Profile'
-                    : route.name;
+          const displayLabel = tabLabels[route.name] ?? route.name;
 
           return (
             <TouchableOpacity

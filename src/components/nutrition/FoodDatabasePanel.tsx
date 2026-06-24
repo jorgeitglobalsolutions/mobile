@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { colors, radius, spacing } from '../../theme';
 import { FOOD_CATEGORIES, type FoodCategoryFilter } from '../../data/foodsCatalog';
 import type { CustomFoodRow } from '../../types/food';
@@ -21,6 +22,8 @@ import { saveCustomFood, subscribeCustomFoods } from '../../services/customFoods
 import type { HabitDefaults } from '../../services/habitsRepo';
 import { localDateKey } from '../../utils/dateKey';
 import { friendlyAppError } from '../../utils/appError';
+import { useLocale } from '../../context/LocaleContext';
+import { getFoodDisplayName } from '../../i18n/catalogDisplay';
 import FoodPortionModal from './FoodPortionModal';
 
 type LogMode = 'search' | 'custom';
@@ -35,9 +38,15 @@ type Props = {
 
 const DEFAULT_GRAMS = '100';
 
-function formatMacros(p: number, c: number, f: number, kcal: number): string {
-  return `${Math.round(kcal)} kcal · ${p}P / ${c}C / ${f}F`;
-}
+const CATEGORY_I18N_KEY: Record<FoodCategoryFilter, string> = {
+  all: 'all',
+  proteinas: 'protein',
+  carbohidratos: 'carbs',
+  grasas: 'fats',
+  frutas: 'fruit',
+  vegetales: 'vegetables',
+  suplementos: 'supplements',
+};
 
 export default function FoodDatabasePanel({
   uid,
@@ -45,6 +54,8 @@ export default function FoodDatabasePanel({
   variant = 'inline',
   onClose,
 }: Props) {
+  const { t } = useTranslation();
+  const { language } = useLocale();
   const isModal = variant === 'modal';
   const [mode, setMode] = useState<LogMode>('search');
   const [query, setQuery] = useState('');
@@ -98,17 +109,41 @@ export default function FoodDatabasePanel({
     );
   }, [selected, grams]);
 
-  const foodName = (f: SearchableFood) =>
-    f.source === 'catalog' ? f.item.name : f.item.data.name;
+  const formatMacros = useCallback(
+    (p: number, c: number, f: number, kcal: number): string => {
+      const macros = t('foodPortionModal.macroPreview', {
+        kcal: Math.round(kcal),
+        protein: p,
+        carbs: c,
+        fat: f,
+      });
+      return t('foodDatabasePanel.per100g', { macros });
+    },
+    [t],
+  );
+
+  const foodName = useCallback(
+    (f: SearchableFood) =>
+      f.source === 'catalog'
+        ? getFoodDisplayName(f.item.id, f.item.name, language)
+        : f.item.data.name,
+    [language],
+  );
 
   const onAddToMeal = async () => {
     if (!selected || !portionPreview) {
-      Alert.alert('Portion', 'Select a food and enter the amount in grams.');
+      Alert.alert(
+        t('foodDatabasePanel.alerts.portionTitle'),
+        t('foodDatabasePanel.alerts.selectFood'),
+      );
       return;
     }
     const g = parseFloat(grams);
     if (!Number.isFinite(g) || g <= 0) {
-      Alert.alert('Portion', 'Enter a valid amount in grams.');
+      Alert.alert(
+        t('foodDatabasePanel.alerts.portionTitle'),
+        t('foodDatabasePanel.alerts.invalidGrams'),
+      );
       return;
     }
     setSaving(true);
@@ -118,7 +153,7 @@ export default function FoodDatabasePanel({
         uid,
         localDateKey(),
         {
-          name: g !== 100 ? `${name} (${g}g)` : name,
+          name: g !== 100 ? `${name} (${g}${t('common.units.g')})` : name,
           proteinG: portionPreview.protein,
           carbsG: portionPreview.carbs,
           fatG: portionPreview.fat,
@@ -135,7 +170,10 @@ export default function FoodDatabasePanel({
       setQuery('');
       if (isModal) onClose?.();
     } catch (e: unknown) {
-      Alert.alert('Meal', friendlyAppError(e, 'Could not log meal.'));
+      Alert.alert(
+        t('nutritionLogPanel.alerts.mealTitle'),
+        friendlyAppError(e, 'foodDatabasePanel.alerts.mealError'),
+      );
     } finally {
       setSaving(false);
     }
@@ -147,11 +185,17 @@ export default function FoodDatabasePanel({
     const fat = parseFloat(customFat) || 0;
     const calories = customCalories.trim() ? parseFloat(customCalories) : undefined;
     if (!customName.trim()) {
-      Alert.alert('Food', 'Enter a food name.');
+      Alert.alert(
+        t('foodDatabasePanel.alerts.foodTitle'),
+        t('foodDatabasePanel.alerts.nameRequired'),
+      );
       return;
     }
     if (![protein, carbs, fat].some((n) => n > 0) && !(calories && calories > 0)) {
-      Alert.alert('Food', 'Add at least one macro or calories.');
+      Alert.alert(
+        t('foodDatabasePanel.alerts.foodTitle'),
+        t('foodDatabasePanel.alerts.macroRequired'),
+      );
       return;
     }
     setSaving(true);
@@ -197,7 +241,10 @@ export default function FoodDatabasePanel({
       setMode('search');
       if (isModal) onClose?.();
     } catch (e: unknown) {
-      Alert.alert('Food', friendlyAppError(e, 'Could not save food.'));
+      Alert.alert(
+        t('foodDatabasePanel.alerts.foodTitle'),
+        friendlyAppError(e, 'foodDatabasePanel.alerts.saveError'),
+      );
     } finally {
       setSaving(false);
     }
@@ -245,10 +292,10 @@ export default function FoodDatabasePanel({
         <View style={{ flex: 1 }}>
           <Text style={styles.foodName}>{name}</Text>
           <Text style={styles.foodMeta}>
-            {formatMacros(macros.protein, macros.carbs, macros.fat, macros.calories)} / 100g
+            {formatMacros(macros.protein, macros.carbs, macros.fat, macros.calories)}
           </Text>
           {item.source === 'custom' ? (
-            <Text style={styles.foodTag}>Custom</Text>
+            <Text style={styles.foodTag}>{t('foodDatabasePanel.customTag')}</Text>
           ) : null}
         </View>
         <Ionicons name="add-circle-outline" size={22} color={colors.textMuted} />
@@ -261,8 +308,16 @@ export default function FoodDatabasePanel({
 
   const modeRow = (
     <View style={[styles.modeRow, isModal && styles.modeRowModal]}>
-      <ModePill label="Search" active={mode === 'search'} onPress={() => setMode('search')} />
-      <ModePill label="Create custom" active={mode === 'custom'} onPress={() => setMode('custom')} />
+      <ModePill
+        label={t('foodDatabasePanel.modeSearch')}
+        active={mode === 'search'}
+        onPress={() => setMode('search')}
+      />
+      <ModePill
+        label={t('foodDatabasePanel.modeCustom')}
+        active={mode === 'custom'}
+        onPress={() => setMode('custom')}
+      />
     </View>
   );
 
@@ -281,39 +336,57 @@ export default function FoodDatabasePanel({
 
   const customForm = (
     <View style={styles.formCard}>
-      <Text style={styles.sectionTitle}>Custom food</Text>
-      <Text style={styles.formHint}>Macros per 100g. Saved to your history for reuse.</Text>
+      <Text style={styles.sectionTitle}>{t('foodDatabasePanel.customFood')}</Text>
+      <Text style={styles.formHint}>{t('foodDatabasePanel.customHint')}</Text>
       <TextInput
         style={styles.nameInput}
-        placeholder="Food name"
+        placeholder={t('foodDatabasePanel.foodNamePlaceholder')}
         placeholderTextColor={colors.textMuted}
         value={customName}
         onChangeText={setCustomName}
       />
       <View style={styles.macroInputsRow}>
-        <MacroField label="Protein" suffix="g" value={customProtein} onChange={setCustomProtein} color={colors.green} />
-        <MacroField label="Carbs" suffix="g" value={customCarbs} onChange={setCustomCarbs} color={colors.primary} />
-        <MacroField label="Fat" suffix="g" value={customFat} onChange={setCustomFat} color={colors.yellow} />
+        <MacroField
+          label={t('common.macros.protein')}
+          suffix={t('common.units.g')}
+          value={customProtein}
+          onChange={setCustomProtein}
+          color={colors.green}
+        />
+        <MacroField
+          label={t('common.macros.carbs')}
+          suffix={t('common.units.g')}
+          value={customCarbs}
+          onChange={setCustomCarbs}
+          color={colors.primary}
+        />
+        <MacroField
+          label={t('common.macros.fat')}
+          suffix={t('common.units.g')}
+          value={customFat}
+          onChange={setCustomFat}
+          color={colors.yellow}
+        />
       </View>
       <MacroField
-        label="Calories (optional)"
-        suffix="kcal"
+        label={t('foodDatabasePanel.caloriesOptional')}
+        suffix={t('common.units.kcal')}
         value={customCalories}
         onChange={setCustomCalories}
         color={colors.orange}
         fullWidth
       />
-      <Text style={styles.portionSub}>Portion to log today</Text>
+      <Text style={styles.portionSub}>{t('foodDatabasePanel.portionToLog')}</Text>
       <View style={styles.gramsInputWrap}>
         <TextInput
           style={styles.gramsInput}
           keyboardType="decimal-pad"
           value={grams}
           onChangeText={setGrams}
-          placeholder="100"
+          placeholder={t('foodPortionModal.gramsPlaceholder')}
           placeholderTextColor={colors.textMuted}
         />
-        <Text style={styles.gramsSuffix}>g</Text>
+        <Text style={styles.gramsSuffix}>{t('common.units.g')}</Text>
       </View>
       <TouchableOpacity
         style={styles.saveToggle}
@@ -325,7 +398,7 @@ export default function FoodDatabasePanel({
           size={22}
           color={colors.primary}
         />
-        <Text style={styles.saveToggleText}>Save to my history</Text>
+        <Text style={styles.saveToggleText}>{t('foodDatabasePanel.saveToHistory')}</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={[styles.primaryBtn, saving && { opacity: 0.7 }]}
@@ -335,7 +408,7 @@ export default function FoodDatabasePanel({
         {saving ? (
           <ActivityIndicator color={colors.white} />
         ) : (
-          <Text style={styles.primaryBtnText}>Save and log meal</Text>
+          <Text style={styles.primaryBtnText}>{t('foodDatabasePanel.saveAndLog')}</Text>
         )}
       </TouchableOpacity>
     </View>
@@ -346,13 +419,13 @@ export default function FoodDatabasePanel({
       <View style={styles.searchWrap}>
         <Ionicons name="search" size={18} color={colors.textMuted} style={{ marginRight: 8 }} />
         <TextInput
-          placeholder="Search food (chicken, rice, egg...)"
+          placeholder={t('foodDatabasePanel.searchPlaceholder')}
           placeholderTextColor={colors.textMuted}
           style={styles.searchInput}
           value={query}
-          onChangeText={(t) => {
-            setQuery(t);
-            if (!t.trim()) setSelected(null);
+          onChangeText={(text) => {
+            setQuery(text);
+            if (!text.trim()) setSelected(null);
           }}
         />
       </View>
@@ -368,13 +441,15 @@ export default function FoodDatabasePanel({
             onPress={() => setCategory(c.id)}
             style={[styles.chip, category === c.id && styles.chipActive]}
           >
-            <Text style={[styles.chipText, category === c.id && styles.chipTextActive]}>{c.label}</Text>
+            <Text style={[styles.chipText, category === c.id && styles.chipTextActive]}>
+              {t(`foodDatabasePanel.categories.${CATEGORY_I18N_KEY[c.id]}`)}
+            </Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
       {customFoods.length > 0 && !query.trim() ? (
         <>
-          <Text style={styles.sectionTitle}>Your saved foods</Text>
+          <Text style={styles.sectionTitle}>{t('foodDatabasePanel.yourSavedFoods')}</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: spacing.md }}>
             <View style={{ flexDirection: 'row', gap: spacing.sm }}>
               {customFoods.slice(0, 8).map((row) => (
@@ -402,9 +477,7 @@ export default function FoodDatabasePanel({
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {!isModal ? (
-            <Text style={styles.hint}>Search the food database or create custom foods. Values are per 100g.</Text>
-          ) : null}
+          {!isModal ? <Text style={styles.hint}>{t('foodDatabasePanel.hint')}</Text> : null}
           {modeRow}
           {customForm}
         </ScrollView>
@@ -429,14 +502,12 @@ export default function FoodDatabasePanel({
           ListFooterComponent={
             <>
               {listData.length > 40 && visibleList.length >= 40 ? (
-                <Text style={styles.moreHint}>Refine your search to narrow results.</Text>
+                <Text style={styles.moreHint}>{t('foodDatabasePanel.moreHintRefine')}</Text>
               ) : null}
               <View style={{ height: spacing.xl }} />
             </>
           }
-          ListEmptyComponent={
-            <Text style={styles.empty}>No results. Try another term or category.</Text>
-          }
+          ListEmptyComponent={<Text style={styles.empty}>{t('foodDatabasePanel.empty')}</Text>}
           ItemSeparatorComponent={() => <View style={{ height: spacing.sm }} />}
         />
       </View>
@@ -446,7 +517,7 @@ export default function FoodDatabasePanel({
   return (
     <View>
       {portionModal}
-      <Text style={styles.hint}>Search the food database or create custom foods. Values are per 100g.</Text>
+      <Text style={styles.hint}>{t('foodDatabasePanel.hint')}</Text>
       {modeRow}
       {searchFilters}
       <FlatList
@@ -456,13 +527,13 @@ export default function FoodDatabasePanel({
         }
         renderItem={renderFoodRow}
         scrollEnabled={false}
-        ListEmptyComponent={
-          <Text style={styles.empty}>No results. Try another term or category.</Text>
-        }
+        ListEmptyComponent={<Text style={styles.empty}>{t('foodDatabasePanel.empty')}</Text>}
         ItemSeparatorComponent={() => <View style={{ height: spacing.sm }} />}
       />
       {listData.length > 40 ? (
-        <Text style={styles.moreHint}>Showing 40 of {listData.length} — refine your search.</Text>
+        <Text style={styles.moreHint}>
+          {t('foodDatabasePanel.moreHintShowing', { total: listData.length })}
+        </Text>
       ) : null}
     </View>
   );

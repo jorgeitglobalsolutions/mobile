@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList, RoutinesScreenProps } from '../navigation/types';
 import { colors, radius, spacing } from '../theme';
@@ -9,14 +10,24 @@ import { useAuth } from '../context/AuthContext';
 import { deleteRoutine, getRoutine } from '../services/routinesRepo';
 import type { RoutineDoc } from '../types/domain';
 import { getCatalogExerciseByName } from '../data/exercisesCatalog';
+import { useLocale } from '../context/LocaleContext';
+import { getRoutineDisplayTitle, getRoutineDisplayDescription } from '../i18n/catalogDisplay';
+import { getExerciseDisplayName } from '../i18n/catalogDisplay';
 
 type Props = RoutinesScreenProps<'RoutineDetail'>;
 
 export default function RoutineDetailScreen({ navigation, route }: Props) {
+  const { t } = useTranslation();
+  const { language } = useLocale();
   const { user } = useAuth();
   const { routineId } = route.params;
   const [routine, setRoutine] = useState<RoutineDoc | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const exerciseLabel = (name: string) => {
+    const hit = getCatalogExerciseByName(name);
+    return hit ? getExerciseDisplayName(hit.id, hit.name, language) : name;
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -51,26 +62,29 @@ export default function RoutineDetailScreen({ navigation, route }: Props) {
           <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={12}>
             <Ionicons name="chevron-back" size={26} color={colors.text} />
           </TouchableOpacity>
-          <Text style={styles.topTitle}>Routine</Text>
+          <Text style={styles.topTitle}>{t('routineDetail.title')}</Text>
           <View style={{ width: 26 }} />
         </View>
-        <Text style={{ padding: spacing.xl, color: colors.textSecondary }}>Routine not found.</Text>
+        <Text style={{ padding: spacing.xl, color: colors.textSecondary }}>{t('routineDetail.notFound')}</Text>
       </SafeAreaView>
     );
   }
 
-  const title = routine.title;
+  const title = getRoutineDisplayTitle(routineId, routine.title, language);
   const muscles = routine.muscles;
   const minutes = routine.minutes;
   const exerciseCount = routine.exerciseCount;
   const desc =
-    routine.description ||
-    `Focus on ${muscles.toLowerCase()} with compound movements and isolation work.`;
+    getRoutineDisplayDescription(routineId, routine.description ?? '', language) ||
+    t('routineDetail.defaultDescription', { muscles: muscles.toLowerCase() });
 
   const openExercise = (name: string) => {
     const hit = getCatalogExerciseByName(name);
     if (!hit) {
-      Alert.alert('Exercise', 'Details for this exercise are not available yet.');
+      Alert.alert(
+        t('routineDetail.alerts.exerciseTitle'),
+        t('routineDetail.alerts.exerciseUnavailable'),
+      );
       return;
     }
     const root = navigation.getParent()?.getParent() as NativeStackNavigationProp<RootStackParamList> | undefined;
@@ -93,8 +107,8 @@ export default function RoutineDetailScreen({ navigation, route }: Props) {
 
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.metaRow}>
-          <MetaPill icon="time-outline" label={`~${minutes} min`} />
-          <MetaPill icon="list-outline" label={`${exerciseCount} exercises`} />
+          <MetaPill icon="time-outline" label={t('routineDetail.minutes', { minutes })} />
+          <MetaPill icon="list-outline" label={t('routineDetail.exerciseCount', { count: exerciseCount })} />
         </View>
         <Text style={styles.desc}>{desc}</Text>
 
@@ -104,10 +118,10 @@ export default function RoutineDetailScreen({ navigation, route }: Props) {
           onPress={() => navigation.navigate('WorkoutActive', { routineId, title })}
         >
           <Ionicons name="play" size={22} color={colors.white} style={{ marginRight: 8 }} />
-          <Text style={styles.startText}>Start Workout</Text>
+          <Text style={styles.startText}>{t('routineDetail.startWorkout')}</Text>
         </TouchableOpacity>
 
-        <Text style={styles.listHeader}>Exercises</Text>
+        <Text style={styles.listHeader}>{t('routineDetail.exercisesHeader')}</Text>
         {routine.exercises.map((ex, i) => (
           <TouchableOpacity
             key={`${ex.name}-${i}`}
@@ -120,9 +134,13 @@ export default function RoutineDetailScreen({ navigation, route }: Props) {
               <Ionicons name="fitness-outline" size={22} color={colors.primary} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.exName}>{ex.name}</Text>
+              <Text style={styles.exName}>{exerciseLabel(ex.name)}</Text>
               <Text style={styles.exMeta}>
-                {ex.targetSets} sets • {ex.targetRepMin}-{ex.targetRepMax} reps
+                {t('routineDetail.setsReps', {
+                  sets: ex.targetSets,
+                  min: ex.targetRepMin,
+                  max: ex.targetRepMax,
+                })}
               </Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
@@ -137,16 +155,16 @@ export default function RoutineDetailScreen({ navigation, route }: Props) {
               onPress={() => navigation.navigate('RoutineBuilder', { routineId })}
             >
               <Ionicons name="create-outline" size={20} color={colors.primary} style={{ marginRight: 8 }} />
-              <Text style={styles.editText}>Edit Routine</Text>
+              <Text style={styles.editText}>{t('routineDetail.editRoutine')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.dangerBtn}
               activeOpacity={0.9}
               onPress={() => {
-                Alert.alert('Delete routine', 'This cannot be undone.', [
-                  { text: 'Cancel', style: 'cancel' },
+                Alert.alert(t('routineDetail.alerts.deleteTitle'), t('routineDetail.alerts.deleteMessage'), [
+                  { text: t('common.cancel'), style: 'cancel' },
                   {
-                    text: 'Delete',
+                    text: t('common.delete'),
                     style: 'destructive',
                     onPress: async () => {
                       if (!user?.uid) return;
@@ -157,7 +175,7 @@ export default function RoutineDetailScreen({ navigation, route }: Props) {
                 ]);
               }}
             >
-              <Text style={styles.dangerText}>Delete routine</Text>
+              <Text style={styles.dangerText}>{t('routineDetail.deleteRoutine')}</Text>
             </TouchableOpacity>
           </>
         )}

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, Linking, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -12,6 +13,7 @@ import { colors, radius, spacing } from '../theme';
 import { friendlyAppError } from '../utils/appError';
 
 export default function ProfileScreen() {
+  const { t } = useTranslation();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { user, userDoc, subscriptionStatus, signOutUser } = useAuth();
   const [busy, setBusy] = useState(false);
@@ -19,7 +21,7 @@ export default function ProfileScreen() {
   const displayName =
     user?.displayName ||
     (user?.email && user.email.includes('@') ? user.email.split('@')[0] : null) ||
-    'Athlete';
+    t('profile.defaultName');
   const email = user?.email ?? '—';
 
   const legal = getLegalUrls();
@@ -34,12 +36,12 @@ export default function ProfileScreen() {
 
   const onDeleteAccount = () => {
     Alert.alert(
-      'Delete account',
-      'This permanently deletes your account, workouts, nutrition logs, and other saved data. This cannot be undone.',
+      t('profile.alerts.deleteTitle'),
+      t('profile.alerts.deleteMessage'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Delete',
+          text: t('common.delete'),
           style: 'destructive',
           onPress: async () => {
             setBusy(true);
@@ -48,7 +50,7 @@ export default function ProfileScreen() {
               await signOutUser();
               navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
             } catch (e: unknown) {
-              Alert.alert('Delete account', friendlyAppError(e, 'Could not delete account right now.'));
+              Alert.alert(t('profile.alerts.deleteTitle'), friendlyAppError(e, 'profile.alerts.deleteError'));
             } finally {
               setBusy(false);
             }
@@ -64,7 +66,7 @@ export default function ProfileScreen() {
       await signOutUser();
       navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
     } catch (e: unknown) {
-      Alert.alert('Sign out', friendlyAppError(e, 'Could not sign out. Please try again.'));
+      Alert.alert(t('profile.alerts.signOutTitle'), friendlyAppError(e, 'profile.alerts.signOutError'));
     } finally {
       setBusy(false);
     }
@@ -78,7 +80,7 @@ export default function ProfileScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.header}>
-          <Text style={styles.title}>Profile</Text>
+          <Text style={styles.title}>{t('profile.title')}</Text>
         </View>
         <View style={styles.card}>
           <View style={styles.avatar}>
@@ -86,7 +88,13 @@ export default function ProfileScreen() {
           </View>
           <Text style={styles.name}>{displayName}</Text>
           <Text style={styles.email}>{email}</Text>
-          <Text style={styles.subtle}>Subscription: {subscriptionStatus}</Text>
+          <Text style={styles.subtle}>
+            {t('common.subscriptionLabel', {
+              status: t(`common.subscriptionStatus.${subscriptionStatus}`, {
+                defaultValue: subscriptionStatus,
+              }),
+            })}
+          </Text>
         </View>
 
         <TouchableOpacity
@@ -95,7 +103,7 @@ export default function ProfileScreen() {
           onPress={() => navigation.navigate('BodyMetrics')}
         >
           <Ionicons name="body-outline" size={22} color={colors.text} />
-          <Text style={styles.rowLabel}>Body metrics</Text>
+          <Text style={styles.rowLabel}>{t('profile.bodyMetrics')}</Text>
           <Ionicons name="chevron-forward" size={20} color={colors.textMuted} style={{ marginLeft: 'auto' }} />
         </TouchableOpacity>
 
@@ -105,7 +113,7 @@ export default function ProfileScreen() {
           onPress={() => navigation.navigate('WeightTracking')}
         >
           <Ionicons name="trending-up-outline" size={22} color={colors.text} />
-          <Text style={styles.rowLabel}>Body weight</Text>
+          <Text style={styles.rowLabel}>{t('profile.bodyWeight')}</Text>
           <Ionicons name="chevron-forward" size={20} color={colors.textMuted} style={{ marginLeft: 'auto' }} />
         </TouchableOpacity>
 
@@ -115,7 +123,7 @@ export default function ProfileScreen() {
           onPress={() => navigation.navigate('Nutrition')}
         >
           <Ionicons name="nutrition-outline" size={22} color={colors.text} />
-          <Text style={styles.rowLabel}>Nutrition</Text>
+          <Text style={styles.rowLabel}>{t('nutrition.title')}</Text>
           <Ionicons name="chevron-forward" size={20} color={colors.textMuted} style={{ marginLeft: 'auto' }} />
         </TouchableOpacity>
 
@@ -125,19 +133,19 @@ export default function ProfileScreen() {
           onPress={() => navigation.navigate('Settings')}
         >
           <Ionicons name="settings-outline" size={22} color={colors.text} />
-          <Text style={styles.rowLabel}>Settings</Text>
+          <Text style={styles.rowLabel}>{t('profile.settings')}</Text>
           <Ionicons name="chevron-forward" size={20} color={colors.textMuted} style={{ marginLeft: 'auto' }} />
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.row} activeOpacity={0.85} onPress={onManageSubscription}>
           <Ionicons name="card-outline" size={22} color={colors.text} />
-          <Text style={styles.rowLabel}>Manage subscription</Text>
+          <Text style={styles.rowLabel}>{t('profile.manageSubscription')}</Text>
           <Ionicons name="chevron-forward" size={20} color={colors.textMuted} style={{ marginLeft: 'auto' }} />
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.row} activeOpacity={0.85} onPress={onOpenPrivacy}>
           <Ionicons name="document-text-outline" size={22} color={colors.text} />
-          <Text style={styles.rowLabel}>Privacy & data</Text>
+          <Text style={styles.rowLabel}>{t('profile.privacyData')}</Text>
           <Ionicons name="chevron-forward" size={20} color={colors.textMuted} style={{ marginLeft: 'auto' }} />
         </TouchableOpacity>
 
@@ -148,7 +156,7 @@ export default function ProfileScreen() {
           disabled={busy}
         >
           <Ionicons name="trash-outline" size={22} color="#B91C1C" />
-          <Text style={[styles.rowLabel, { color: '#B91C1C' }]}>Delete account</Text>
+          <Text style={[styles.rowLabel, { color: '#B91C1C' }]}>{t('profile.deleteAccount')}</Text>
           <Ionicons name="chevron-forward" size={20} color="#B91C1C" style={{ marginLeft: 'auto' }} />
         </TouchableOpacity>
 
@@ -160,7 +168,7 @@ export default function ProfileScreen() {
         >
           <Ionicons name="log-out-outline" size={22} color={colors.text} />
           <Text style={[styles.rowLabel, { marginLeft: spacing.md }]}>
-            {busy ? 'Signing out…' : 'Sign out'}
+            {busy ? t('profile.signingOut') : t('profile.signOut')}
           </Text>
         </TouchableOpacity>
 
@@ -171,8 +179,8 @@ export default function ProfileScreen() {
         >
           <Ionicons name="ribbon-outline" size={22} color={colors.paywallPurple} style={{ marginRight: spacing.md }} />
           <View style={{ flex: 1 }}>
-            <Text style={styles.premiumTitle}>Go Premium</Text>
-            <Text style={styles.premiumSub}>7-day free trial, then $9.99/mo</Text>
+            <Text style={styles.premiumTitle}>{t('profile.goPremium')}</Text>
+            <Text style={styles.premiumSub}>{t('profile.premiumSub')}</Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color={colors.paywallPurple} />
         </TouchableOpacity>

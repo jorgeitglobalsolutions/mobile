@@ -194,10 +194,58 @@ export const deleteAccount = onCall({ region: FUNCTIONS_REGION }, async (request
 
 type UserPushFields = {
   pushToken?: string | null;
-  settings?: { notificationsEnabled?: boolean; reminderHourUtc?: number | null };
+  settings?: {
+    notificationsEnabled?: boolean;
+    reminderHourUtc?: number | null;
+    language?: 'en' | 'es';
+  };
 };
 
 const DEFAULT_REMINDER_HOUR_UTC = 13;
+
+const REMINDER_COPY = {
+  en: {
+    title: 'EM Fit',
+    body: 'Quick check-in: log protein, water, or start a workout.',
+  },
+  es: {
+    title: 'EM Fit',
+    body: 'Registro rápido: anota proteína, agua o empieza un entrenamiento.',
+  },
+} as const;
+
+function reminderCopy(language: string | undefined): { title: string; body: string } {
+  return language === 'es' ? REMINDER_COPY.es : REMINDER_COPY.en;
+}
+
+function utcDateKey(d = new Date()): string {
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(d.getUTCDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+type HabitDayFields = {
+  proteinG?: number;
+  waterMl?: number;
+  workoutCompleted?: boolean;
+  mood?: string | null;
+  proteinGoalG?: number;
+  waterGoalMl?: number;
+};
+
+async function habitsCompleteForToday(uid: string): Promise<boolean> {
+  const snap = await getDb().doc(`users/${uid}/habitDays/${utcDateKey()}`).get();
+  if (!snap.exists) return false;
+  const d = snap.data() as HabitDayFields;
+  const proteinGoal = d.proteinGoalG ?? 0;
+  const waterGoal = d.waterGoalMl ?? 0;
+  const proteinDone = proteinGoal > 0 ? (d.proteinG ?? 0) >= proteinGoal : false;
+  const waterDone = waterGoal > 0 ? (d.waterMl ?? 0) >= waterGoal : false;
+  const workoutDone = d.workoutCompleted === true;
+  const moodDone = Boolean(d.mood);
+  return proteinDone && waterDone && workoutDone && moodDone;
+}
 
 function shouldSendReminderThisHour(data: UserPushFields, utcHour: number): boolean {
   if (data.settings?.notificationsEnabled === false) return false;
@@ -249,6 +297,9 @@ export const sendDailyHabitReminders = onSchedule(
         const d = doc.data() as UserPushFields;
         if (!d.pushToken || typeof d.pushToken !== 'string') continue;
         if (!shouldSendReminderThisHour(d, utcHour)) continue;
+        if (await habitsCompleteForToday(doc.id)) continue;
+
+        const copy = reminderCopy(d.settings?.language);
 
         try {
           const res = await fetch('https://exp.host/--/api/v2/push/send', {
@@ -260,8 +311,8 @@ export const sendDailyHabitReminders = onSchedule(
             },
             body: JSON.stringify({
               to: d.pushToken,
-              title: 'EM Fit',
-              body: 'Quick check-in: log protein, water, or start a workout.',
+              title: copy.title,
+              body: copy.body,
               sound: 'default',
             }),
           });

@@ -12,6 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList, RoutinesScreenProps } from '../navigation/types';
 import { colors, radius, spacing } from '../theme';
@@ -20,10 +21,15 @@ import { getRoutine, saveUserRoutine } from '../services/routinesRepo';
 import type { RoutineDoc, RoutineExerciseTemplate } from '../types/domain';
 import { friendlyAppError } from '../utils/appError';
 import { consumePickedExercises } from '../services/exercisePickerBridge';
+import { getCatalogExerciseByName } from '../data/exercisesCatalog';
+import { useLocale } from '../context/LocaleContext';
+import { getExerciseDisplayName } from '../i18n/catalogDisplay';
 
 type Props = RoutinesScreenProps<'RoutineBuilder'>;
 
 export default function RoutineBuilderScreen({ navigation, route }: Props) {
+  const { t } = useTranslation();
+  const { language } = useLocale();
   const { user } = useAuth();
   const pickerSessionIdRef = useRef(`rb-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
   const editId = route.params?.routineId;
@@ -36,6 +42,11 @@ export default function RoutineBuilderScreen({ navigation, route }: Props) {
   const [exercises, setExercises] = useState<RoutineExerciseTemplate[]>([]);
   const [loading, setLoading] = useState(!!editId);
   const [saving, setSaving] = useState(false);
+
+  const exerciseLabel = (name: string) => {
+    const hit = getCatalogExerciseByName(name);
+    return hit ? getExerciseDisplayName(hit.id, hit.name, language) : name;
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -96,7 +107,10 @@ export default function RoutineBuilderScreen({ navigation, route }: Props) {
   const addExercise = () => {
     const name = exName.trim();
     if (!name) {
-      Alert.alert('Exercise', 'Please enter an exercise name.');
+      Alert.alert(
+        t('routineBuilder.alerts.exerciseTitle'),
+        t('routineBuilder.alerts.exerciseNameRequired'),
+      );
       return;
     }
     const ts = Math.max(1, parseInt(sets, 10) || 3);
@@ -112,20 +126,26 @@ export default function RoutineBuilderScreen({ navigation, route }: Props) {
 
   const onSave = async () => {
     if (!user?.uid) return;
-    const t = title.trim();
-    if (!t) {
-      Alert.alert('Routine', 'Please enter a routine title.');
+    const routineTitle = title.trim();
+    if (!routineTitle) {
+      Alert.alert(
+        t('routineBuilder.alerts.routineTitle'),
+        t('routineBuilder.alerts.titleRequired'),
+      );
       return;
     }
     if (exercises.length === 0) {
-      Alert.alert('Routine', 'Please add at least one exercise.');
+      Alert.alert(
+        t('routineBuilder.alerts.routineTitle'),
+        t('routineBuilder.alerts.exerciseRequired'),
+      );
       return;
     }
     setSaving(true);
     try {
       const minutes = Math.max(15, exercises.length * 10);
       await saveUserRoutine(user.uid, editId, {
-        title: t,
+        title: routineTitle,
         muscles: muscles.trim() || 'Custom',
         minutes,
         exerciseCount: exercises.length,
@@ -136,7 +156,10 @@ export default function RoutineBuilderScreen({ navigation, route }: Props) {
       });
       navigation.goBack();
     } catch (e: unknown) {
-      Alert.alert('Save routine', friendlyAppError(e, 'Could not save routine. Please try again.'));
+      Alert.alert(
+        t('routineBuilder.alerts.saveTitle'),
+        friendlyAppError(e, 'routineBuilder.alerts.saveError'),
+      );
     } finally {
       setSaving(false);
     }
@@ -156,59 +179,67 @@ export default function RoutineBuilderScreen({ navigation, route }: Props) {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="close" size={26} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.topTitle}>{editId ? 'Edit routine' : 'New routine'}</Text>
+        <Text style={styles.topTitle}>
+          {editId ? t('routineBuilder.editTitle') : t('routineBuilder.newTitle')}
+        </Text>
         <TouchableOpacity onPress={onSave} disabled={saving}>
-          <Text style={styles.saveTop}>{saving ? '…' : 'Save'}</Text>
+          <Text style={styles.saveTop}>{saving ? t('routineBuilder.saving') : t('common.save')}</Text>
         </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll}>
-        <Text style={styles.label}>Title</Text>
+        <Text style={styles.label}>{t('routineBuilder.titleLabel')}</Text>
         <TextInput
           style={styles.input}
           value={title}
           onChangeText={setTitle}
-          placeholder="Upper strength"
+          placeholder={t('routineBuilder.titlePlaceholder')}
           placeholderTextColor={colors.textMuted}
         />
-        <Text style={styles.label}>Target muscles</Text>
+        <Text style={styles.label}>{t('routineBuilder.musclesLabel')}</Text>
         <TextInput
           style={styles.input}
           value={muscles}
           onChangeText={setMuscles}
-          placeholder="Chest, shoulders…"
+          placeholder={t('routineBuilder.musclesPlaceholder')}
           placeholderTextColor={colors.textMuted}
         />
 
-        <Text style={styles.section}>Add exercise</Text>
+        <Text style={styles.section}>{t('routineBuilder.addExercise')}</Text>
         <TouchableOpacity style={styles.libBtn} onPress={openExercisePicker} activeOpacity={0.9}>
           <Ionicons name="library-outline" size={20} color={colors.primary} style={{ marginRight: 8 }} />
-          <Text style={styles.libBtnText}>Pick from library</Text>
+          <Text style={styles.libBtnText}>{t('routineBuilder.pickFromLibrary')}</Text>
         </TouchableOpacity>
         <TextInput
           style={styles.input}
           value={exName}
           onChangeText={setExName}
-          placeholder="Exercise name"
+          placeholder={t('routineBuilder.exercisePlaceholder')}
           placeholderTextColor={colors.textMuted}
         />
         <View style={styles.row3}>
-          <Field label="Sets" value={sets} onChangeText={setSets} />
-          <Field label="Rep min" value={repMin} onChangeText={setRepMin} />
-          <Field label="Rep max" value={repMax} onChangeText={setRepMax} />
+          <Field label={t('routineBuilder.sets')} value={sets} onChangeText={setSets} />
+          <Field label={t('routineBuilder.repMin')} value={repMin} onChangeText={setRepMin} />
+          <Field label={t('routineBuilder.repMax')} value={repMax} onChangeText={setRepMax} />
         </View>
         <TouchableOpacity style={styles.addBtn} onPress={addExercise} activeOpacity={0.9}>
           <Ionicons name="add" size={20} color={colors.white} style={{ marginRight: 6 }} />
-          <Text style={styles.addBtnText}>Add to routine</Text>
+          <Text style={styles.addBtnText}>{t('routineBuilder.addToRoutine')}</Text>
         </TouchableOpacity>
 
-        <Text style={styles.section}>Routine exercises ({exercises.length})</Text>
+        <Text style={styles.section}>
+          {t('routineBuilder.routineExercises', { count: exercises.length })}
+        </Text>
         {exercises.map((ex, idx) => (
           <View key={`${ex.name}-${idx}`} style={styles.exCard}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.exTitle}>{ex.name}</Text>
+              <Text style={styles.exTitle}>{exerciseLabel(ex.name)}</Text>
               <Text style={styles.exSub}>
-                {ex.targetSets} sets • {ex.targetRepMin}-{ex.targetRepMax} reps
+                {t('routineBuilder.exerciseSetsReps', {
+                  sets: ex.targetSets,
+                  min: ex.targetRepMin,
+                  max: ex.targetRepMax,
+                })}
               </Text>
             </View>
             <TouchableOpacity onPress={() => removeAt(idx)} hitSlop={12}>
