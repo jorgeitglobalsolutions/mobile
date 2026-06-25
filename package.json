@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "exercises:generate": "node scripts/generateExercisesCatalog.mjs",
     "exercises:upload": "node firebase/functions/scripts/uploadExerciseGifs.mjs",
-    "firebase:deploy": "npm --prefix firebase/functions run build && npx firebase-tools deploy --only firestore,functions,storage --config firebase/firebase.json",
+    "firebase:deploy": "npm --prefix firebase/functions run build && cross-env FUNCTIONS_DISCOVERY_TIMEOUT=60 npx firebase-tools deploy --only firestore,functions,storage --config firebase/firebase.json",
+    "firebase:deploy:functions": "npm --prefix firebase/functions run build && cross-env FUNCTIONS_DISCOVERY_TIMEOUT=60 npx firebase-tools deploy --only functions --config firebase/firebase.json",
     "firebase:deploy:rules": "npx firebase-tools deploy --only firestore:rules --config firebase/firebase.json",
     "firebase:deploy:storage": "npx firebase-tools deploy --only storage --config firebase/firebase.json"
   },
@@ -41,6 +42,7 @@
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
+    "cross-env": "^10.1.0",
     "firebase-tools": "^15.16.0",
     "typescript": "~5.9.2"
   },

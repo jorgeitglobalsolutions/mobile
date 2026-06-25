@@ -24,7 +24,7 @@ function getDb(): Firestore {
 const FUNCTIONS_REGION = 'us-central1';
 
 /** Bumped on deploy when only Functions env (.env) changes, so Cloud Run picks up new variables. */
-const FUNCTIONS_DEPLOY_REVISION = 1;
+const FUNCTIONS_DEPLOY_REVISION = 2;
 
 type VerifyBody = {
   platform: string;

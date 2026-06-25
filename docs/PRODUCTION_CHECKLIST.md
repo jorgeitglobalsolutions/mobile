@@ -23,7 +23,8 @@ Use this when moving from local/mock development to a store-ready build aligned 
 ## Cloud Functions (`mobile/firebase`)
 
 1. **Deploy**  
-   From `mobile/firebase` (or project root per your layout): `firebase deploy --only functions`
+   From project root: `npm run firebase:deploy` (or `npm run firebase:deploy:functions` for functions only).  
+   On Windows / OneDrive, if deploy fails with *"User code failed to load… Timeout after 10000"*, the scripts already set `FUNCTIONS_DISCOVERY_TIMEOUT=60` (seconds). Retry after a minute if you hit Cloud Billing API rate limits (429).
 
 2. **`verifyPurchase` production**  
    - **Do not** set `ALLOW_VERIFY_PURCHASE_STUB` in production.  
