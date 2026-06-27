@@ -29,8 +29,7 @@
       "package": "com.jorgeitglobalsolutionssorganization.emfitsystem",
       "permissions": [
         "com.google.android.gms.permission.AD_ID"
-      ],
-      "versionCode": 10
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -48,6 +47,14 @@
     ],
     "extra": {
       "useMockData": false,
+      "firebase": {
+        "apiKey": "AIzaSyCyMttwFqwZyFP4pcPJP7_e9E_p1533i2E",
+        "authDomain": "em-fit-system-c0d3d.firebaseapp.com",
+        "projectId": "em-fit-system-c0d3d",
+        "storageBucket": "em-fit-system-c0d3d.firebasestorage.app",
+        "messagingSenderId": "827570597255",
+        "appId": "1:827570597255:web:4925a9a24455488a3e3722"
+      },
       "firebaseFunctionsRegion": "us-central1",
       "eas": {
         "projectId": "23d75ead-2ffa-4de0-978a-4f95e2ba2f0b"

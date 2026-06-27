@@ -24,6 +24,13 @@ const extra = appJson.expo?.extra ?? {};
 if (extra.useMockData === false) ok('app.json extra.useMockData is false');
 else fail('app.json extra.useMockData must be false for production');
 
+const fb = extra.firebase ?? {};
+if (fb.apiKey && fb.projectId && fb.appId) {
+  ok('app.json extra.firebase has apiKey, projectId, appId (required for EAS builds without .env)');
+} else {
+  fail('app.json extra.firebase is incomplete — Play Store builds will show MissingFirebaseScreen');
+}
+
 const skus = [extra.iapSkuMonthly, extra.iapSkuYearly];
 if (skus[0] === 'em_fit_monthly' && skus[1] === 'em_fit_yearly') {
   ok('IAP SKUs match Play Console (em_fit_monthly / em_fit_yearly)');

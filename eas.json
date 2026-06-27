@@ -1,7 +1,8 @@
 {
   "cli": {
     "version": ">= 18.7.0",
-    "appVersionSource": "remote"
+    "appVersionSource": "remote",
+    "requireCommit": true
   },
   "build": {
     "development": {
@@ -17,7 +18,8 @@
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_USE_MOCK_DATA": "0"
+        "EXPO_PUBLIC_USE_MOCK_DATA": "0",
+        "EAS_BUILD_NO_EXPO_GO_WARNING": "true"
       }
     }
   },

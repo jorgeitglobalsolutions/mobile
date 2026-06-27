@@ -13,7 +13,9 @@
     "firebase:deploy": "npm --prefix firebase/functions run build && cross-env FUNCTIONS_DISCOVERY_TIMEOUT=60 npx firebase-tools deploy --only firestore,functions,storage --config firebase/firebase.json",
     "firebase:deploy:functions": "npm --prefix firebase/functions run build && cross-env FUNCTIONS_DISCOVERY_TIMEOUT=60 npx firebase-tools deploy --only functions --config firebase/firebase.json",
     "firebase:deploy:rules": "npx firebase-tools deploy --only firestore:rules --config firebase/firebase.json",
-    "firebase:deploy:storage": "npx firebase-tools deploy --only storage --config firebase/firebase.json"
+    "firebase:deploy:storage": "npx firebase-tools deploy --only storage --config firebase/firebase.json",
+    "eas:build:android": "eas build --platform android --profile production",
+    "release:check": "node scripts/releaseSmokeCheck.mjs"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

@@ -11,13 +11,16 @@ Use this when moving from local/mock development to a store-ready build aligned 
    `app.json` sets `extra.useMockData` to `false` for release alignment. For local work **without** Firebase, set `EXPO_PUBLIC_USE_MOCK_DATA=1` (see [mockMode.ts](../src/config/mockMode.ts)) in your shell, `.env`, or a non-production EAS profile before `expo start`.
 
 3. **EAS env**  
-   The `production` profile in `eas.json` sets `EXPO_PUBLIC_USE_MOCK_DATA=0`. Add other secrets via [EAS Secrets](https://docs.expo.dev/build-reference/variables/) (e.g. API endpoints) as needed.
+   The `production` profile in `eas.json` sets `EXPO_PUBLIC_USE_MOCK_DATA=0`. Firebase keys are embedded in `app.json` → `extra.firebase` (and can be overridden via EAS Secrets / `.env` locally).
 
-4. **Native store config**  
+4. **EAS Build on Windows**  
+   `eas.json` sets `cli.requireCommit: true` to avoid `EPERM: rmdir` during upload (shallow-clone cleanup on Windows/OneDrive). **Commit all changes before** `eas build`. If upload still fails, move the repo out of OneDrive or run the build from GitHub Actions / WSL.
+
+5. **Native store config**  
    - Android: `google-services.json` from Firebase, package name matches Play Console.  
    - iOS: `GoogleService-Info.plist`, bundle ID matches App Store Connect.
 
-5. **IAP product IDs**  
+6. **IAP product IDs**  
    Ensure `app.json` → `extra.iapSkuMonthly` / `iapSkuYearly` match App Store Connect and Play Console SKUs.
 
 ## Cloud Functions (`mobile/firebase`)
