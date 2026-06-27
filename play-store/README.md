@@ -84,7 +84,49 @@ Complete **App content → Data safety** using the pre-filled answers in [data-s
 - **App content → Privacy policy:** `https://estaciondemusculacion.com/privacy`
 - **App content → Account deletion:** In-app **Profile → Delete account** (calls Cloud Function `deleteAccount`)
 - **Testing → Internal testing:** Create release, upload AAB from `eas build --profile production --platform android`, add license testers
-- **Setup → API access:** Link Google Cloud project; grant service account **Financial data** for `verifyPurchase`
+- **Setup → API access:** Link Google Cloud project; grant service account permissions (see below)
+
+### EAS Submit service account (`eas submit`)
+
+If submit fails with *"The service account is missing the necessary permissions"*, fix **Play Console**, not the app code.
+
+**Service account email (from your key):** `play-submit@em-fit-system-c0d3d.iam.gserviceaccount.com`
+
+#### A. Google Cloud (project `em-fit-system-c0d3d`)
+
+1. [Google Play Android Developer API](https://console.cloud.google.com/apis/library/androidpublisher.googleapis.com) → **Enable** for this project.
+2. Confirm the JSON key at `.eas-play-service-account.json` belongs to `play-submit@...` (same email as above).
+
+#### B. Play Console → link Cloud project
+
+1. **Setup → API access**
+2. Link the Google Cloud project **em-fit-system-c0d3d** if not already linked.
+3. Under **Service accounts**, you should see `play-submit@em-fit-system-c0d3d.iam.gserviceaccount.com`. If it shows **Grant access**, click it and continue with step C.
+
+#### C. Play Console → invite user & app permissions
+
+1. **Users and permissions** → **Invite new users** (or edit existing `play-submit@...`).
+2. Email: `play-submit@em-fit-system-c0d3d.iam.gserviceaccount.com`
+3. **App permissions** tab → add app **EM Fit System** (`com.jorgeitglobalsolutionssorganization.emfitsystem`).
+4. Role: **Release manager** (recommended). Or enable at minimum:
+   - **Release apps to testing tracks** (required for `track: internal` in `eas.json`)
+   - **View app information and download bulk reports**
+   - **Manage testing tracks and edit tester lists** (optional but useful)
+5. Save / **Invite user**. Status must be **Active** (not “Invitation sent” only).
+
+#### D. Retry submit
+
+```powershell
+eas submit --platform android --profile production
+```
+
+Permissions can take **15–30 minutes** (sometimes up to 24h) to propagate after changes.
+
+#### E. First release note
+
+If the app has **never** had an AAB uploaded to any track, upload **one release manually** in Play Console → **Testing → Internal testing** → Create release → upload the same `.aab` from EAS once. After that, `eas submit` usually works for subsequent builds.
+
+**Separate account for IAP verification:** Cloud Functions use `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` (may be a different service account). Play **submit** and **purchase verification** can use the same account if it has both Play Console release permissions and Android Publisher API access.
 
 ## 6. Subscription disclosure (store)
 
