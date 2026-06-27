@@ -5,13 +5,13 @@ Use this when moving from local/mock development to a store-ready build aligned 
 ## Mobile app (Expo / EAS)
 
 1. **Firebase client config**  
-   Add production web SDK keys under `expo.extra.firebase` in `app.json`, **or** set `EXPO_PUBLIC_FIREBASE_*` in `.env` (see `.env.example`) / [EAS Secrets](https://docs.expo.dev/build-reference/variables/), matching the Firebase project used in production. Callable functions region defaults to `us-central1` (`extra.firebaseFunctionsRegion` / `EXPO_PUBLIC_FIREBASE_FUNCTIONS_REGION`). Without valid Firebase config, `isMockDataMode()` may enable demo data—only acceptable for internal demos.
+   Set `EXPO_PUBLIC_FIREBASE_*` in a local `.env` (see `.env.example`) and in **EAS → Environment variables → production**. Callable functions region defaults to `us-central1` (`extra.firebaseFunctionsRegion`). **Never commit Firebase keys in `app.json`** — use EAS Secrets for Play Store builds. If a key was exposed on GitHub, rotate it in [Google Cloud Console](https://console.cloud.google.com/apis/credentials) and update EAS + `.env`.
 
 2. **Mock data off**  
    `app.json` sets `extra.useMockData` to `false` for release alignment. For local work **without** Firebase, set `EXPO_PUBLIC_USE_MOCK_DATA=1` (see [mockMode.ts](../src/config/mockMode.ts)) in your shell, `.env`, or a non-production EAS profile before `expo start`.
 
 3. **EAS env**  
-   The `production` profile in `eas.json` sets `EXPO_PUBLIC_USE_MOCK_DATA=0`. Firebase keys are embedded in `app.json` → `extra.firebase` (and can be overridden via EAS Secrets / `.env` locally).
+   The `production` profile sets `EXPO_PUBLIC_USE_MOCK_DATA=0`. All `EXPO_PUBLIC_FIREBASE_*` values must live in **EAS production environment variables** (not in git).
 
 4. **EAS Build on Windows**  
    `eas.json` sets `cli.requireCommit: true` to avoid `EPERM: rmdir` during upload (shallow-clone cleanup on Windows/OneDrive). **Commit all changes before** `eas build`. If upload still fails, move the repo out of OneDrive or run the build from GitHub Actions / WSL.

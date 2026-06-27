@@ -25,10 +25,39 @@ if (extra.useMockData === false) ok('app.json extra.useMockData is false');
 else fail('app.json extra.useMockData must be false for production');
 
 const fb = extra.firebase ?? {};
-if (fb.apiKey && fb.projectId && fb.appId) {
-  ok('app.json extra.firebase has apiKey, projectId, appId (required for EAS builds without .env)');
+if (fb.apiKey || fb.projectId || fb.appId) {
+  fail('app.json must NOT contain extra.firebase — use .env locally and EAS Secrets for production');
 } else {
-  fail('app.json extra.firebase is incomplete — Play Store builds will show MissingFirebaseScreen');
+  ok('app.json has no committed Firebase keys');
+}
+
+function loadDotEnv() {
+  try {
+    const raw = readFileSync(join(root, '.env'), 'utf8');
+    const out = {};
+    for (const line of raw.split('\n')) {
+      const m = line.match(/^([A-Z0-9_]+)=(.*)$/);
+      if (m) out[m[1]] = m[2].trim();
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
+const env = { ...loadDotEnv(), ...process.env };
+const firebaseKeys = [
+  'EXPO_PUBLIC_FIREBASE_API_KEY',
+  'EXPO_PUBLIC_FIREBASE_PROJECT_ID',
+  'EXPO_PUBLIC_FIREBASE_APP_ID',
+];
+const hasLocalFirebase = firebaseKeys.every((k) => env[k]?.trim());
+if (hasLocalFirebase) {
+  ok('Local .env has Firebase keys (or set them in EAS production environment for cloud builds)');
+} else {
+  fail(
+    'Firebase keys missing in .env — required for local builds; EAS production must have EXPO_PUBLIC_FIREBASE_* in project secrets',
+  );
 }
 
 const skus = [extra.iapSkuMonthly, extra.iapSkuYearly];
